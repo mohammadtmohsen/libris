@@ -1,8 +1,8 @@
 import axios from '_axios';
 import { IExerciseDetails } from '_types/types';
 export const workoutServices = {
-  getAllWorkouts: async (params?: object) => {
-    const endPoint = '/workout';
+  getAllBooks: async (params?: object) => {
+    const endPoint = '/books';
     try {
       const res = await axios.get<
         object,

@@ -4,6 +4,7 @@ import authRoutes from './authRoutes.js';
 import workoutRoutes from './workoutRoutes.js';
 import recordRoutes from './recordRoutes.js';
 import routineRoutes from './routineRoutes.js';
+import bookRoutes from './bookRoutes.js';
 const router = Router();
 
 // Health check route
@@ -21,5 +22,6 @@ router.use('/auth', authRoutes);
 router.use('/workout', workoutRoutes);
 router.use('/record', recordRoutes);
 router.use('/routine', routineRoutes);
+router.use('/books', bookRoutes);
 
 export default router;

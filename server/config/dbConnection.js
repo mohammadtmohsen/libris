@@ -5,7 +5,7 @@ const connectDB = async () => {
   try {
     const URI = process.env.ATLAS_URI || '';
     await mongoose.connect(URI);
-    console.log('Connected to MongoDB! from DB Connection');
+    console.log('Connected to MongoDB! from Libris Connection');
   } catch (err) {
     console.error(err);
   }
