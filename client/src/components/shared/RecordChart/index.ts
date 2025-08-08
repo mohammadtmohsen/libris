@@ -1,0 +1,1 @@
+export { RecordChart } from './RecordChart';
