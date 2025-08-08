@@ -6,6 +6,15 @@ import recordRoutes from './recordRoutes.js';
 import routineRoutes from './routineRoutes.js';
 const router = Router();
 
+// Health check route
+router.get('/', (req, res) => {
+  res.json({ 
+    message: 'Libris API Server is running!', 
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
+
 // register routes
 router.use('/users', userRoutes);
 router.use('/auth', authRoutes);
