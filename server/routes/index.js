@@ -8,10 +8,10 @@ const router = Router();
 
 // Health check route
 router.get('/', (req, res) => {
-  res.json({ 
-    message: 'Libris API Server is running!', 
+  res.json({
+    message: 'Libris API Server is running!',
     timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'development'
+    env: process.env.NODE_ENV || 'development',
   });
 });
 
