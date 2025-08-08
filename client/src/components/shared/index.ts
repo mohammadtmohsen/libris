@@ -18,7 +18,6 @@ import { TitleWithBackButton } from './TitleWithBackButton/TitleWithBackButton';
 import { Charts } from './Charts/Charts';
 import { ButtonToggleGroup, ToggleOption } from './ButtonToggleGroup';
 import { RepsSelector, RepsOption } from './RepsSelector';
-import { RecordChart } from './RecordChart';
 import { Tabs, TabOption } from './Tabs';
 export {
   ExercisesCard,
@@ -42,7 +41,6 @@ export {
   Charts,
   ButtonToggleGroup,
   RepsSelector,
-  RecordChart,
   Tabs,
 };
 

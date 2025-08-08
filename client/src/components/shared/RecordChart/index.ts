@@ -1,1 +1,0 @@
-export { RecordChart } from './RecordChart';
