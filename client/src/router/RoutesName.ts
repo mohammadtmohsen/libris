@@ -5,5 +5,5 @@ export const RoutesName = {
   'Routines Details': '/routines/:routineId',
   'Build Routines': '/routines/build-plan',
   'My Records': '/records',
-  Workouts: '/workouts',
+  Books: '/books',
 };

@@ -1,16 +1,30 @@
 import axios from '_axios';
-import { IExerciseDetails } from '_types/types';
+import type { Book, BooksListResponse } from './booksServices.types';
 export const workoutServices = {
   getAllBooks: async (params?: object) => {
     const endPoint = '/books';
     try {
       const res = await axios.get<
-        object,
-        { data: { items: IExerciseDetails[]; count: number } }
+        unknown,
+        { data: { data: Book[]; total: number } }
       >(endPoint, { params });
-      return res?.data;
+      // Normalize to items/count for existing components contract
+      return {
+        items: res.data.data,
+        count: res.data.total,
+      } as BooksListResponse;
     } catch (error) {
       throw Promise.reject(error);
     }
+  },
+  getBookById: async (id: string) => {
+    const res = await axios.get<unknown, { data: { data: Book } }>(
+      `/books/${id}`
+    );
+    return res.data.data;
+  },
+  getThumbnailUrl: (book: Pick<Book, 'id' | 'thumbnailUrl'>) => {
+    // thumbnailUrl is already relative path from server; caller should prefix with baseURL if needed
+    return book.thumbnailUrl ?? `/books/${book.id}/thumbnail`;
   },
 };

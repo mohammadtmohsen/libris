@@ -84,7 +84,11 @@ class BooksController {
 
       res.json({
         success: true,
-        data: books,
+        data: books.map((b) => ({
+          ...b,
+          // Provide a proxy URL the client can use to fetch the thumbnail safely
+          thumbnailUrl: `/books/${b.id}/thumbnail`,
+        })),
         total: books.length,
         message: `Found ${books.length} books`,
       });
@@ -120,7 +124,10 @@ class BooksController {
 
       res.json({
         success: true,
-        data: book,
+        data: {
+          ...book,
+          thumbnailUrl: `/books/${book.id}/thumbnail`,
+        },
         message: 'Book retrieved successfully',
       });
     } catch (error) {
@@ -249,7 +256,10 @@ class BooksController {
 
       res.json({
         success: true,
-        data: books,
+        data: books.map((b) => ({
+          ...b,
+          thumbnailUrl: `/books/${b.id}/thumbnail`,
+        })),
         total: books.length,
         searchTerm: searchTerm.trim(),
         message: `Found ${books.length} books matching "${searchTerm}"`,
@@ -259,6 +269,58 @@ class BooksController {
       res.status(500).json({
         success: false,
         error: 'Search failed',
+        message: error.message,
+      });
+    }
+  });
+
+  /**
+   * Get/Proxy a book thumbnail image
+   * GET /books/:id/thumbnail?size=256
+   */
+  getBookThumbnail = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const size = Math.max(64, Math.min(1024, parseInt(req.query.size, 10) || 256));
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Book ID is required',
+        message: 'Please provide a valid book ID',
+      });
+    }
+    try {
+      const response = await this.googleDriveService.getBookThumbnailResponse(id, size);
+      // Propagate content type from Google
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+      const contentLength = response.headers.get('content-length');
+      res.setHeader('Content-Type', contentType);
+      if (contentLength) res.setHeader('Content-Length', contentLength);
+      // Cache for 1 day; include weak ETag using id and size
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.setHeader('ETag', `"thumb-${id}-s${size}"`);
+
+      // Stream body to response
+      if (response.body) {
+        response.body.pipe(res);
+      } else {
+        const buffer = Buffer.from(await response.arrayBuffer());
+        res.end(buffer);
+      }
+    } catch (error) {
+      console.error('Error in getBookThumbnail:', error);
+      if (
+        error.message.includes('not found') ||
+        error.message.includes('File not found')
+      ) {
+        return res.status(404).json({
+          success: false,
+          error: 'Book not found',
+          message: 'The requested book does not exist',
+        });
+      }
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch thumbnail',
         message: error.message,
       });
     }

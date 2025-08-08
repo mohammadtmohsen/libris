@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from '_components/layout/Layout';
 import { Dashboard } from '_pages/dashboard/Dashboard';
 import { DailyRoutine } from '_pages/DailyRoutine/DailyRoutine';
-import { Workouts } from '_pages/workouts';
+import { Books } from '_pages/books';
 import { Records } from '_pages/records/Records';
 import RoutineList from '_pages/routines/routineList/RoutineList';
 import RoutineDetails from '_pages/routines/routineDetails/RoutineDetails';
@@ -20,7 +20,7 @@ export const dashboardRouter = createBrowserRouter([
       { path: RoutesName['Routines Details'], element: <RoutineDetails /> },
       { path: RoutesName['Build Routines'], element: <NewRoutine /> },
       { path: RoutesName['My Records'], element: <Records /> },
-      { path: RoutesName.Workouts, element: <Workouts /> },
+  { path: RoutesName.Books, element: <Books /> },
       { path: '*', element: <Navigate to={'/'} /> },
     ],
   },

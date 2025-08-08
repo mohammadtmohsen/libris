@@ -24,4 +24,7 @@ router.get('/:id', booksController.getBookById);
 // Download a book file
 router.get('/:id/download', booksController.downloadBook);
 
+// Get a book thumbnail (proxied)
+router.get('/:id/thumbnail', booksController.getBookThumbnail);
+
 export default router;
