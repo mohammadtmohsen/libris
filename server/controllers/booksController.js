@@ -15,20 +15,7 @@ class BooksController {
    */
   initializeService() {
     // Try different authentication methods in order of preference
-    if (process.env.GOOGLE_API_KEY) {
-      console.log('Attempting to initialize Google Drive with API Key...');
-      if (this.googleDriveService.initApiKey()) {
-        console.log(
-          'Google Drive service initialized successfully with API Key'
-        );
-        return;
-      } else {
-        console.warn('API Key present but Drive init failed.');
-      }
-    } else {
-      console.warn('No GOOGLE_API_KEY found in environment.');
-    }
-
+    // 1) Service Account (best for server-to-server)
     if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
       console.log(
         'Attempting to initialize Google Drive with Service Account...'
@@ -43,6 +30,7 @@ class BooksController {
       }
     }
 
+    // 2) OAuth2 (user-consented server-side)
     if (
       process.env.GOOGLE_CLIENT_ID &&
       process.env.GOOGLE_CLIENT_SECRET &&
@@ -55,6 +43,24 @@ class BooksController {
       } else {
         console.warn('OAuth2 env present but Drive init failed.');
       }
+    }
+
+    // 3) API Key (limited; metadata and public files only)
+    if (process.env.GOOGLE_API_KEY) {
+      console.log('Attempting to initialize Google Drive with API Key...');
+      if (this.googleDriveService.initApiKey()) {
+        console.log(
+          'Google Drive service initialized successfully with API Key'
+        );
+        console.warn(
+          'Note: API Key has limited access. Downloading private files may fail. Prefer Service Account or OAuth2.'
+        );
+        return;
+      } else {
+        console.warn('API Key present but Drive init failed.');
+      }
+    } else {
+      console.warn('No GOOGLE_API_KEY found in environment.');
     }
 
     console.error(
@@ -168,21 +174,41 @@ class BooksController {
         });
       }
 
-      console.log(`Downloading book with ID: ${id}`);
+      console.log(`[Books] Download request for id=${id}`);
 
       // Get book metadata first
       const book = await this.googleDriveService.getBookById(id);
+      if (!book) {
+        return res.status(404).json({
+          success: false,
+          error: 'Book not found',
+          message: 'The requested book does not exist',
+        });
+      }
+
+      // Validate mime type to ensure it's a PDF
+      if (book.mimeType && book.mimeType !== 'application/pdf') {
+        console.warn(
+          `[Books] Rejecting download, unsupported mimeType=${book.mimeType} for id=${id}`
+        );
+        return res.status(415).json({
+          success: false,
+          error: 'Unsupported Media Type',
+          message: `This file is not a PDF (type: ${book.mimeType})`,
+        });
+      }
 
       // Get download stream
       const downloadStream =
         await this.googleDriveService.getBookDownloadStream(id);
 
-      // Set appropriate headers for PDF download
+      // If we have a stream, set headers then pipe
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader(
         'Content-Disposition',
         `inline; filename="${book.fileName}"`
       );
+      res.setHeader('Accept-Ranges', 'bytes');
 
       if (book.size) {
         res.setHeader('Content-Length', book.size);
@@ -190,24 +216,39 @@ class BooksController {
 
       // Add caching headers
       res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
-      res.setHeader('ETag', `"${book.id}-${book.modifiedTime}"`);
+      if (book.modifiedTime) {
+        res.setHeader('ETag', `"${book.id}-${book.modifiedTime}"`);
+      }
 
-      console.log(`Streaming book: ${book.title}`);
+      console.log(`[Books] Streaming: title="${book.title}", id=${book.id}`);
+
+      downloadStream.on('end', () => {
+        console.log(`[Books] Stream finished for id=${book.id}`);
+      });
+
+      // Handle stream errors before piping response ends
+      downloadStream.on('error', (error) => {
+        console.error(
+          '[Books] Download stream error:',
+          error?.message || error
+        );
+        if (!res.headersSent) {
+          res.status(502).json({
+            success: false,
+            error: 'Bad Gateway',
+            message: 'Upstream failed to provide PDF stream',
+          });
+        } else {
+          try {
+            res.destroy(error);
+          } catch (_) {
+            // no-op
+          }
+        }
+      });
 
       // Stream the file to the client
       downloadStream.pipe(res);
-
-      // Handle stream errors
-      downloadStream.on('error', (error) => {
-        console.error('Download stream error:', error);
-        if (!res.headersSent) {
-          res.status(500).json({
-            success: false,
-            error: 'Download failed',
-            message: 'Failed to stream book content',
-          });
-        }
-      });
     } catch (error) {
       console.error('Error in downloadBook:', error);
 
@@ -280,7 +321,10 @@ class BooksController {
    */
   getBookThumbnail = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const size = Math.max(64, Math.min(1024, parseInt(req.query.size, 10) || 256));
+    const size = Math.max(
+      64,
+      Math.min(1024, parseInt(req.query.size, 10) || 256)
+    );
     if (!id) {
       return res.status(400).json({
         success: false,
@@ -289,7 +333,10 @@ class BooksController {
       });
     }
     try {
-      const response = await this.googleDriveService.getBookThumbnailResponse(id, size);
+      const response = await this.googleDriveService.getBookThumbnailResponse(
+        id,
+        size
+      );
       // Propagate content type from Google
       const contentType = response.headers.get('content-type') || 'image/jpeg';
       const contentLength = response.headers.get('content-length');
