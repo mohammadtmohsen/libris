@@ -6,7 +6,6 @@ import { Books } from '_pages/books';
 import { Records } from '_pages/records/Records';
 import RoutineList from '_pages/routines/routineList/RoutineList';
 import RoutineDetails from '_pages/routines/routineDetails/RoutineDetails';
-import NewRoutine from '_pages/routines/newRoutine/NewRoutine';
 import { RoutesName } from './RoutesName';
 
 export const dashboardRouter = createBrowserRouter([
@@ -18,7 +17,6 @@ export const dashboardRouter = createBrowserRouter([
       { path: RoutesName['Daily Workout'], element: <DailyRoutine /> },
       { path: RoutesName['My Routines'], element: <RoutineList /> },
       { path: RoutesName['Routines Details'], element: <RoutineDetails /> },
-      { path: RoutesName['Build Routines'], element: <NewRoutine /> },
       { path: RoutesName['My Records'], element: <Records /> },
   { path: RoutesName.Books, element: <Books /> },
       { path: '*', element: <Navigate to={'/'} /> },
