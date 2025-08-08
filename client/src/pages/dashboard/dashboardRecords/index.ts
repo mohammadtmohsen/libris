@@ -1,1 +1,0 @@
-export { DashboardRecords } from './DashboardRecords';

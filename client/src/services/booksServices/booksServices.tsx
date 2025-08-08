@@ -1,6 +1,6 @@
 import axios from '_axios';
 import type { Book, BooksListResponse } from './booksServices.types';
-export const workoutServices = {
+export const booksServices = {
   getAllBooks: async (params?: object) => {
     const endPoint = '/books';
     try {

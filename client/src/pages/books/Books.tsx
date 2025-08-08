@@ -1,10 +1,9 @@
 import { CardSkeleton } from '_components/shared';
-import { useGetWorkouts } from '_queries/workoutQueries/workoutQueries';
-import { workoutServices } from '_services/booksServices';
+import { useGetBooks } from '_queries/booksQueries/booksQueries';
 
 export const Books = () => {
   // Reuse the existing query hook which currently targets books via service
-  const { data, isFetching } = useGetWorkouts();
+  const { data, isFetching } = useGetBooks();
 
   return (
     <div className='flex flex-col gap-5'>
@@ -15,7 +14,7 @@ export const Books = () => {
         <CardSkeleton loading={isFetching} count={1} rows={12} />
         {!isFetching &&
           data?.items?.map((book) => {
-            const thumbUrl = workoutServices.getThumbnailUrl(book);
+            const thumbUrl = book.thumbnailLink;
             return (
               <div
                 key={book.id}
@@ -23,7 +22,7 @@ export const Books = () => {
               >
                 <div className='w-full aspect-[3/4] bg-black-2 rounded overflow-hidden flex items-center justify-center'>
                   <img
-                    src={thumbUrl}
+                    src={thumbUrl ? thumbUrl : undefined}
                     alt={`Thumbnail of ${book.title}`}
                     className='w-full h-full object-cover'
                     loading='lazy'
