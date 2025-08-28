@@ -1,6 +1,30 @@
 import GoogleDriveService from '../services/googleDriveService.js';
 import asyncHandler from 'express-async-handler';
 
+const fetchWithRetry = (fn, retries = 3, delay = 100) => {
+  return fn().catch((err) => {
+    // Check if the error is a rate limit error (status code 429 or 403)
+    // You might need to adjust this check based on the actual error object from your service
+    const isRateLimitError =
+      err.code === 429 ||
+      err.code === 403 ||
+      err.status === 429 ||
+      err.status === 403;
+
+    if (isRateLimitError && retries > 0) {
+      console.log(
+        `Rate limit hit. Retrying in ${delay}ms. Retries left: ${retries}`
+      );
+      // Wait for the delay, then retry with one less retry attempt and double the delay.
+      return new Promise((resolve) => setTimeout(resolve, delay)).then(() =>
+        fetchWithRetry(fn, retries - 1, delay * 2)
+      );
+    }
+    // If it's not a rate limit error or we're out of retries, throw the error.
+    return Promise.reject(err);
+  });
+};
+
 /**
  * Controller for handling book-related operations with Google Drive
  */
@@ -162,6 +186,22 @@ class BooksController {
    * Download a book file
    * GET /books/:id/download
    */
+  /**
+   * Download a book file
+   * GET /books/:id/download
+   */
+  /**
+   * Download a book file
+   * GET /books/:id/download
+   */
+  /**
+   * Download a book file
+   * GET /books/:id/download
+   */
+  /**
+   * Download a book file
+   * GET /books/:id/download
+   */
   downloadBook = asyncHandler(async (req, res) => {
     try {
       const { id } = req.params;
@@ -176,79 +216,55 @@ class BooksController {
 
       console.log(`[Books] Download request for id=${id}`);
 
-      // Get book metadata first
+      // Get book metadata for filename and type validation
       const book = await this.googleDriveService.getBookById(id);
       if (!book) {
         return res.status(404).json({
           success: false,
           error: 'Book not found',
-          message: 'The requested book does not exist',
         });
       }
 
-      // Validate mime type to ensure it's a PDF
       if (book.mimeType && book.mimeType !== 'application/pdf') {
-        console.warn(
-          `[Books] Rejecting download, unsupported mimeType=${book.mimeType} for id=${id}`
-        );
         return res.status(415).json({
           success: false,
           error: 'Unsupported Media Type',
-          message: `This file is not a PDF (type: ${book.mimeType})`,
         });
       }
 
-      // Get download stream
-      const downloadStream =
+      const driveResponseObject =
         await this.googleDriveService.getBookDownloadStream(id);
 
-      // If we have a stream, set headers then pipe
+      const bufferSymbol = Object.getOwnPropertySymbols(
+        driveResponseObject
+      ).find((s) => s.description === 'buffer');
+
+      const fileBuffer = driveResponseObject[bufferSymbol];
+
+      if (!fileBuffer || typeof fileBuffer.length !== 'number') {
+        throw new Error(
+          'Could not extract a valid buffer from the Drive response.'
+        );
+      }
+
       res.setHeader('Content-Type', 'application/pdf');
+
+      // --- START: The Fix ---
+      const fallbackFilename = book.fileName.replace(/[^\x00-\x7F]/g, '');
+      const encodedFilename = encodeURIComponent(book.fileName);
       res.setHeader(
         'Content-Disposition',
-        `inline; filename="${book.fileName}"`
+        `inline; filename="${fallbackFilename}"; filename*=UTF-8''${encodedFilename}`
       );
-      res.setHeader('Accept-Ranges', 'bytes');
+      // --- END: The Fix ---
 
-      if (book.size) {
-        res.setHeader('Content-Length', book.size);
-      }
+      res.setHeader('Content-Length', fileBuffer.length);
 
-      // Add caching headers
-      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
-      if (book.modifiedTime) {
-        res.setHeader('ETag', `"${book.id}-${book.modifiedTime}"`);
-      }
+      console.log(
+        `[Books] Sending buffer: title="${book.title}", size=${fileBuffer.length} bytes`
+      );
 
-      console.log(`[Books] Streaming: title="${book.title}", id=${book.id}`);
-
-      downloadStream.on('end', () => {
-        console.log(`[Books] Stream finished for id=${book.id}`);
-      });
-
-      // Handle stream errors before piping response ends
-      downloadStream.on('error', (error) => {
-        console.error(
-          '[Books] Download stream error:',
-          error?.message || error
-        );
-        if (!res.headersSent) {
-          res.status(502).json({
-            success: false,
-            error: 'Bad Gateway',
-            message: 'Upstream failed to provide PDF stream',
-          });
-        } else {
-          try {
-            res.destroy(error);
-          } catch (_) {
-            // no-op
-          }
-        }
-      });
-
-      // Stream the file to the client
-      downloadStream.pipe(res);
+      res.send(fileBuffer);
     } catch (error) {
       console.error('Error in downloadBook:', error);
 
@@ -259,7 +275,6 @@ class BooksController {
         return res.status(404).json({
           success: false,
           error: 'Book not found',
-          message: 'The requested book does not exist',
         });
       }
 
@@ -319,6 +334,10 @@ class BooksController {
    * Get/Proxy a book thumbnail image
    * GET /books/:id/thumbnail?size=256
    */
+  /**
+   * Get/Proxy a book thumbnail image
+   * GET /books/:id/thumbnail?size=256
+   */
   getBookThumbnail = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const size = Math.max(
@@ -329,30 +348,40 @@ class BooksController {
       return res.status(400).json({
         success: false,
         error: 'Book ID is required',
-        message: 'Please provide a valid book ID',
       });
     }
     try {
-      const response = await this.googleDriveService.getBookThumbnailResponse(
-        id,
-        size
+      // --- START: The Fix ---
+      // 1. Get the special object from the service.
+      const driveResponseObject = await fetchWithRetry(() =>
+        this.googleDriveService.getBookThumbnailResponse(id, size)
       );
-      // Propagate content type from Google
-      const contentType = response.headers.get('content-type') || 'image/jpeg';
-      const contentLength = response.headers.get('content-length');
+
+      // 2. Find the Symbol keys for the buffer and the content type.
+      const symbols = Object.getOwnPropertySymbols(driveResponseObject);
+      const bufferSymbol = symbols.find((s) => s.description === 'buffer');
+      const typeSymbol = symbols.find((s) => s.description === 'type');
+
+      // 3. Extract the buffer and content type using the symbols.
+      const imageBuffer = driveResponseObject[bufferSymbol];
+      const contentType = driveResponseObject[typeSymbol] || 'image/jpeg'; // Default to jpeg
+
+      // 4. Safety check the buffer.
+      if (!imageBuffer) {
+        throw new Error(
+          'Could not extract thumbnail buffer from Drive response.'
+        );
+      }
+
+      // 5. Set the headers.
       res.setHeader('Content-Type', contentType);
-      if (contentLength) res.setHeader('Content-Length', contentLength);
-      // Cache for 1 day; include weak ETag using id and size
-      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.setHeader('Content-Length', imageBuffer.length);
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
       res.setHeader('ETag', `"thumb-${id}-s${size}"`);
 
-      // Stream body to response
-      if (response.body) {
-        response.body.pipe(res);
-      } else {
-        const buffer = Buffer.from(await response.arrayBuffer());
-        res.end(buffer);
-      }
+      // 6. Send the image buffer.
+      res.send(imageBuffer);
+      // --- END: The Fix ---
     } catch (error) {
       console.error('Error in getBookThumbnail:', error);
       if (
@@ -362,7 +391,6 @@ class BooksController {
         return res.status(404).json({
           success: false,
           error: 'Book not found',
-          message: 'The requested book does not exist',
         });
       }
       return res.status(500).json({
