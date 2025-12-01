@@ -6,7 +6,7 @@ const booksController = new BooksController();
 
 /**
  * Books Routes
- * All routes for managing and fetching books from Google Drive
+ * Google integrations removed. Endpoints currently return 503 until R2 migration.
  */
 
 // Get service status and configuration

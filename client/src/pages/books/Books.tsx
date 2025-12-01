@@ -16,10 +16,10 @@ type PdfViewerProps = {
 function PdfViewer({ title, url, onClose }: PdfViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [scale, setScale] = useState(1.1);
+  const [scale, setScale] = useState(1);
 
   return (
-    <div className='flex flex-col w-[95vw] h-[90vh] max-w-[1200px] max-h-[90vh]'>
+    <div className='flex flex-col w-full h-full xw-[95vw] xh-[90vh] xmax-w-[1200px] xmax-h-[90vh]'>
       <div className='flex items-center gap-2 p-2 sm:p-3 bg-black-3 border-b border-black-2'>
         <div className='flex-1 truncate pr-2' title={title}>
           <span className='text-sm sm:text-base'>{title}</span>
@@ -114,8 +114,8 @@ export const Books = () => {
 
   // Modal with PDF viewer content
   const pdfModal = useModal({
-    overrideStyle:
-      '!bg-black-1 !p-0 w-[95vw] h-[90vh] max-w-[1200px] max-h-[90vh]',
+    overrideStyle: '',
+    // '!bg-black-1 !p-0 w-[95vw] h-[90vh] max-w-[1200px] max-h-[90vh]',
     content: ({ close, contentProps }) => (
       <PdfViewer
         title={(contentProps?.title as string) || 'Document'}
