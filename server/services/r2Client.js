@@ -34,7 +34,7 @@ export const buckets = {
   cover: process.env.CLOUDFLARE_R2_COVER_BUCKET,
 };
 
-const defaultExpiresIn = 900; // 15 minutes
+const defaultExpiresIn = 3600; // 60 minutes
 
 const requireBucket = (bucket) => {
   if (!bucket) {

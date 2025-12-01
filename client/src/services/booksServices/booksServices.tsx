@@ -1,5 +1,12 @@
 import axios from '_axios';
-import type { Book, BooksListResponse, SignedUrlResponse } from './booksServices.types';
+import axiosRaw from 'axios';
+import type {
+  Book,
+  BooksListResponse,
+  SignedUrlResponse,
+  PresignUploadRequest,
+  PresignUploadResponse,
+} from './booksServices.types';
 
 const mapBook = (book: Book): Book => ({
   ...book,
@@ -35,5 +42,35 @@ export const booksServices = {
       `/books/${id}/thumbnail`
     );
     return res.data.data.coverUrl;
+  },
+
+  presignUpload: async (payload: PresignUploadRequest) => {
+    const res = await axios.post<unknown, { data: { data: PresignUploadResponse } }>(
+      '/books/presign-upload',
+      payload
+    );
+    return res.data.data;
+  },
+
+  completeUpload: async (payload: {
+    title: string;
+    author?: string;
+    description?: string;
+    tags?: string[];
+    status?: Book['status'];
+    visibility?: Book['visibility'];
+    file: Book['file'];
+    cover?: Book['cover'];
+  }) => {
+    const res = await axios.post<unknown, { data: { data: Book } }>('/books/complete', payload);
+    return mapBook(res.data.data);
+  },
+
+  uploadToPresignedUrl: async (file: File, presign: PresignUploadResponse) => {
+    const headers: Record<string, string> = {
+      'Content-Type': file.type || 'application/octet-stream',
+      ...(presign.headers || {}),
+    };
+    await axiosRaw.put(presign.uploadUrl, file, { headers });
   },
 };

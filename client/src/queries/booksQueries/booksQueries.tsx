@@ -1,5 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { booksServices } from '_services/booksServices/booksServices';
+import type {
+  PresignUploadRequest,
+  PresignUploadResponse,
+  Book,
+} from '_services/booksServices/booksServices.types';
 
 export const useGetBooks = (params?: object) => {
   const queryResult = useQuery({
@@ -19,4 +24,31 @@ export const useGetBookSignedUrl = (id?: string, includeCover = false, enabled =
     },
   });
   return queryResult;
+};
+
+export const usePresignUpload = () => {
+  return useMutation({
+    mutationKey: ['PRESIGN_BOOK_UPLOAD'],
+    mutationFn: (payload: PresignUploadRequest) => booksServices.presignUpload(payload),
+  });
+};
+
+export const useCompleteUpload = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['COMPLETE_BOOK_UPLOAD'],
+    mutationFn: (payload: {
+      title: string;
+      author?: string;
+      description?: string;
+      tags?: string[];
+      status?: Book['status'];
+      visibility?: Book['visibility'];
+      file: Book['file'];
+      cover?: Book['cover'];
+    }) => booksServices.completeUpload(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['GET_BOOKS'] });
+    },
+  });
 };

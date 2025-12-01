@@ -11,8 +11,8 @@ import {
   buckets,
 } from '../services/r2Client.js';
 
-const DEFAULT_URL_TTL_SECONDS = 900; // 15 minutes
-const MAX_URL_TTL_SECONDS = 3600; // 1 hour cap to limit signed URL churn
+const DEFAULT_URL_TTL_SECONDS = 3600; // 60 minutes
+const MAX_URL_TTL_SECONDS = 7200; // 2 hours cap to limit signed URL churn
 
 const validationFailed = (req, res) => {
   const errors = validationResult(req);
