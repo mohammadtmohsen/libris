@@ -11,10 +11,10 @@ const requiredEnv = [
   'CLOUDFLARE_R2_ACCESS_KEY_ID',
   'CLOUDFLARE_R2_SECRET_ACCESS_KEY',
   'CLOUDFLARE_R2_BOOK_BUCKET',
-  'CLOUDFLARE_R2_COVER_BUCKET',
 ];
 
-export const isR2Configured = () => requiredEnv.every((key) => Boolean(process.env[key]));
+export const isR2Configured = () =>
+  requiredEnv.every((key) => Boolean(process.env[key]));
 
 const endpoint = process.env.CLOUDFLARE_R2_ACCOUNT_ID
   ? `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
@@ -29,30 +29,17 @@ const client = new S3Client({
   },
 });
 
-export const buckets = {
-  book: process.env.CLOUDFLARE_R2_BOOK_BUCKET,
-  cover: process.env.CLOUDFLARE_R2_COVER_BUCKET,
-};
-
+const bucket = process.env.CLOUDFLARE_R2_BOOK_BUCKET;
 const defaultExpiresIn = 3600; // 60 minutes
-
-const requireBucket = (bucket) => {
-  if (!bucket) {
-    throw new Error('Storage bucket is required');
-  }
-  return bucket;
-};
 
 export const createUploadUrl = async ({
   key,
-  bucket,
   contentType,
   contentLength,
   expiresIn = defaultExpiresIn,
 }) => {
-  const targetBucket = requireBucket(bucket);
   const command = new PutObjectCommand({
-    Bucket: targetBucket,
+    Bucket: bucket,
     Key: key,
     ContentType: contentType,
     ContentLength: contentLength,
@@ -63,22 +50,21 @@ export const createUploadUrl = async ({
 
 export const createReadUrl = async ({
   key,
-  bucket,
   expiresIn = defaultExpiresIn,
   downloadName,
 }) => {
-  const targetBucket = requireBucket(bucket);
   const command = new GetObjectCommand({
-    Bucket: targetBucket,
+    Bucket: bucket,
     Key: key,
-    ResponseContentDisposition: downloadName ? `attachment; filename="${downloadName}"` : undefined,
+    ResponseContentDisposition: downloadName
+      ? `attachment; filename="${downloadName}"`
+      : undefined,
   });
   const signedUrl = await getSignedUrl(client, command, { expiresIn });
   return signedUrl;
 };
 
-export const deleteObject = async ({ key, bucket }) => {
-  const targetBucket = requireBucket(bucket);
-  const command = new DeleteObjectCommand({ Bucket: targetBucket, Key: key });
+export const deleteObject = async ({ key }) => {
+  const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
   await client.send(command);
 };

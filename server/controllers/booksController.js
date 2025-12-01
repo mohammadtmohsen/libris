@@ -8,7 +8,6 @@ import {
   createUploadUrl,
   deleteObject,
   isR2Configured,
-  buckets,
 } from '../services/r2Client.js';
 
 const DEFAULT_URL_TTL_SECONDS = 3600; // 60 minutes
@@ -28,8 +27,6 @@ export const getServiceStatus = asyncHandler(async (req, res) => {
     success: true,
     data: {
       configured: isR2Configured(),
-      bucketBook: buckets.book,
-      bucketCover: buckets.cover,
     },
     message: isR2Configured()
       ? 'Cloudflare R2 configured for book and cover storage'
@@ -49,11 +46,9 @@ export const presignUpload = asyncHandler(async (req, res) => {
   const ext = fileName ? path.extname(fileName) : '';
   const folder = isCover ? 'covers' : 'books';
   const key = `${folder}/${req.user._id}/${randomUUID()}${ext}`;
-  const bucket = isCover ? buckets.cover : buckets.book;
 
   const uploadUrl = await createUploadUrl({
     key,
-    bucket,
     contentType: mimeType,
     contentLength,
     expiresIn: DEFAULT_URL_TTL_SECONDS,
@@ -161,7 +156,6 @@ export const getSignedUrlForBook = asyncHandler(async (req, res) => {
 
   const signedUrl = await createReadUrl({
     key: book.file.key,
-    bucket: buckets.book,
     expiresIn,
   });
 
@@ -175,7 +169,6 @@ export const getSignedUrlForBook = asyncHandler(async (req, res) => {
   if (includeCover && book.cover?.key) {
     response.coverUrl = await createReadUrl({
       key: book.cover.key,
-      bucket: buckets.cover,
       expiresIn,
     });
   }
@@ -198,7 +191,6 @@ export const downloadBook = asyncHandler(async (req, res) => {
 
   const signedUrl = await createReadUrl({
     key: book.file.key,
-    bucket: buckets.book,
     expiresIn: DEFAULT_URL_TTL_SECONDS,
     downloadName: book.file.originalName || `${book.title}.pdf`,
   });
@@ -230,7 +222,6 @@ export const getBookThumbnail = asyncHandler(async (req, res) => {
 
   const coverUrl = await createReadUrl({
     key: book.cover.key,
-    bucket: buckets.cover,
     expiresIn: DEFAULT_URL_TTL_SECONDS,
   });
 
@@ -324,7 +315,7 @@ export const deleteBook = asyncHandler(async (req, res) => {
   const errors = [];
   if (book.file?.key) {
     try {
-      await deleteObject({ key: book.file.key, bucket: buckets.book });
+      await deleteObject({ key: book.file.key });
     } catch (err) {
       errors.push('Failed to delete book file from storage');
       console.error('R2 delete file error', err);
@@ -332,7 +323,7 @@ export const deleteBook = asyncHandler(async (req, res) => {
   }
   if (book.cover?.key) {
     try {
-      await deleteObject({ key: book.cover.key, bucket: buckets.cover });
+      await deleteObject({ key: book.cover.key });
     } catch (err) {
       errors.push('Failed to delete cover from storage');
       console.error('R2 delete cover error', err);
