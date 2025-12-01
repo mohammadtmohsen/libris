@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { store } from './store/store';
 import authServices from './services/authServices/authServices';
 import { refreshToken } from './store/auth/authSlice';
@@ -6,6 +6,10 @@ import { refreshToken } from './store/auth/authSlice';
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
 });
+
+interface RetryAxiosRequestConfig extends AxiosRequestConfig {
+  _retry?: boolean;
+}
 
 // Define proper types for the queue
 interface QueuePromise {
@@ -52,8 +56,8 @@ axiosInstance.interceptors.response.use(
   (response) => {
     return response;
   },
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as RetryAxiosRequestConfig;
 
     // If the error is 401 and we haven't tried refreshing yet
     if (
@@ -67,12 +71,11 @@ axiosInstance.interceptors.response.use(
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
+            if (!originalRequest.headers) originalRequest.headers = {};
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return axiosInstance(originalRequest);
           })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
+          .catch((err) => Promise.reject(err));
       }
 
       // Mark that we're starting the refresh process
@@ -90,41 +93,48 @@ axiosInstance.interceptors.response.use(
         // Call the refresh endpoint with refresh token
         const response = await authServices.refreshToken(refreshTokenValue);
 
-        if (response && response.accessToken) {
-          // Update the token in Redux (include new refresh token if provided)
-          store.dispatch(
-            refreshToken({
-              accessToken: response.accessToken,
-              refreshToken: response.refreshToken, // Include the new refresh token
-              user: response.user,
-            })
+        if (!response || !response.accessToken) {
+          throw new Error(
+            typeof response === 'object' && response?.message
+              ? response.message
+              : 'Failed to refresh token'
           );
-
-          // Set the new token on the original request
-          axiosInstance.defaults.headers.common[
-            'Authorization'
-          ] = `Bearer ${response.accessToken}`;
-          originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
-
-          // Process any requests that were waiting
-          processQueue(null, response.accessToken);
-
-          // Retry the original request
-          return axiosInstance(originalRequest);
-        } else {
-          // If refresh failed but returned (like a 403), log the user out
-          processQueue(new Error('Failed to refresh token'), null);
-          return Promise.reject(error);
         }
-      } catch (refreshError) {
-        // If refresh throws an exception, log the user out
-        processQueue(
-          refreshError instanceof Error
-            ? refreshError
-            : new Error('Unknown refresh error'),
-          null
+
+        // Update the token in Redux (include new refresh token if provided)
+        store.dispatch(
+          refreshToken({
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken, // Include the new refresh token
+            user: response.user,
+          })
         );
-        // Logic to log user out
+
+        // Set the new token on the original request
+        axiosInstance.defaults.headers.common[
+          'Authorization'
+        ] = `Bearer ${response.accessToken}`;
+        if (!originalRequest.headers) originalRequest.headers = {};
+        originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
+
+        // Process any requests that were waiting
+        processQueue(null, response.accessToken);
+
+        // Retry the original request
+        return axiosInstance(originalRequest);
+      } catch (refreshError: unknown) {
+        // If refresh throws an exception, log the user out
+        let message = 'Failed to refresh token';
+        if (axios.isAxiosError(refreshError)) {
+          const data = refreshError.response?.data as
+            | { message?: string }
+            | undefined;
+          message = data?.message || refreshError.message || message;
+        } else if (refreshError instanceof Error) {
+          message = refreshError.message || message;
+        }
+
+        processQueue(new Error(message), null);
         store.dispatch({ type: 'auth/logout' });
 
         return Promise.reject(refreshError);

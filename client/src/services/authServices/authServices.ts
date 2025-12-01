@@ -14,12 +14,8 @@ const authServices = {
 
   refreshToken: async (refreshToken: string) => {
     const endpoint = '/auth/refresh';
-    try {
-      const res = await axios.post(endpoint, { refreshToken });
-      return res?.data;
-    } catch (error) {
-      return error;
-    }
+    const res = await axios.post(endpoint, { refreshToken });
+    return res?.data;
   },
   logout: async () => {
     const endpoint = '/auth/logout';

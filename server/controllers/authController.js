@@ -26,7 +26,7 @@ const login = async (req, res) => {
 
     // Create refresh token - longer lived
     const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
+      expiresIn: '30d',
     });
 
     // Log the response we're sending back
@@ -74,7 +74,7 @@ const refreshTokenHandler = async (req, res) => {
 
     // Generate a new refresh token
     const newRefreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
+      expiresIn: '30d',
     });
 
     console.log('Token refreshed for user:', user._id);
