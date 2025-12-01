@@ -1,18 +1,51 @@
+export type BookFile = {
+  key: string;
+  mime: string;
+  size: number;
+  originalName?: string;
+  pageCount?: number;
+};
+
+export type BookCover = {
+  key: string;
+  mime?: string;
+  size?: number;
+  originalName?: string;
+};
+
+export type BookProgress = {
+  pagesRead?: number;
+  percent?: number;
+  lastLocation?: string;
+  lastOpenedAt?: string;
+};
+
 export type Book = {
-  id: string;
+  id: string; // convenience copy of _id
+  _id?: string;
+  owner?: string;
   title: string;
-  fileName: string;
-  mimeType?: string;
-  size?: string;
-  modifiedTime?: string;
-  hasThumbnail?: boolean;
-  thumbnailLink?: string | null;
-  iconLink?: string | null;
-  // Provided by server controller for proxying
-  thumbnailUrl?: string; // e.g., "/books/:id/thumbnail"
+  author?: string;
+  description?: string;
+  tags?: string[];
+  status: 'not_started' | 'reading' | 'finished' | 'abandoned';
+  visibility: 'private' | 'public';
+  file: BookFile;
+  cover?: BookCover;
+  progress?: BookProgress;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type BooksListResponse = {
   items: Book[];
-  count: number;
+  count?: number;
+};
+
+export type SignedUrlResponse = {
+  signedUrl: string;
+  expiresIn: number;
+  expiresAt: string;
+  mime?: string;
+  coverUrl?: string;
 };

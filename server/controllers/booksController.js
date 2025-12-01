@@ -1,63 +1,347 @@
 import asyncHandler from 'express-async-handler';
+import { validationResult } from 'express-validator';
+import path from 'path';
+import { randomUUID } from 'crypto';
+import Book from '../models/Book.js';
+import {
+  createReadUrl,
+  createUploadUrl,
+  deleteObject,
+  isR2Configured,
+  buckets,
+} from '../services/r2Client.js';
 
-// Temporary stub controller: Google services removed. To be replaced with Cloudflare R2.
-class BooksController {
-  constructor() {}
+const DEFAULT_URL_TTL_SECONDS = 900; // 15 minutes
+const MAX_URL_TTL_SECONDS = 3600; // 1 hour cap to limit signed URL churn
 
-  getAllBooks = asyncHandler(async (req, res) => {
-    return res.status(503).json({
-      success: false,
-      error: 'Books service disabled',
-      message: 'Google Drive integration removed. R2 integration pending.',
-    });
+const validationFailed = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ success: false, errors: errors.array() });
+    return true;
+  }
+  return false;
+};
+
+export const getServiceStatus = asyncHandler(async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      configured: isR2Configured(),
+      bucketBook: buckets.book,
+      bucketCover: buckets.cover,
+    },
+    message: isR2Configured()
+      ? 'Cloudflare R2 configured for book and cover storage'
+      : 'Cloudflare R2 is not fully configured',
+  });
+});
+
+export const presignUpload = asyncHandler(async (req, res) => {
+  if (!isR2Configured()) {
+    return res
+      .status(503)
+      .json({ success: false, error: 'Storage not configured' });
+  }
+  if (validationFailed(req, res)) return;
+
+  const { fileName, mimeType, isCover = false, contentLength } = req.body;
+  const ext = fileName ? path.extname(fileName) : '';
+  const folder = isCover ? 'covers' : 'books';
+  const key = `${folder}/${req.user._id}/${randomUUID()}${ext}`;
+  const bucket = isCover ? buckets.cover : buckets.book;
+
+  const uploadUrl = await createUploadUrl({
+    key,
+    bucket,
+    contentType: mimeType,
+    contentLength,
+    expiresIn: DEFAULT_URL_TTL_SECONDS,
   });
 
-  getBookById = asyncHandler(async (req, res) => {
-    return res.status(503).json({
-      success: false,
-      error: 'Books service disabled',
-      message: 'Google Drive integration removed. R2 integration pending.',
-    });
+  res.json({
+    success: true,
+    data: {
+      key,
+      uploadUrl,
+      expiresIn: DEFAULT_URL_TTL_SECONDS,
+      headers: { 'Content-Type': mimeType },
+    },
+  });
+});
+
+export const completeUpload = asyncHandler(async (req, res) => {
+  if (validationFailed(req, res)) return;
+  const {
+    title,
+    author,
+    description,
+    tags = [],
+    status = 'not_started',
+    visibility = 'private',
+    file,
+    cover,
+  } = req.body;
+
+  const book = await Book.create({
+    owner: req.user._id,
+    title,
+    author,
+    description,
+    tags,
+    status,
+    visibility,
+    file: {
+      key: file.key,
+      mime: file.mime,
+      size: file.size,
+      originalName: file.originalName,
+      pageCount: file.pageCount,
+    },
+    cover: cover?.key
+      ? {
+          key: cover.key,
+          mime: cover.mime,
+          size: cover.size,
+          originalName: cover.originalName,
+        }
+      : undefined,
+    progress: { pagesRead: 0, percent: 0 },
   });
 
-  downloadBook = asyncHandler(async (req, res) => {
-    return res.status(503).json({
-      success: false,
-      error: 'Books service disabled',
-      message: 'Google Drive integration removed. R2 integration pending.',
-    });
+  res.status(201).json({ success: true, data: book });
+});
+
+export const getAllBooks = asyncHandler(async (req, res) => {
+  const { status, tag, search } = req.query;
+  const query = { owner: req.user._id };
+  if (status) query.status = status;
+  if (tag) query.tags = tag;
+  if (search) {
+    query.$or = [
+      { title: { $regex: search, $options: 'i' } },
+      { author: { $regex: search, $options: 'i' } },
+    ];
+  }
+
+  const books = await Book.find(query).sort({ updatedAt: -1 });
+  res.json({ success: true, data: books });
+});
+
+export const searchBooks = getAllBooks;
+
+export const getBookById = asyncHandler(async (req, res) => {
+  if (validationFailed(req, res)) return;
+  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  if (!book) {
+    return res.status(404).json({ success: false, error: 'Book not found' });
+  }
+  res.json({ success: true, data: book });
+});
+
+export const getSignedUrlForBook = asyncHandler(async (req, res) => {
+  if (!isR2Configured()) {
+    return res
+      .status(503)
+      .json({ success: false, error: 'Storage not configured' });
+  }
+  if (validationFailed(req, res)) return;
+
+  const { includeCover = false } = req.query;
+  const rawExpiresIn = parseInt(req.query.expiresIn, 10);
+  const expiresIn =
+    Number.isFinite(rawExpiresIn) && rawExpiresIn > 0
+      ? Math.min(rawExpiresIn, MAX_URL_TTL_SECONDS)
+      : DEFAULT_URL_TTL_SECONDS;
+
+  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  if (!book || !book.file?.key) {
+    return res.status(404).json({ success: false, error: 'Book not found' });
+  }
+
+  const signedUrl = await createReadUrl({
+    key: book.file.key,
+    bucket: buckets.book,
+    expiresIn,
   });
 
-  searchBooks = asyncHandler(async (req, res) => {
-    return res.status(503).json({
-      success: false,
-      error: 'Books service disabled',
-      message: 'Google Drive integration removed. R2 integration pending.',
+  const response = {
+    signedUrl,
+    expiresIn,
+    expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
+    mime: book.file.mime,
+  };
+
+  if (includeCover && book.cover?.key) {
+    response.coverUrl = await createReadUrl({
+      key: book.cover.key,
+      bucket: buckets.cover,
+      expiresIn,
     });
+  }
+
+  res.json({ success: true, data: response });
+});
+
+export const downloadBook = asyncHandler(async (req, res) => {
+  if (!isR2Configured()) {
+    return res
+      .status(503)
+      .json({ success: false, error: 'Storage not configured' });
+  }
+  if (validationFailed(req, res)) return;
+
+  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  if (!book || !book.file?.key) {
+    return res.status(404).json({ success: false, error: 'Book not found' });
+  }
+
+  const signedUrl = await createReadUrl({
+    key: book.file.key,
+    bucket: buckets.book,
+    expiresIn: DEFAULT_URL_TTL_SECONDS,
+    downloadName: book.file.originalName || `${book.title}.pdf`,
   });
 
-  getBookThumbnail = asyncHandler(async (req, res) => {
-    return res.status(503).json({
-      success: false,
-      error: 'Books service disabled',
-      message: 'Google Drive integration removed. R2 integration pending.',
-    });
+  res.json({
+    success: true,
+    data: {
+      signedUrl,
+      expiresIn: DEFAULT_URL_TTL_SECONDS,
+      expiresAt: new Date(
+        Date.now() + DEFAULT_URL_TTL_SECONDS * 1000
+      ).toISOString(),
+    },
+  });
+});
+
+export const getBookThumbnail = asyncHandler(async (req, res) => {
+  if (!isR2Configured()) {
+    return res
+      .status(503)
+      .json({ success: false, error: 'Storage not configured' });
+  }
+  if (validationFailed(req, res)) return;
+
+  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  if (!book?.cover?.key) {
+    return res.status(404).json({ success: false, error: 'Cover not found' });
+  }
+
+  const coverUrl = await createReadUrl({
+    key: book.cover.key,
+    bucket: buckets.cover,
+    expiresIn: DEFAULT_URL_TTL_SECONDS,
   });
 
-  getServiceStatus = asyncHandler(async (req, res) => {
-    return res.json({
-      success: true,
-      data: {
-        configured: false,
-        authType: null,
-        hasApiKey: false,
-        hasServiceAccount: false,
-        hasOAuthCredentials: false,
-        hasFolderId: false,
-      },
-      message: 'Books service disabled; awaiting Cloudflare R2 migration',
-    });
+  res.json({
+    success: true,
+    data: {
+      coverUrl,
+      expiresIn: DEFAULT_URL_TTL_SECONDS,
+      expiresAt: new Date(
+        Date.now() + DEFAULT_URL_TTL_SECONDS * 1000
+      ).toISOString(),
+    },
   });
-}
+});
 
-export default BooksController;
+export const updateBook = asyncHandler(async (req, res) => {
+  if (validationFailed(req, res)) return;
+  const { title, author, description, tags, status, visibility } = req.body;
+  const updates = {};
+  if (title !== undefined) updates.title = title;
+  if (author !== undefined) updates.author = author;
+  if (description !== undefined) updates.description = description;
+  if (tags !== undefined) updates.tags = tags;
+  if (status !== undefined) updates.status = status;
+  if (visibility !== undefined) updates.visibility = visibility;
+
+  if (Object.keys(updates).length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'No updates provided' });
+  }
+
+  const book = await Book.findOneAndUpdate(
+    { _id: req.params.id, owner: req.user._id },
+    { $set: updates },
+    { new: true }
+  );
+
+  if (!book) {
+    return res.status(404).json({ success: false, error: 'Book not found' });
+  }
+
+  res.json({ success: true, data: book });
+});
+
+export const updateProgress = asyncHandler(async (req, res) => {
+  if (validationFailed(req, res)) return;
+  const { pagesRead, percent, lastLocation } = req.body;
+
+  if (
+    pagesRead === undefined &&
+    percent === undefined &&
+    lastLocation === undefined
+  ) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'No progress fields provided' });
+  }
+
+  const updates = {};
+  if (pagesRead !== undefined) updates['progress.pagesRead'] = pagesRead;
+  if (percent !== undefined) updates['progress.percent'] = percent;
+  if (lastLocation !== undefined)
+    updates['progress.lastLocation'] = lastLocation;
+  updates['progress.lastOpenedAt'] = new Date();
+
+  const book = await Book.findOneAndUpdate(
+    { _id: req.params.id, owner: req.user._id },
+    { $set: updates },
+    { new: true }
+  );
+
+  if (!book) {
+    return res.status(404).json({ success: false, error: 'Book not found' });
+  }
+
+  res.json({ success: true, data: book });
+});
+
+export const deleteBook = asyncHandler(async (req, res) => {
+  if (validationFailed(req, res)) return;
+
+  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  if (!book) {
+    return res.status(404).json({ success: false, error: 'Book not found' });
+  }
+
+  await Book.deleteOne({ _id: book._id, owner: req.user._id });
+
+  // Best-effort cleanup of files; failures reported but do not block deletion response.
+  const errors = [];
+  if (book.file?.key) {
+    try {
+      await deleteObject({ key: book.file.key, bucket: buckets.book });
+    } catch (err) {
+      errors.push('Failed to delete book file from storage');
+      console.error('R2 delete file error', err);
+    }
+  }
+  if (book.cover?.key) {
+    try {
+      await deleteObject({ key: book.cover.key, bucket: buckets.cover });
+    } catch (err) {
+      errors.push('Failed to delete cover from storage');
+      console.error('R2 delete cover error', err);
+    }
+  }
+
+  res.json({
+    success: errors.length === 0,
+    data: { id: book._id },
+    warnings: errors,
+  });
+});
