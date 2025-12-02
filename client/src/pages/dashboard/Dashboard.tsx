@@ -1,86 +1,67 @@
-import { useState, useEffect } from 'react';
-import { Button, Input, Modal, useModal } from '_components/shared';
+import { Button, DropZone, Input, Modal, useModal } from '_components/shared';
 import {
   usePresignUpload,
   useCompleteUpload,
+  useUploadToPresignedUrl,
 } from '_queries/booksQueries/booksQueries';
-import { booksServices } from '_services/booksServices';
+import { Controller, useForm } from 'react-hook-form';
 
-type DropZoneProps = {
-  label: string;
-  accept: string;
-  file?: File | null;
-  onFile: (file: File | null) => void;
+type UploadBookFormPayload = {
+  title: string;
+  author: string;
+  description: string;
+  file: File | null;
+  cover: File | null;
 };
 
-const DropZone = ({ label, accept, file, onFile }: DropZoneProps) => {
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile) onFile(droppedFile);
-  };
+const UploadBookForm = ({ onClose }: { onClose: () => void }) => {
+  const methods = useForm<UploadBookFormPayload>({
+    defaultValues: {
+      title: '',
+      author: '',
+      description: '',
+      file: null as File | null,
+      cover: null as File | null,
+    },
+  });
+  console.log('🚀 > methods:', methods.watch());
 
-  return (
-    <label
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={handleDrop}
-      className='flex flex-col gap-2 border border-dashed border-blue-4 rounded-secondary p-4 cursor-pointer hover:bg-black-2/50 transition-colors'
-    >
-      <span className='text-sm font-semibold'>{label}</span>
-      <input
-        type='file'
-        accept={accept}
-        className='hidden'
-        onChange={(e) => onFile(e.target.files?.[0] || null)}
-      />
-      <div className='text-xs text-white/70'>
-        {file
-          ? `Selected: ${file.name}`
-          : `Drag & drop or click to choose (${accept})`}
-      </div>
-    </label>
-  );
-};
+  const {
+    mutateAsync: presignMutateAsync,
+    isPending: isPresignPending,
+    isError: isPresignError,
+  } = usePresignUpload();
 
-const UploadBookForm = ({
-  onSuccess,
-  onClose,
-}: {
-  onSuccess: () => void;
-  onClose: () => void;
-}) => {
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [description, setDescription] = useState('');
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const presignMutation = usePresignUpload();
-  const completeUploadMutation = useCompleteUpload();
+  const {
+    mutateAsync: uploadMutateAsync,
+    isPending: isUploadPending,
+    isError: isUploadError,
+  } = useUploadToPresignedUrl();
 
-  useEffect(() => {
-    if (pdfFile && !title) {
-      setTitle(pdfFile.name.replace(/\.[^.]+$/, ''));
-    }
-  }, [pdfFile, title]);
+  const {
+    mutateAsync: completeUploadMutateAsync,
+    isPending: isCompleteUploadPending,
+    isError: isCompleteUploadError,
+  } = useCompleteUpload();
 
-  const handleSubmit = async () => {
-    if (!pdfFile) {
-      setError('Please select a PDF file to upload.');
+  const isSubmitting =
+    isPresignPending || isUploadPending || isCompleteUploadPending;
+
+  const isError = isPresignError || isUploadError || isCompleteUploadError;
+
+  const handleSubmit = async (payload: UploadBookFormPayload) => {
+    if (!payload.file) {
       return;
     }
-    setError(null);
-    setIsSubmitting(true);
 
     try {
       // Presign + upload PDF
-      const pdfPresign = await presignMutation.mutateAsync({
-        fileName: pdfFile.name,
-        mimeType: pdfFile.type || 'application/pdf',
-        contentLength: pdfFile.size,
+      const pdfPresign = await presignMutateAsync({
+        fileName: payload.file.name,
+        mimeType: payload.file.type || 'application/pdf',
+        contentLength: payload.file.size,
       });
-      await booksServices.uploadToPresignedUrl(pdfFile, pdfPresign);
+      await uploadMutateAsync({ file: payload.file, presign: pdfPresign });
 
       // Presign + upload cover if provided
       let coverKey: string | undefined;
@@ -88,31 +69,31 @@ const UploadBookForm = ({
       let coverSize: number | undefined;
       let coverOriginalName: string | undefined;
 
-      if (coverFile) {
-        const coverPresign = await presignMutation.mutateAsync({
-          fileName: coverFile.name,
-          mimeType: coverFile.type || 'image/jpeg',
+      if (payload.cover) {
+        const coverPresign = await presignMutateAsync({
+          fileName: payload.cover.name,
+          mimeType: payload.cover.type || 'image/jpeg',
           isCover: true,
-          contentLength: coverFile.size,
+          contentLength: payload.cover.size,
         });
-        await booksServices.uploadToPresignedUrl(coverFile, coverPresign);
+        await uploadMutateAsync({ file: payload.cover, presign: coverPresign });
         coverKey = coverPresign.key;
-        coverMime = coverFile.type || 'image/jpeg';
-        coverSize = coverFile.size;
-        coverOriginalName = coverFile.name;
+        coverMime = payload.cover.type || 'image/jpeg';
+        coverSize = payload.cover.size;
+        coverOriginalName = payload.cover.name;
       }
 
-      await completeUploadMutation.mutateAsync({
-        title: title || pdfFile.name.replace(/\.[^.]+$/, ''),
-        author: author || undefined,
-        description: description || undefined,
+      await completeUploadMutateAsync({
+        title: payload.title || payload.file.name.replace(/\.[^.]+$/, ''),
+        author: payload.author || undefined,
+        description: payload.description || undefined,
         status: 'not_started',
         visibility: 'private',
         file: {
           key: pdfPresign.key,
-          mime: pdfFile.type || 'application/pdf',
-          size: pdfFile.size,
-          originalName: pdfFile.name,
+          mime: payload.file.type || 'application/pdf',
+          size: payload.file.size,
+          originalName: payload.file.name,
         },
         cover: coverKey
           ? {
@@ -123,84 +104,105 @@ const UploadBookForm = ({
             }
           : undefined,
       });
-
-      onSuccess();
       onClose();
-      // Reset form after close
-      setTitle('');
-      setAuthor('');
-      setDescription('');
-      setPdfFile(null);
-      setCoverFile(null);
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ||
-        err?.message ||
-        'Failed to upload book. Please try again.';
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
+    } catch (err: unknown) {
+      console.log(`'Failed to upload book. Please try again.'`, err);
     }
   };
 
   return (
-    <div className='flex flex-col gap-4 w-[90vw] max-w-xl'>
+    <form
+      onSubmit={methods.handleSubmit(handleSubmit)}
+      className='flex flex-col gap-4 m-auto w-[90vw] max-w-xl'
+    >
       <h2 className='text-lg font-semibold'>Upload a Book</h2>
-      <DropZone
-        label='Book PDF'
-        accept='application/pdf'
-        file={pdfFile}
-        onFile={setPdfFile}
+      <Controller
+        name='file'
+        control={methods.control}
+        render={({ field, fieldState }) => (
+          <DropZone
+            label='Book PDF'
+            accept='application/pdf'
+            {...field}
+            onChange={(f) => {
+              field.onChange(f);
+              methods.setValue('title', f.name.replace(/\.[^.]+$/, ''));
+            }}
+            error={fieldState.error?.message}
+          />
+        )}
+        rules={{ required: 'This Field is required ' }}
       />
-      <DropZone
-        label='Cover Image (optional)'
-        accept='image/*'
-        file={coverFile}
-        onFile={setCoverFile}
+      <Controller
+        name='cover'
+        control={methods.control}
+        render={({ field, fieldState }) => (
+          <DropZone
+            label='Cover Image (optional)'
+            accept='image/*'
+            {...field}
+            error={fieldState.error?.message}
+          />
+        )}
       />
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-        <Input
-          label='Title'
-          placeholder='Book title'
-          value={title}
-          onChange={(val) => setTitle(String(val))}
+        <Controller
+          name='title'
+          control={methods.control}
+          render={({ field, fieldState }) => (
+            <Input
+              label='Title'
+              placeholder='Book title'
+              {...field}
+              error={fieldState.error?.message}
+            />
+          )}
+          rules={{ required: 'This Field is required ' }}
         />
-        <Input
-          label='Author'
-          placeholder='Author name'
-          value={author}
-          onChange={(val) => setAuthor(String(val))}
+        <Controller
+          name='author'
+          control={methods.control}
+          render={({ field, fieldState }) => (
+            <Input
+              label='Author'
+              placeholder='Author name'
+              {...field}
+              error={fieldState.error?.message}
+            />
+          )}
+          rules={{ required: 'This Field is required ' }}
         />
       </div>
-      <Input
-        label='Description'
-        placeholder='Short description'
-        value={description}
-        onChange={(val) => setDescription(String(val))}
+      <Controller
+        name='description'
+        control={methods.control}
+        render={({ field, fieldState }) => (
+          <Input
+            label='Description'
+            placeholder='Short description'
+            {...field}
+            error={fieldState.error?.message}
+          />
+        )}
       />
-      {error && <div className='text-sm text-red-400'>{error}</div>}
+      {isError && (
+        <p className='text-red-1'>Failed to upload book. Please try again.</p>
+      )}
       <div className='flex justify-end gap-3'>
         <Button variant='outline' onClick={onClose} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
+        <Button type='submit' disabled={isSubmitting}>
           {isSubmitting ? 'Uploading…' : 'Upload'}
         </Button>
       </div>
-    </div>
+    </form>
   );
 };
 
 export const Dashboard = () => {
   const uploadModal = useModal({
-    content: ({ close }) => (
-      <UploadBookForm
-        onSuccess={() => {
-          /* No-op hook; list will refetch via invalidation */
-        }}
-        onClose={close}
-      />
-    ),
+    content: ({ close }) => <UploadBookForm onClose={close} />,
   });
 
   return (

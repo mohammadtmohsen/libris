@@ -1,6 +1,4 @@
 import { ExercisesCard } from './ExercisesCard/ExercisesCard';
-import { OneDayRoutineCard } from './OneDayRoutineCard/OneDayRoutineCard';
-import { RoutineCard } from './RoutineCard/RoutineCard';
 import { CardSkeleton } from './CardSkeleton/CardSkeleton';
 import { Button } from './Button/Button';
 import { Input } from './Input/Input';
@@ -12,17 +10,14 @@ import { Table } from './Table/Table';
 import { CustomSelect } from './CustomSelect/CustomSelect';
 import { useModal } from './Modal/useModal';
 import { Icon } from './Icon/Icon';
-import { Sortable, SortableItem } from './Sortable';
 import { Loader } from './Loader/Loader';
 import { TitleWithBackButton } from './TitleWithBackButton/TitleWithBackButton';
-import { Charts } from './Charts/Charts';
 import { ButtonToggleGroup, ToggleOption } from './ButtonToggleGroup';
-import { RepsSelector, RepsOption } from './RepsSelector';
 import { Tabs, TabOption } from './Tabs';
+import { DropZoneProps, DropZone } from './DropZone/DropZone';
+
 export {
   ExercisesCard,
-  OneDayRoutineCard,
-  RoutineCard,
   CardSkeleton,
   Button,
   TextButton,
@@ -33,15 +28,12 @@ export {
   Table,
   CustomSelect,
   Icon,
-  Sortable,
-  SortableItem,
   DatePicker,
   Loader,
   TitleWithBackButton,
-  Charts,
   ButtonToggleGroup,
-  RepsSelector,
   Tabs,
+  DropZone,
 };
 
-export type { ToggleOption, RepsOption, TabOption };
+export type { ToggleOption, TabOption, DropZoneProps };

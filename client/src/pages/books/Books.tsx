@@ -131,7 +131,7 @@ export const Books = () => {
     data: bookUrlData,
     isFetching: bookUrlLoading,
     error: bookUrlErrorObj,
-  } = useGetBookSignedUrl(activeBook?.id, true, Boolean(activeBook));
+  } = useGetBookSignedUrl(activeBook?._id, true, Boolean(activeBook));
   const bookUrlError =
     bookUrlErrorObj && bookUrlErrorObj instanceof Error
       ? bookUrlErrorObj.message

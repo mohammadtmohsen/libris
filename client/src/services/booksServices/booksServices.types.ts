@@ -63,3 +63,19 @@ export type PresignUploadResponse = {
   expiresIn: number;
   headers?: Record<string, string>;
 };
+
+export type UploadToPresignedUrlRequest = {
+  file: File;
+  presign: PresignUploadResponse;
+};
+
+export type CompleteUploadRequest = {
+  title: string;
+  author?: string;
+  description?: string;
+  tags?: string[];
+  status?: Book['status'];
+  visibility?: Book['visibility'];
+  file: Book['file'];
+  cover?: Book['cover'];
+};
