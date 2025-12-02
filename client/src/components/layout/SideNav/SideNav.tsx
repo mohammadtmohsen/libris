@@ -52,7 +52,7 @@ export const SideNav = () => {
   );
 
   return (
-    <div className='sm:hidden'>
+    <div className=''>
       <IconButton onClick={toggleDrawer(true)}>
         <MenuIcon sx={{ color: colors.red[1] }} />
       </IconButton>
