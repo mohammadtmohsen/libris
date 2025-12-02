@@ -107,8 +107,31 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     ];
   }
 
-  const books = await Book.find(query).sort({ updatedAt: -1 });
-  res.json({ success: true, data: books });
+  // Use lean() for plain objects so we can safely enhance the response
+  const books = await Book.find(query).sort({ updatedAt: -1 }).lean();
+
+  let data = books;
+  if (isR2Configured() && Array.isArray(books) && books.length > 0) {
+    data = await Promise.all(
+      books.map(async (b) => {
+        if (b?.cover?.key) {
+          try {
+            const coverUrl = await createReadUrl({
+              key: b.cover.key,
+              expiresIn: DEFAULT_URL_TTL_SECONDS,
+            });
+            return { ...b, cover: { ...b.cover, coverUrl } };
+          } catch (_err) {
+            // If generating a signed URL fails, return the book as-is
+            return b;
+          }
+        }
+        return b;
+      })
+    );
+  }
+
+  res.json({ success: true, data });
 });
 
 export const searchBooks = getAllBooks;

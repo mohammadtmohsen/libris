@@ -11,6 +11,7 @@ export type BookCover = {
   mime?: string;
   size?: number;
   originalName?: string;
+  coverUrl?: string;
 };
 
 export type BookProgress = {

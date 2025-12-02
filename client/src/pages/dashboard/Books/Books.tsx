@@ -170,16 +170,14 @@ export const Books = () => {
         {!isFetching &&
           books.map((book: Book) => {
             const percent = book.progress?.percent ?? null;
-            const hasCover = Boolean(book.cover?.key);
+            const hasCover = Boolean(book?.cover?.coverUrl);
             return (
               <div
                 key={book.id}
                 className='flex flex-col gap-3 bg-black-3 rounded-md p-3 border border-black-2 hover:border-blue-4 transition-colors'
               >
-                <div className='w-full aspect-[3/4] rounded bg-gradient-to-br from-black-2 to-black-1 flex items-center justify-center text-lg font-semibold text-white/80'>
-                  {hasCover
-                    ? 'Cover stored'
-                    : book.title.slice(0, 2).toUpperCase()}
+                <div className='w-full aspect-[3/4] rounded bg-gradient-to-br from-black-2 to-black-1 flex items-center justify-center text-lg font-semibold text-white/80 text-center'>
+                  {hasCover ? <img src={book?.cover?.coverUrl} /> : book.title}
                 </div>
                 <div className='flex items-center justify-between gap-2'>
                   <div
