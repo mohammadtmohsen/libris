@@ -3,9 +3,10 @@ import { Button, DropZone, Input, Modal, useModal } from '_components/shared';
 import { Controller } from 'react-hook-form';
 import { useUploadBooks } from './useUploadBooks';
 
-
 const UploadBookForm = ({ onClose }: { onClose: () => void }) => {
-  const { methods, handleSubmit, isSubmitting, isError } = useUploadBooks({ onClose });
+  const { methods, handleSubmit, isSubmitting, isError } = useUploadBooks({
+    onClose,
+  });
 
   return (
     <form
@@ -30,18 +31,7 @@ const UploadBookForm = ({ onClose }: { onClose: () => void }) => {
         )}
         rules={{ required: 'This Field is required ' }}
       />
-      <Controller
-        name='cover'
-        control={methods.control}
-        render={({ field, fieldState }) => (
-          <DropZone
-            label='Cover Image (optional)'
-            accept='image/*'
-            {...field}
-            error={fieldState.error?.message}
-          />
-        )}
-      />
+      {/* Cover input removed: cover image is auto-generated from the PDF */}
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
         <Controller
           name='title'

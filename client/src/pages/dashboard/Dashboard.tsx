@@ -1,4 +1,4 @@
-import { Books } from './Books';
+import { Books } from './Books/Books';
 import { UploadBook } from './UploadBooks/UploadBooks';
 
 export const Dashboard = () => {

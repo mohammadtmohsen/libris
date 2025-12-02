@@ -22,8 +22,7 @@ export type BookProgress = {
 };
 
 export type Book = {
-  id: string; // convenience copy of _id
-  _id?: string;
+  _id: string;
   owner?: string;
   title: string;
   author?: string;

@@ -1,8 +1,6 @@
-import { ExercisesCard } from './ExercisesCard/ExercisesCard';
 import { CardSkeleton } from './CardSkeleton/CardSkeleton';
 import { Button } from './Button/Button';
 import { Input } from './Input/Input';
-import { IncrementDecrementInput } from './IncrementDecrementInput/IncrementDecrementInput';
 import { DatePicker } from './DatePicker/DatePicker';
 import { TextButton } from './Button/TextButton';
 import { Modal } from './Modal/Modal';
@@ -15,16 +13,15 @@ import { TitleWithBackButton } from './TitleWithBackButton/TitleWithBackButton';
 import { ButtonToggleGroup, ToggleOption } from './ButtonToggleGroup';
 import { Tabs, TabOption } from './Tabs';
 import { DropZoneProps, DropZone } from './DropZone/DropZone';
+import { BookCard } from './BookCard/BookCard';
 
 export {
-  ExercisesCard,
   CardSkeleton,
   Button,
   TextButton,
   Modal,
   useModal,
   Input,
-  IncrementDecrementInput,
   Table,
   CustomSelect,
   Icon,
@@ -34,6 +31,7 @@ export {
   ButtonToggleGroup,
   Tabs,
   DropZone,
+  BookCard,
 };
 
 export type { ToggleOption, TabOption, DropZoneProps };

@@ -1,14 +1,19 @@
-import { CardSkeleton, Modal, useModal, Button } from '_components/shared';
+import {
+  CardSkeleton,
+  Modal,
+  useModal,
+  Button,
+  BookCard,
+} from '_components/shared';
 import {
   useGetBooks,
   useGetBookSignedUrl,
-} from '_queries/booksQueries/booksQueries';
-import type { Book } from '_services/booksServices/booksServices.types';
-import { useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+  Book,
+  useDeleteBook,
+} from '_queries/booksQueries';
 
-// Configure pdf.js worker (use CDN matching installed version to avoid bundler issues)
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+import { useState } from 'react';
+import { Document, Page } from 'react-pdf';
 
 type PdfViewerProps = {
   title: string;
@@ -114,13 +119,6 @@ function PdfViewer({ title, url, loading, error, onClose }: PdfViewerProps) {
   );
 }
 
-const statusLabel: Record<Book['status'], string> = {
-  not_started: 'Not started',
-  reading: 'Reading',
-  finished: 'Finished',
-  abandoned: 'Abandoned',
-};
-
 export const Books = () => {
   const { data, isFetching } = useGetBooks();
   const books = data?.items ?? [];
@@ -136,6 +134,18 @@ export const Books = () => {
     bookUrlErrorObj && bookUrlErrorObj instanceof Error
       ? bookUrlErrorObj.message
       : null;
+
+  const { mutateAsync: deleteBook } = useDeleteBook();
+
+  const onDeleteBook = async (bookId: string) => {
+    try {
+      await deleteBook(bookId);
+      // Optionally, you can add a success message or refresh the book list here
+    } catch (error) {
+      console.error('Failed to delete book:', error);
+      // Optionally, you can show an error message to the user here
+    }
+  };
 
   const pdfModal = useModal({
     overrideStyle: '',
@@ -153,82 +163,23 @@ export const Books = () => {
     ),
   });
 
-  const statusColor: Record<Book['status'], string> = {
-    not_started: 'bg-gray-600',
-    reading: 'bg-blue-500',
-    finished: 'bg-green-500',
-    abandoned: 'bg-red-500',
-  };
-
   return (
     <div className='flex flex-col gap-5'>
-      <div
-        className='grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4 bg-black-4 p-4 rounded-secondary max-h-[calc(100vh-260px)] overflow-auto'
-        style={{ height: 'calc(100vh - 260px)' }}
-      >
+      <div className='grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 bg-black-4 p-4 rounded-secondary !h-[calc(100vh-260px)] overflow-auto'>
         <CardSkeleton loading={isFetching} count={1} rows={12} />
         {!isFetching &&
           books.map((book: Book) => {
-            const percent = book.progress?.percent ?? null;
-            const hasCover = Boolean(book?.cover?.coverUrl);
             return (
-              <div
-                key={book.id}
-                className='flex flex-col gap-3 bg-black-3 rounded-md p-3 border border-black-2 hover:border-blue-4 transition-colors'
-              >
-                <div className='w-full aspect-[3/4] rounded bg-gradient-to-br from-black-2 to-black-1 flex items-center justify-center text-lg font-semibold text-white/80 text-center'>
-                  {hasCover ? <img src={book?.cover?.coverUrl} /> : book.title}
-                </div>
-                <div className='flex items-center justify-between gap-2'>
-                  <div
-                    className='text-sm font-semibold truncate'
-                    title={book.title}
-                  >
-                    {book.title}
-                  </div>
-                  <span
-                    className={`text-[11px] px-2 py-1 rounded-full text-white ${
-                      statusColor[book.status]
-                    }`}
-                  >
-                    {statusLabel[book.status]}
-                  </span>
-                </div>
-                {book.author && (
-                  <div
-                    className='text-xs text-white/70 truncate'
-                    title={book.author}
-                  >
-                    {book.author}
-                  </div>
-                )}
-                {typeof percent === 'number' && (
-                  <div className='w-full'>
-                    <div className='flex justify-between text-[11px] text-white/70'>
-                      <span>Progress</span>
-                      <span>{percent.toFixed(0)}%</span>
-                    </div>
-                    <div className='mt-1 h-2 w-full rounded bg-black-2 overflow-hidden'>
-                      <div
-                        className='h-full bg-blue-4 transition-all'
-                        style={{
-                          width: `${Math.min(100, Math.max(0, percent))}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-                <Button
-                  variant='primary'
-                  onClick={() => {
-                    setActiveBook(book);
-                    pdfModal.open({});
-                  }}
-                  className='w-full'
-                >
-                  Read
-                </Button>
-              </div>
+              <BookCard
+                book={book}
+                onClickBook={() => {
+                  setActiveBook(book);
+                  pdfModal.open();
+                }}
+                onClickInfo={() => {
+                  onDeleteBook(book?._id);
+                }}
+              />
             );
           })}
       </div>

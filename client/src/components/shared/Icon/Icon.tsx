@@ -2,7 +2,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIcon from '@mui/icons-material/InfoOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import LogoutIcon from '@mui/icons-material/Logout';
 import BackIcon from '@mui/icons-material/ArrowBackIos';
