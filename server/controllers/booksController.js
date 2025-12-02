@@ -1,5 +1,4 @@
 import asyncHandler from 'express-async-handler';
-import { validationResult } from 'express-validator';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import Book from '../models/Book.js';
@@ -12,15 +11,6 @@ import {
 
 const DEFAULT_URL_TTL_SECONDS = 3600; // 60 minutes
 const MAX_URL_TTL_SECONDS = 7200; // 2 hours cap to limit signed URL churn
-
-const validationFailed = (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ success: false, errors: errors.array() });
-    return true;
-  }
-  return false;
-};
 
 export const getServiceStatus = asyncHandler(async (req, res) => {
   res.json({
@@ -40,7 +30,6 @@ export const presignUpload = asyncHandler(async (req, res) => {
       .status(503)
       .json({ success: false, error: 'Storage not configured' });
   }
-  if (validationFailed(req, res)) return;
 
   const { fileName, mimeType, isCover = false, contentLength } = req.body;
   const ext = fileName ? path.extname(fileName) : '';
@@ -66,7 +55,6 @@ export const presignUpload = asyncHandler(async (req, res) => {
 });
 
 export const completeUpload = asyncHandler(async (req, res) => {
-  if (validationFailed(req, res)) return;
   const {
     title,
     author,
@@ -126,7 +114,6 @@ export const getAllBooks = asyncHandler(async (req, res) => {
 export const searchBooks = getAllBooks;
 
 export const getBookById = asyncHandler(async (req, res) => {
-  if (validationFailed(req, res)) return;
   const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
   if (!book) {
     return res.status(404).json({ success: false, error: 'Book not found' });
@@ -140,7 +127,6 @@ export const getSignedUrlForBook = asyncHandler(async (req, res) => {
       .status(503)
       .json({ success: false, error: 'Storage not configured' });
   }
-  if (validationFailed(req, res)) return;
 
   const { includeCover = false } = req.query;
   const rawExpiresIn = parseInt(req.query.expiresIn, 10);
@@ -182,7 +168,6 @@ export const downloadBook = asyncHandler(async (req, res) => {
       .status(503)
       .json({ success: false, error: 'Storage not configured' });
   }
-  if (validationFailed(req, res)) return;
 
   const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
   if (!book || !book.file?.key) {
@@ -213,7 +198,6 @@ export const getBookThumbnail = asyncHandler(async (req, res) => {
       .status(503)
       .json({ success: false, error: 'Storage not configured' });
   }
-  if (validationFailed(req, res)) return;
 
   const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
   if (!book?.cover?.key) {
@@ -238,7 +222,6 @@ export const getBookThumbnail = asyncHandler(async (req, res) => {
 });
 
 export const updateBook = asyncHandler(async (req, res) => {
-  if (validationFailed(req, res)) return;
   const { title, author, description, tags, status, visibility } = req.body;
   const updates = {};
   if (title !== undefined) updates.title = title;
@@ -268,7 +251,6 @@ export const updateBook = asyncHandler(async (req, res) => {
 });
 
 export const updateProgress = asyncHandler(async (req, res) => {
-  if (validationFailed(req, res)) return;
   const { pagesRead, percent, lastLocation } = req.body;
 
   if (
@@ -302,8 +284,6 @@ export const updateProgress = asyncHandler(async (req, res) => {
 });
 
 export const deleteBook = asyncHandler(async (req, res) => {
-  if (validationFailed(req, res)) return;
-
   const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
   if (!book) {
     return res.status(404).json({ success: false, error: 'Book not found' });

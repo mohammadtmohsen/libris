@@ -16,9 +16,7 @@ const requiredEnv = [
 export const isR2Configured = () =>
   requiredEnv.every((key) => Boolean(process.env[key]));
 
-const endpoint = process.env.CLOUDFLARE_R2_ACCOUNT_ID
-  ? `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
-  : undefined;
+const endpoint = process.env.CLOUDFLARE_R2_PUBLIC_BASE || undefined;
 
 const client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',

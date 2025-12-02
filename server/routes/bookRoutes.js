@@ -1,4 +1,4 @@
-import express from 'express';
+import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import {
   completeUpload,
@@ -15,8 +15,9 @@ import {
   updateProgress,
 } from '../controllers/booksController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import { handleValidationErrors } from '../validators/helpers.js';
 
-const router = express.Router();
+const router = Router();
 
 router.use(authMiddleware);
 
@@ -28,6 +29,7 @@ router.post(
   body('fileName').optional().isString(),
   body('isCover').optional().isBoolean().toBoolean(),
   body('contentLength').optional().isInt({ min: 1 }).toInt(),
+  handleValidationErrors,
   presignUpload
 );
 
@@ -38,7 +40,9 @@ router.post(
   body('description').optional().isString(),
   body('tags').optional().isArray(),
   body('tags.*').optional().isString(),
-  body('status').optional().isIn(['not_started', 'reading', 'finished', 'abandoned']),
+  body('status')
+    .optional()
+    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
   body('visibility').optional().isIn(['private', 'public']),
   body('file.key').isString().notEmpty(),
   body('file.mime').isString().notEmpty(),
@@ -50,37 +54,60 @@ router.post(
   body('cover.mime').optional().isString(),
   body('cover.size').optional().isInt({ min: 1 }).toInt(),
   body('cover.originalName').optional().isString(),
+  handleValidationErrors,
   completeUpload
 );
 
 router.get(
   '/',
-  query('status').optional().isIn(['not_started', 'reading', 'finished', 'abandoned']),
+  query('status')
+    .optional()
+    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
   query('tag').optional().isString(),
   query('search').optional().isString(),
+  handleValidationErrors,
   getAllBooks
 );
 
 router.get(
   '/search',
   query('search').optional().isString(),
-  query('status').optional().isIn(['not_started', 'reading', 'finished', 'abandoned']),
+  query('status')
+    .optional()
+    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
+  handleValidationErrors,
   searchBooks
 );
 
-router.get('/:id', param('id').isMongoId(), getBookById);
+router.get(
+  '/:id',
+  param('id').isMongoId(),
+  handleValidationErrors,
+  getBookById
+);
 
 router.get(
   '/:id/url',
   param('id').isMongoId(),
   query('includeCover').optional().isBoolean().toBoolean(),
   query('expiresIn').optional().isInt({ min: 60, max: 3600 }).toInt(),
+  handleValidationErrors,
   getSignedUrlForBook
 );
 
-router.get('/:id/download', param('id').isMongoId(), downloadBook);
+router.get(
+  '/:id/download',
+  param('id').isMongoId(),
+  handleValidationErrors,
+  downloadBook
+);
 
-router.get('/:id/thumbnail', param('id').isMongoId(), getBookThumbnail);
+router.get(
+  '/:id/thumbnail',
+  param('id').isMongoId(),
+  handleValidationErrors,
+  getBookThumbnail
+);
 
 router.patch(
   '/:id',
@@ -90,8 +117,11 @@ router.patch(
   body('description').optional().isString(),
   body('tags').optional().isArray(),
   body('tags.*').optional().isString(),
-  body('status').optional().isIn(['not_started', 'reading', 'finished', 'abandoned']),
+  body('status')
+    .optional()
+    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
   body('visibility').optional().isIn(['private', 'public']),
+  handleValidationErrors,
   updateBook
 );
 
@@ -101,9 +131,15 @@ router.patch(
   body('pagesRead').optional().isInt({ min: 0 }).toInt(),
   body('percent').optional().isFloat({ min: 0, max: 100 }).toFloat(),
   body('lastLocation').optional().isString(),
+  handleValidationErrors,
   updateProgress
 );
 
-router.delete('/:id', param('id').isMongoId(), deleteBook);
+router.delete(
+  '/:id',
+  param('id').isMongoId(),
+  handleValidationErrors,
+  deleteBook
+);
 
 export default router;
