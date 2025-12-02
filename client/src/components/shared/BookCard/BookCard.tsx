@@ -1,5 +1,5 @@
 import { Book } from '_queries/booksQueries';
-import { Button } from '../Button/Button';
+import { ReactNode } from 'react';
 
 // const statusLabel: Record<Book['status'], string> = {
 //   not_started: 'Not started',
@@ -18,11 +18,11 @@ import { Button } from '../Button/Button';
 export const BookCard = ({
   book,
   onClickBook,
-  onClickInfo,
+  infoButton,
 }: {
   book: Book;
   onClickBook: () => void;
-  onClickInfo: () => void;
+  infoButton: ReactNode;
 }) => {
   const percent = book.progress?.percent ?? '50';
   return (
@@ -45,13 +45,8 @@ export const BookCard = ({
         <div className='text-xs text-black-1/70 truncate text-right'>
           {book?.author}
         </div>
-        <Button
-          variant='primary'
-          iconButton='info'
-          onClick={onClickInfo}
-          className='absolute top-3 right-3 z-10'
-        />
       </div>
+      <div onClick={(e) => e.stopPropagation()}>{infoButton}</div>
       {typeof percent === 'number' && (
         <div className='mt-1 h-2 w-full rounded bg-black-2 overflow-hidden'>
           <div

@@ -2,15 +2,7 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const ProgressSchema = new Schema(
-  {
-    pagesRead: { type: Number, default: 0 },
-    percent: { type: Number, default: 0, min: 0, max: 100 },
-    lastLocation: { type: String },
-    lastOpenedAt: { type: Date },
-  },
-  { _id: false }
-);
+// Removed ProgressSchema as progress tracking is no longer used
 
 const FileSchema = new Schema(
   {
@@ -49,7 +41,8 @@ const BookSchema = new Schema(
     visibility: { type: String, enum: ['private', 'public'], default: 'private' },
     file: { type: FileSchema, required: true },
     cover: { type: CoverSchema },
-    progress: { type: ProgressSchema, default: () => ({}) },
+    totalPages: { type: Number, default: 0, min: 0 },
+    currentPage: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

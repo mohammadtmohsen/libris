@@ -12,7 +12,7 @@ import {
   presignUpload,
   searchBooks,
   updateBook,
-  updateProgress,
+  updatePages,
 } from '../controllers/booksController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { handleValidationErrors } from '../validators/helpers.js';
@@ -126,13 +126,12 @@ router.patch(
 );
 
 router.patch(
-  '/:id/progress',
+  '/:id/pages',
   param('id').isMongoId(),
-  body('pagesRead').optional().isInt({ min: 0 }).toInt(),
-  body('percent').optional().isFloat({ min: 0, max: 100 }).toFloat(),
-  body('lastLocation').optional().isString(),
+  body('currentPage').optional().isInt({ min: 0 }).toInt(),
+  body('totalPages').optional().isInt({ min: 0 }).toInt(),
   handleValidationErrors,
-  updateProgress
+  updatePages
 );
 
 router.delete(

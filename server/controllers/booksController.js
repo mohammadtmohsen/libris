@@ -64,6 +64,7 @@ export const completeUpload = asyncHandler(async (req, res) => {
     visibility = 'private',
     file,
     cover,
+    totalPages,
   } = req.body;
 
   const book = await Book.create({
@@ -79,7 +80,6 @@ export const completeUpload = asyncHandler(async (req, res) => {
       mime: file.mime,
       size: file.size,
       originalName: file.originalName,
-      pageCount: file.pageCount,
     },
     cover: cover?.key
       ? {
@@ -89,7 +89,9 @@ export const completeUpload = asyncHandler(async (req, res) => {
           originalName: cover.originalName,
         }
       : undefined,
-    progress: { pagesRead: 0, percent: 0 },
+    // initialize page tracking
+    currentPage: 0,
+    totalPages: Number.isFinite(totalPages) ? totalPages : 0,
   });
 
   res.status(201).json({ success: true, data: book });
@@ -273,25 +275,18 @@ export const updateBook = asyncHandler(async (req, res) => {
   res.json({ success: true, data: book });
 });
 
-export const updateProgress = asyncHandler(async (req, res) => {
-  const { pagesRead, percent, lastLocation } = req.body;
+export const updatePages = asyncHandler(async (req, res) => {
+  const { currentPage, totalPages } = req.body;
 
-  if (
-    pagesRead === undefined &&
-    percent === undefined &&
-    lastLocation === undefined
-  ) {
+  if (currentPage === undefined && totalPages === undefined) {
     return res
       .status(400)
-      .json({ success: false, error: 'No progress fields provided' });
+      .json({ success: false, error: 'No page fields provided' });
   }
 
   const updates = {};
-  if (pagesRead !== undefined) updates['progress.pagesRead'] = pagesRead;
-  if (percent !== undefined) updates['progress.percent'] = percent;
-  if (lastLocation !== undefined)
-    updates['progress.lastLocation'] = lastLocation;
-  updates['progress.lastOpenedAt'] = new Date();
+  if (currentPage !== undefined) updates.currentPage = currentPage;
+  if (totalPages !== undefined) updates.totalPages = totalPages;
 
   const book = await Book.findOneAndUpdate(
     { _id: req.params.id, owner: req.user._id },

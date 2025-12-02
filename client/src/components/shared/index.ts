@@ -14,6 +14,7 @@ import { ButtonToggleGroup, ToggleOption } from './ButtonToggleGroup';
 import { Tabs, TabOption } from './Tabs';
 import { DropZoneProps, DropZone } from './DropZone/DropZone';
 import { BookCard } from './BookCard/BookCard';
+import { UploadEditBookForm } from './UploadEditBookForm/UploadEditBookForm';
 
 export {
   CardSkeleton,
@@ -32,6 +33,7 @@ export {
   Tabs,
   DropZone,
   BookCard,
+  UploadEditBookForm,
 };
 
 export type { ToggleOption, TabOption, DropZoneProps };

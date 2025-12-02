@@ -78,4 +78,5 @@ export type CompleteUploadRequest = {
   visibility?: Book['visibility'];
   file: Book['file'];
   cover?: Book['cover'];
+  totalPages?: number;
 };

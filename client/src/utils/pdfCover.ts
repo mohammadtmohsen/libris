@@ -15,7 +15,7 @@ export async function extractFirstPageAsImage(
     quality = 0.9,
     fileNameHint,
   }: PdfCoverOptions = {}
-): Promise<File> {
+): Promise<{ file: File; pageCount: number }> {
   const ab = await file.arrayBuffer();
 
   const loadingTask = pdfjs.getDocument({ data: ab });
@@ -68,5 +68,5 @@ export async function extractFirstPageAsImage(
   canvas.width = 0;
   canvas.height = 0;
 
-  return outFile;
+  return { file: outFile, pageCount: pdf.numPages };
 }

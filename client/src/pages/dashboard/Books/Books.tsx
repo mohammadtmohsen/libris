@@ -14,6 +14,7 @@ import {
 
 import { useState } from 'react';
 import { Document, Page } from 'react-pdf';
+import { UpdateBook } from '../UpdateBook/UpdateBook';
 
 type PdfViewerProps = {
   title: string;
@@ -176,9 +177,7 @@ export const Books = () => {
                   setActiveBook(book);
                   pdfModal.open();
                 }}
-                onClickInfo={() => {
-                  onDeleteBook(book?._id);
-                }}
+                infoButton={<UpdateBook book={book} />}
               />
             );
           })}

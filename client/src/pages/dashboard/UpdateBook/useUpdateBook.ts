@@ -1,4 +1,5 @@
 import {
+  Book,
   useCompleteUpload,
   usePresignUpload,
   useUploadToPresignedUrl,
@@ -13,12 +14,12 @@ type UploadEditBookFormPayload = {
   file: File | null;
 };
 
-export const useUploadBooks = () => {
+export const useUpdateBook = (book: Book) => {
   const methods = useForm<UploadEditBookFormPayload>({
     defaultValues: {
-      title: '',
-      author: '',
-      description: '',
+      title: book.title || '',
+      author: book.author || '',
+      description: book.description || '',
       file: null as File | null,
     },
   });
@@ -52,10 +53,10 @@ export const useUploadBooks = () => {
             const { file: coverFile, pageCount } = await extractFirstPageAsImage(
               payload.file,
               {
-              maxWidth: 900,
-              mimeType: 'image/jpeg',
-              quality: 0.9,
-              fileNameHint: payload.title || payload.file.name,
+                maxWidth: 900,
+                mimeType: 'image/jpeg',
+                quality: 0.9,
+                fileNameHint: payload.title || payload.file.name,
               }
             );
             effectiveCover = coverFile;
@@ -102,12 +103,12 @@ export const useUploadBooks = () => {
           description: payload.description || undefined,
           status: 'not_started',
           visibility: 'private',
-          totalPages,
           file: {
             key: pdfPresign.key,
             mime: payload.file.type || 'application/pdf',
             size: payload.file.size,
             originalName: payload.file.name,
+            pageCount: totalPages,
           },
           cover: coverKey
             ? {
