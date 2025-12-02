@@ -1,19 +1,19 @@
 import { Book } from '_queries/booksQueries';
 import { Button } from '../Button/Button';
 
-const statusLabel: Record<Book['status'], string> = {
-  not_started: 'Not started',
-  reading: 'Reading',
-  finished: 'Finished',
-  abandoned: 'Abandoned',
-};
+// const statusLabel: Record<Book['status'], string> = {
+//   not_started: 'Not started',
+//   reading: 'Reading',
+//   finished: 'Finished',
+//   abandoned: 'Abandoned',
+// };
 
-const statusColor: Record<Book['status'], string> = {
-  not_started: 'bg-gray-600',
-  reading: 'bg-blue-500',
-  finished: 'bg-green-500',
-  abandoned: 'bg-red-500',
-};
+// const statusColor: Record<Book['status'], string> = {
+//   not_started: 'bg-gray-600',
+//   reading: 'bg-blue-500',
+//   finished: 'bg-green-500',
+//   abandoned: 'bg-red-500',
+// };
 
 export const BookCard = ({
   book,
