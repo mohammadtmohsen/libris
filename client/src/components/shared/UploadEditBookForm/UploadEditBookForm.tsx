@@ -18,6 +18,7 @@ export const UploadEditBookForm = ({
   isSubmitting,
   isEdit = false,
   book,
+  onDelete,
 }: {
   onSubmit: (
     next: () => void
@@ -27,6 +28,7 @@ export const UploadEditBookForm = ({
   isSubmitting: boolean;
   isEdit?: boolean;
   book?: Book;
+  onDelete?: (next: () => void) => Promise<void>;
 }) => {
   return (
     <form
@@ -113,6 +115,16 @@ export const UploadEditBookForm = ({
         <Button type='submit' disabled={isSubmitting} loading={isSubmitting}>
           {isEdit ? 'Save' : 'Upload'}
         </Button>
+        {isEdit && onDelete && (
+          <Button
+            type='button'
+            onClick={() => onDelete(onCancel)}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+          >
+            Delete
+          </Button>
+        )}
       </div>
     </form>
   );

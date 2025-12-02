@@ -9,7 +9,8 @@ import { useUpdateBook } from './useUpdateBook';
 import { Book } from '_queries/booksQueries';
 
 export const UpdateBook = ({ book }: { book: Book }) => {
-  const { methods, handleSubmit, isSubmitting } = useUpdateBook(book);
+  const { methods, handleSubmit, isSubmitting, onDeleteBook } =
+    useUpdateBook(book);
 
   const uploadModal = useModal({
     content: ({ close }) => (
@@ -20,6 +21,7 @@ export const UpdateBook = ({ book }: { book: Book }) => {
         onSubmit={handleSubmit}
         isEdit={true}
         book={book}
+        onDelete={onDeleteBook}
       />
     ),
   });

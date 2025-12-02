@@ -1,6 +1,7 @@
 import {
   Book,
   useCompleteUpload,
+  useDeleteBook,
   usePresignUpload,
   useUploadToPresignedUrl,
 } from '_queries/booksQueries';
@@ -24,6 +25,8 @@ export const useUpdateBook = (book: Book) => {
     },
   });
 
+  const { mutateAsync: deleteBook } = useDeleteBook();
+
   const { mutateAsync: presignMutateAsync, isPending: isPresignPending } =
     usePresignUpload();
 
@@ -34,6 +37,20 @@ export const useUpdateBook = (book: Book) => {
     mutateAsync: completeUploadMutateAsync,
     isPending: isCompleteUploadPending,
   } = useCompleteUpload();
+
+  const onDeleteBook = async (next: () => void) => {
+    if (!book._id) {
+      return;
+    }
+    try {
+      await deleteBook(book._id);
+      next();
+      // Optionally, you can add a success message or refresh the book list here
+    } catch (error) {
+      console.error('Failed to delete book:', error);
+      // Optionally, you can show an error message to the user here
+    }
+  };
 
   const isSubmitting =
     isPresignPending || isUploadPending || isCompleteUploadPending;
@@ -50,15 +67,13 @@ export const useUpdateBook = (book: Book) => {
         let totalPages: number | undefined;
         if (payload.file.type === 'application/pdf') {
           try {
-            const { file: coverFile, pageCount } = await extractFirstPageAsImage(
-              payload.file,
-              {
+            const { file: coverFile, pageCount } =
+              await extractFirstPageAsImage(payload.file, {
                 maxWidth: 900,
                 mimeType: 'image/jpeg',
                 quality: 0.9,
                 fileNameHint: payload.title || payload.file.name,
-              }
-            );
+              });
             effectiveCover = coverFile;
             totalPages = pageCount;
           } catch (e) {
@@ -126,5 +141,5 @@ export const useUpdateBook = (book: Book) => {
         console.error('Failed to upload book:', detailed);
       }
     });
-  return { methods, handleSubmit, isSubmitting };
+  return { methods, handleSubmit, isSubmitting, onDeleteBook };
 };

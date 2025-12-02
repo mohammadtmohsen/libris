@@ -5,12 +5,7 @@ import {
   Button,
   BookCard,
 } from '_components/shared';
-import {
-  useGetBooks,
-  useGetBookSignedUrl,
-  Book,
-  useDeleteBook,
-} from '_queries/booksQueries';
+import { useGetBooks, useGetBookSignedUrl, Book } from '_queries/booksQueries';
 
 import { useState } from 'react';
 import { Document, Page } from 'react-pdf';
@@ -135,18 +130,6 @@ export const Books = () => {
     bookUrlErrorObj && bookUrlErrorObj instanceof Error
       ? bookUrlErrorObj.message
       : null;
-
-  const { mutateAsync: deleteBook } = useDeleteBook();
-
-  const onDeleteBook = async (bookId: string) => {
-    try {
-      await deleteBook(bookId);
-      // Optionally, you can add a success message or refresh the book list here
-    } catch (error) {
-      console.error('Failed to delete book:', error);
-      // Optionally, you can show an error message to the user here
-    }
-  };
 
   const pdfModal = useModal({
     overrideStyle: '',
