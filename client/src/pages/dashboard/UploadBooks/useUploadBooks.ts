@@ -5,13 +5,7 @@ import {
 } from '_queries/booksQueries';
 import { useForm } from 'react-hook-form';
 import { extractFirstPageAsImage } from '_utils/pdfCover';
-
-type UploadEditBookFormPayload = {
-  title: string;
-  author: string;
-  description: string;
-  file: File | null;
-};
+import { UploadEditBookFormPayload } from '_components/shared/UploadEditBookForm/UploadEditBookForm';
 
 export const useUploadBooks = () => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -20,6 +14,8 @@ export const useUploadBooks = () => {
       author: '',
       description: '',
       file: null as File | null,
+      tags: [],
+      status: 'not_started',
     },
   });
 
@@ -49,15 +45,13 @@ export const useUploadBooks = () => {
         let totalPages: number | undefined;
         if (payload.file.type === 'application/pdf') {
           try {
-            const { file: coverFile, pageCount } = await extractFirstPageAsImage(
-              payload.file,
-              {
-              maxWidth: 900,
-              mimeType: 'image/jpeg',
-              quality: 0.9,
-              fileNameHint: payload.title || payload.file.name,
-              }
-            );
+            const { file: coverFile, pageCount } =
+              await extractFirstPageAsImage(payload.file, {
+                maxWidth: 900,
+                mimeType: 'image/jpeg',
+                quality: 0.9,
+                fileNameHint: payload.title || payload.file.name,
+              });
             effectiveCover = coverFile;
             totalPages = pageCount;
           } catch (e) {
@@ -100,8 +94,10 @@ export const useUploadBooks = () => {
           title: payload.title || payload.file.name.replace(/\.[^.]+$/, ''),
           author: payload.author || undefined,
           description: payload.description || undefined,
-          status: 'not_started',
+          status: payload.status || 'not_started',
           visibility: 'private',
+          tags: payload.tags,
+          currentPage: 0,
           totalPages,
           file: {
             key: pdfPresign.key,

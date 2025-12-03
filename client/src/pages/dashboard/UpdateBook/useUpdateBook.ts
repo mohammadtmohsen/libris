@@ -7,13 +7,7 @@ import {
 } from '_queries/booksQueries';
 import { useForm } from 'react-hook-form';
 import { extractFirstPageAsImage } from '_utils/pdfCover';
-
-type UploadEditBookFormPayload = {
-  title: string;
-  author: string;
-  description: string;
-  file: File | null;
-};
+import { UploadEditBookFormPayload } from '_components/shared/UploadEditBookForm/UploadEditBookForm';
 
 export const useUpdateBook = (book: Book) => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -22,6 +16,8 @@ export const useUpdateBook = (book: Book) => {
       author: book.author || '',
       description: book.description || '',
       file: null as File | null,
+      tags: book.tags || [],
+      status: book.status || 'not_started',
     },
   });
 

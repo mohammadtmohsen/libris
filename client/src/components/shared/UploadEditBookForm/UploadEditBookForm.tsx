@@ -3,12 +3,16 @@ import { DropZone } from '../DropZone/DropZone';
 import { Input } from '../Input/Input';
 import { Button } from '../Button/Button';
 import { Book } from '_queries/booksQueries';
+import { CustomSelect } from '../CustomSelect/CustomSelect';
+import { ARABIC_BOOK_TAGS, READING_STATUSES } from '_constants/filtersOptions';
 
 export type UploadEditBookFormPayload = {
   title: string;
   author: string;
   description: string;
-  file: File | null;
+  file?: File | null;
+  tags: string[];
+  status: Book['status'];
 };
 
 export const UploadEditBookForm = ({
@@ -62,34 +66,61 @@ export const UploadEditBookForm = ({
           rules={{ required: 'This Field is required' }}
         />
       )}
-      <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-        <Controller
-          name='title'
-          control={methods.control}
-          render={({ field, fieldState }) => (
-            <Input
-              label='Title'
-              placeholder='Book title'
-              {...field}
-              error={fieldState.error?.message}
-            />
-          )}
-          rules={{ required: 'This Field is required ' }}
-        />
-        <Controller
-          name='author'
-          control={methods.control}
-          render={({ field, fieldState }) => (
-            <Input
-              label='Author'
-              placeholder='Author name'
-              {...field}
-              error={fieldState.error?.message}
-            />
-          )}
-          rules={{ required: 'This Field is required ' }}
-        />
-      </div>
+      <Controller
+        name='title'
+        control={methods.control}
+        render={({ field, fieldState }) => (
+          <Input
+            label='Title'
+            placeholder='Book title'
+            {...field}
+            error={fieldState.error?.message}
+          />
+        )}
+        rules={{ required: 'This Field is required ' }}
+      />
+      <Controller
+        name='author'
+        control={methods.control}
+        render={({ field, fieldState }) => (
+          <Input
+            label='Author'
+            placeholder='Author name'
+            {...field}
+            error={fieldState.error?.message}
+          />
+        )}
+        rules={{ required: 'This Field is required ' }}
+      />
+      <Controller
+        name='tags'
+        control={methods.control}
+        render={({ field, fieldState }) => (
+          <CustomSelect
+            options={ARABIC_BOOK_TAGS}
+            placeholder='Select by category'
+            label='Category'
+            isMulti
+            value={field.value}
+            onChange={field.onChange}
+            error={fieldState.error?.message}
+          />
+        )}
+      />
+      <Controller
+        name='status'
+        control={methods.control}
+        render={({ field, fieldState }) => (
+          <CustomSelect
+            options={READING_STATUSES}
+            placeholder='Select reading status'
+            label='Reading Status'
+            value={field.value}
+            onChange={field.onChange}
+            error={fieldState.error?.message}
+          />
+        )}
+      />
       <Controller
         name='description'
         control={methods.control}
