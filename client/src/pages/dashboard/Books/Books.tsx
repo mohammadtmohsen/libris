@@ -133,6 +133,7 @@ export const Books = () => {
 
   const pdfModal = useModal({
     overrideStyle: '',
+    fullScreen: true,
     content: ({ close }) => (
       <PdfViewer
         title={activeBook?.title || 'Document'}

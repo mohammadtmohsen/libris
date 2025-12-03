@@ -21,13 +21,17 @@ export const Modal = ({
   content,
   contentProps,
   overrideStyle,
+  fullScreen = false,
 }: ModalProps) => {
   return (
     <Dialog
       open={isVisible}
       onClose={close}
-      // fullWidth
-      fullScreen
+      fullWidth
+      fullScreen={!!fullScreen}
+      slots={{
+        transition: Transition,
+      }}
       classes={{
         paper: clsx('xrounded-primary !bg-transparent', {
           'm-0': true,
@@ -35,16 +39,29 @@ export const Modal = ({
         root: '!m-0',
         container: '!m-0',
       }}
-      slots={{
-        transition: Transition,
-      }}
       slotProps={{
         paper: {
-          style: {
-            margin: 0,
+          sx: {
+            m: 0,
+            height: fullScreen ? '100vh' : '60vh',
+            maxHeight: fullScreen ? '100vh' : '60vh',
+            width: '100vw',
+            maxWidth: '100vw',
+            borderTopLeftRadius: fullScreen ? 0 : '1rem',
+            borderTopRightRadius: fullScreen ? 0 : '1rem',
+            bgcolor: 'transparent',
           },
         },
       }}
+      sx={{
+        '& .MuiDialog-container': {
+          alignItems: 'flex-end',
+        },
+      }}
+      //     backgroundColor: 'transparent',
+      //     borderRadius: '0px',
+      //   },
+      // }}
     >
       <DialogContent
         classes={{

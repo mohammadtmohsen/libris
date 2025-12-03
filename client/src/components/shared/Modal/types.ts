@@ -4,6 +4,7 @@ interface UseModalProps {
     contentProps?: Record<string, unknown> | null;
   }) => React.ReactNode;
   overrideStyle?: string;
+  fullScreen?: boolean;
 }
 
 interface ModalProps {
@@ -16,6 +17,7 @@ interface ModalProps {
   }) => React.ReactNode;
   contentProps?: Record<string, unknown> | null;
   overrideStyle?: string;
+  fullScreen?: boolean;
 }
 
 export type { UseModalProps, ModalProps };

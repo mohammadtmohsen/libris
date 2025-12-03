@@ -4,6 +4,8 @@ import { useStore } from '_store/useStore';
 import { Button } from '_components/shared';
 import authServices from '_services/authServices/authServices';
 import { getInitialsFromName } from '_utils/helper';
+import { UploadBook } from '_pages/dashboard/UploadBooks/UploadBooks';
+import { FilterBooks } from './FilterBooks/FilterBooks';
 
 export const Header = () => {
   const { loggingData, logoutUser } = useStore();
@@ -27,8 +29,10 @@ export const Header = () => {
           <img src={logos.librisLogo} className='w-24 h-24 shrink-0' />
         </div>
         <div className='flex items-center gap-3'>
+          <FilterBooks />
+          <UploadBook />
           <h1 className='font-black text-right'>
-            Welcome, {getInitialsFromName(displayName)}
+            {getInitialsFromName(displayName)}
           </h1>
           <Button
             iconButton='logout'

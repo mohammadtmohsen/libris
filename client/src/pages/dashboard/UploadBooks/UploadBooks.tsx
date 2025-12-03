@@ -23,7 +23,7 @@ export const UploadBook = () => {
 
   return (
     <>
-      <Button onClick={() => uploadModal.open({})}>Upload Book</Button>
+      <Button iconButton='add' onClick={() => uploadModal.open({})} />
       <Modal {...uploadModal} />
     </>
   );

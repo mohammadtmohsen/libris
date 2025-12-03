@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { UseModalProps } from './types';
 
-export const useModal = ({ content, overrideStyle }: UseModalProps) => {
+export const useModal = ({
+  content,
+  overrideStyle,
+  fullScreen,
+}: UseModalProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [contentProps, setContentProps] = useState<Record<
     string,
@@ -24,6 +28,7 @@ export const useModal = ({ content, overrideStyle }: UseModalProps) => {
     content,
     contentProps,
     overrideStyle,
+    fullScreen,
   };
 
   return { ...modalControl, modalControl };
