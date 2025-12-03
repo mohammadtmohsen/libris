@@ -8,14 +8,17 @@ import {
 import { useUploadBooks } from './useUploadBooks';
 
 export const UploadBook = () => {
-  const { methods, handleSubmit, isSubmitting } = useUploadBooks();
+  const { methods, handleSubmit, isSubmitting, onClose } = useUploadBooks();
 
   const uploadModal = useModal({
     content: ({ close }) => (
       <UploadEditBookForm
         isSubmitting={isSubmitting}
         methods={methods}
-        onCancel={close}
+        onCancel={() => {
+          onClose();
+          close();
+        }}
         onSubmit={handleSubmit}
       />
     ),

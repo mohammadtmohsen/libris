@@ -1,5 +1,6 @@
 import { Book } from '_queries/booksQueries';
 import { ReactNode } from 'react';
+import { ProgressBar } from '../ProgressBar/ProgressBar';
 
 // const statusLabel: Record<Book['status'], string> = {
 //   not_started: 'Not started',
@@ -24,7 +25,6 @@ export const BookCard = ({
   onClickBook: () => void;
   infoButton: ReactNode;
 }) => {
-  const percent = book.progress?.percent ?? '50';
   return (
     <div
       onClick={onClickBook}
@@ -37,7 +37,7 @@ export const BookCard = ({
         backgroundPosition: 'top',
       }}
     >
-      <div className='bg-white-4 flex flex-col text-right pt-3 px-3'>
+      <div className='bg-white-4 flex flex-col text-right p-3 bg-opacity-90 rounded-t-primary'>
         <div className='text-sm font-semibold truncate text-right text-black-1'>
           {book?.title}
         </div>
@@ -47,16 +47,11 @@ export const BookCard = ({
         </div>
       </div>
       <div onClick={(e) => e.stopPropagation()}>{infoButton}</div>
-      {typeof percent === 'number' && (
-        <div className='mt-1 h-2 w-full rounded bg-black-2 overflow-hidden'>
-          <div
-            className='h-full bg-blue-1 transition-all'
-            style={{
-              width: `${Math.min(100, Math.max(0, percent))}%`,
-            }}
-          />
-        </div>
-      )}
+      <ProgressBar
+        pageCount={book?.pageCount || 0}
+        pagesRead={book?.pagesRead || 0}
+        className='bg-white-4 bg-opacity-90'
+      />
     </div>
   );
 };

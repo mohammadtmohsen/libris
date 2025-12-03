@@ -33,6 +33,10 @@ export const useUploadBooks = () => {
   const isSubmitting =
     isPresignPending || isUploadPending || isCompleteUploadPending;
 
+  const onClose = () => {
+    methods.reset();
+  };
+
   const handleSubmit = (next: () => void) =>
     methods.handleSubmit(async (payload: UploadEditBookFormPayload) => {
       if (!payload.file) {
@@ -42,10 +46,10 @@ export const useUploadBooks = () => {
       try {
         // Auto-generate a cover from PDF first page; abort if extraction fails.
         let effectiveCover: File | null = null;
-        let totalPages: number | undefined;
+        let pageCount: number | undefined;
         if (payload.file.type === 'application/pdf') {
           try {
-            const { file: coverFile, pageCount } =
+            const { file: coverFile, pageCount: extractedPageCount } =
               await extractFirstPageAsImage(payload.file, {
                 maxWidth: 900,
                 mimeType: 'image/jpeg',
@@ -53,7 +57,7 @@ export const useUploadBooks = () => {
                 fileNameHint: payload.title || payload.file.name,
               });
             effectiveCover = coverFile;
-            totalPages = pageCount;
+            pageCount = extractedPageCount;
           } catch (e) {
             console.error('Cover extraction failed; aborting upload.', e);
             throw new Error('Cover page extraction failed. Upload aborted.');
@@ -97,8 +101,8 @@ export const useUploadBooks = () => {
           status: payload.status || 'not_started',
           visibility: 'private',
           tags: payload.tags,
-          currentPage: 0,
-          totalPages,
+          pagesRead: 0,
+          pageCount,
           file: {
             key: pdfPresign.key,
             mime: payload.file.type || 'application/pdf',
@@ -115,11 +119,11 @@ export const useUploadBooks = () => {
             : undefined,
         });
         next();
-        // onClose();
+        onClose();
       } catch (err: unknown) {
         const detailed = err instanceof Error ? err.message : String(err);
         console.error('Failed to upload book:', detailed);
       }
     });
-  return { methods, handleSubmit, isSubmitting };
+  return { methods, handleSubmit, isSubmitting, onClose };
 };

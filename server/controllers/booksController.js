@@ -64,7 +64,7 @@ export const completeUpload = asyncHandler(async (req, res) => {
     visibility = 'private',
     file,
     cover,
-    totalPages,
+    pageCount,
   } = req.body;
 
   const book = await Book.create({
@@ -90,8 +90,8 @@ export const completeUpload = asyncHandler(async (req, res) => {
         }
       : undefined,
     // initialize page tracking
-    currentPage: 0,
-    totalPages: Number.isFinite(totalPages) ? totalPages : 0,
+    pagesRead: 0,
+    pageCount: Number.isFinite(pageCount) ? pageCount : 0,
   });
 
   res.status(201).json({ success: true, data: book });
@@ -276,17 +276,17 @@ export const updateBook = asyncHandler(async (req, res) => {
 });
 
 export const updatePages = asyncHandler(async (req, res) => {
-  const { currentPage, totalPages } = req.body;
+  const { pagesRead, pageCount } = req.body;
 
-  if (currentPage === undefined && totalPages === undefined) {
+  if (pagesRead === undefined && pageCount === undefined) {
     return res
       .status(400)
       .json({ success: false, error: 'No page fields provided' });
   }
 
   const updates = {};
-  if (currentPage !== undefined) updates.currentPage = currentPage;
-  if (totalPages !== undefined) updates.totalPages = totalPages;
+  if (pagesRead !== undefined) updates.pagesRead = pagesRead;
+  if (pageCount !== undefined) updates.pageCount = pageCount;
 
   const book = await Book.findOneAndUpdate(
     { _id: req.params.id, owner: req.user._id },

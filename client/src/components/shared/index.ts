@@ -14,6 +14,7 @@ import { Tabs, TabOption } from './Tabs';
 import { DropZoneProps, DropZone } from './DropZone/DropZone';
 import { BookCard } from './BookCard/BookCard';
 import { UploadEditBookForm } from './UploadEditBookForm/UploadEditBookForm';
+import { ProgressBar } from './ProgressBar/ProgressBar';
 
 export {
   CardSkeleton,
@@ -32,6 +33,7 @@ export {
   DropZone,
   BookCard,
   UploadEditBookForm,
+  ProgressBar,
 };
 
 export type { ToggleOption, TabOption, DropZoneProps };

@@ -60,10 +60,10 @@ export const useUpdateBook = (book: Book) => {
       try {
         // Auto-generate a cover from PDF first page; abort if extraction fails.
         let effectiveCover: File | null = null;
-        let totalPages: number | undefined;
+        let pageCount: number | undefined;
         if (payload.file.type === 'application/pdf') {
           try {
-            const { file: coverFile, pageCount } =
+            const { file: coverFile, pageCount: extractedPageCount } =
               await extractFirstPageAsImage(payload.file, {
                 maxWidth: 900,
                 mimeType: 'image/jpeg',
@@ -71,7 +71,7 @@ export const useUpdateBook = (book: Book) => {
                 fileNameHint: payload.title || payload.file.name,
               });
             effectiveCover = coverFile;
-            totalPages = pageCount;
+            pageCount = extractedPageCount;
           } catch (e) {
             console.error('Cover extraction failed; aborting upload.', e);
             throw new Error('Cover page extraction failed. Upload aborted.');
@@ -119,7 +119,7 @@ export const useUpdateBook = (book: Book) => {
             mime: payload.file.type || 'application/pdf',
             size: payload.file.size,
             originalName: payload.file.name,
-            pageCount: totalPages,
+            pageCount: pageCount,
           },
           cover: coverKey
             ? {

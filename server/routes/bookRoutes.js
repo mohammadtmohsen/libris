@@ -128,8 +128,8 @@ router.patch(
 router.patch(
   '/:id/pages',
   param('id').isMongoId(),
-  body('currentPage').optional().isInt({ min: 0 }).toInt(),
-  body('totalPages').optional().isInt({ min: 0 }).toInt(),
+  body('pagesRead').optional().isInt({ min: 0 }).toInt(),
+  body('pageCount').optional().isInt({ min: 0 }).toInt(),
   handleValidationErrors,
   updatePages
 );

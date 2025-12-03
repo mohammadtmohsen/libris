@@ -27,7 +27,12 @@ const CoverSchema = new Schema(
 
 const BookSchema = new Schema(
   {
-    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
     title: { type: String, required: true },
     author: { type: String },
     description: { type: String },
@@ -38,11 +43,15 @@ const BookSchema = new Schema(
       default: 'not_started',
       index: true,
     },
-    visibility: { type: String, enum: ['private', 'public'], default: 'private' },
+    visibility: {
+      type: String,
+      enum: ['private', 'public'],
+      default: 'private',
+    },
     file: { type: FileSchema, required: true },
     cover: { type: CoverSchema },
-    totalPages: { type: Number, default: 0, min: 0 },
-    currentPage: { type: Number, default: 0, min: 0 },
+    pageCount: { type: Number, default: 0, min: 0 },
+    pagesRead: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

@@ -15,8 +15,6 @@ export type BookCover = {
 };
 
 export type BookProgress = {
-  pagesRead?: number;
-  percent?: number;
   lastLocation?: string;
   lastOpenedAt?: string;
 };
@@ -30,11 +28,12 @@ export type Book = {
   tags?: string[];
   status: 'not_started' | 'reading' | 'finished' | 'abandoned';
   visibility: 'private' | 'public';
-  file: BookFile;
-  cover?: BookCover;
-  progress?: BookProgress;
+  pageCount?: number;
+  pagesRead?: number;
   createdAt?: string;
   updatedAt?: string;
+  file: BookFile;
+  cover?: BookCover;
 };
 
 export type BooksListResponse = {
@@ -78,6 +77,6 @@ export type CompleteUploadRequest = {
   visibility?: Book['visibility'];
   file: Book['file'];
   cover?: Book['cover'];
-  currentPage?: number;
-  totalPages?: number;
+  pagesRead?: number;
+  pageCount?: number;
 };
