@@ -29,28 +29,15 @@ const FilterBooksForm = ({ onCancel }: { onCancel: () => void }) => {
 };
 
 export const FilterBooks = () => {
-  // const { methods, handleSubmit, isSubmitting, onDeleteBook } =
-  //     useUpdateBook(book);
-
   const uploadModal = useModal({
-    content: ({ close }) => (
-      <FilterBooksForm
-        // isSubmitting={isSubmitting}
-        // methods={methods}
-        onCancel={close}
-        // onSubmit={handleSubmit}
-        // isEdit={true}
-        // book={book}
-        // onDelete={onDeleteBook}
-      />
-    ),
+    content: ({ close }) => <FilterBooksForm onCancel={close} />,
   });
 
   return (
     <>
       <Button
         variant='primary'
-        iconButton='info'
+        iconButton='filter'
         onClick={() => uploadModal.open({})}
       />
       <Modal {...uploadModal} />

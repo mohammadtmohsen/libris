@@ -49,20 +49,24 @@ export const useGetBookById = (id?: string, enabled = true) => {
   return queryResult;
 };
 
-export const useGetBookSignedUrl = (
-  id?: string,
+export const useGetBookSignedUrl = ({
+  bookId,
   includeCover = false,
-  enabled = true
-) => {
+  enabled = true,
+}: {
+  bookId?: string;
+  includeCover: boolean;
+  enabled?: boolean;
+}) => {
   const queryResult = useQuery({
-    queryKey: [BOOK_QUERIES_KEYS.GET_BOOK_URL, id, includeCover],
-    enabled: Boolean(id) && enabled,
+    queryKey: [BOOK_QUERIES_KEYS.GET_BOOK_URL, bookId, includeCover],
+    enabled: Boolean(bookId) && enabled,
     queryFn: async () => {
-      if (!id) return null;
+      if (!bookId) return null;
       const res = await axiosInstance.get<
         unknown,
         { data: { data: SignedUrlResponse } }
-      >(`${BOOKS_QUERY_BASE}/${id}/url`, { params: { includeCover } });
+      >(`${BOOKS_QUERY_BASE}/${bookId}/url`, { params: { includeCover } });
       return res.data.data;
     },
   });
@@ -121,6 +125,29 @@ export const useDeleteBook = () => {
     mutationKey: [BOOK_QUERIES_KEYS.DELETE_BOOK],
     mutationFn: async (id: string) => {
       await axiosInstance.delete(`${BOOKS_QUERY_BASE}/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['GET_BOOKS'] });
+    },
+  });
+};
+
+export const useUpdateBookById = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: [BOOK_QUERIES_KEYS.UPDATE_BOOK],
+    mutationFn: async ({
+      bookId,
+      updateData,
+    }: {
+      bookId: string;
+      updateData: Partial<Book>;
+    }) => {
+      const res = await axiosInstance.patch<unknown, { data: { data: Book } }>(
+        `${BOOKS_QUERY_BASE}/${bookId}`,
+        updateData
+      );
+      return res.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['GET_BOOKS'] });

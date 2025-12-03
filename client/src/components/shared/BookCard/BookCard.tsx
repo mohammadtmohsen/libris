@@ -28,7 +28,6 @@ export const BookCard = ({
   return (
     <div
       onClick={onClickBook}
-      key={book._id}
       className='relative flex flex-col justify-end bg-black-3 rounded-md border border-black-2 hover:border-blue-4 transition-colors w-[320px] h-[400px] overflow-hidden'
       style={{
         backgroundImage: `url(${book?.cover?.coverUrl})`,

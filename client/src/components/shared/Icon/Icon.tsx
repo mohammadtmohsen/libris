@@ -12,6 +12,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 
 export type IconType =
   | 'delete'
@@ -26,7 +27,8 @@ export type IconType =
   | 'clearAll'
   | 'remove'
   | 'kg'
-  | 'plates';
+  | 'plates'
+  | 'filter';
 
 interface IconProps {
   type: IconType;
@@ -77,6 +79,8 @@ export const Icon = ({
       return <FitnessCenterIcon {...iconProps} />;
     case 'plates':
       return <ViewHeadlineIcon {...iconProps} />;
+    case 'filter':
+      return <FilterAltOutlinedIcon {...iconProps} />;
     default:
       return null;
   }
