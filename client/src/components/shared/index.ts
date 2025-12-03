@@ -9,7 +9,6 @@ import { CustomSelect } from './CustomSelect/CustomSelect';
 import { useModal } from './Modal/useModal';
 import { Icon } from './Icon/Icon';
 import { Loader } from './Loader/Loader';
-import { TitleWithBackButton } from './TitleWithBackButton/TitleWithBackButton';
 import { ButtonToggleGroup, ToggleOption } from './ButtonToggleGroup';
 import { Tabs, TabOption } from './Tabs';
 import { DropZoneProps, DropZone } from './DropZone/DropZone';
@@ -28,7 +27,6 @@ export {
   Icon,
   DatePicker,
   Loader,
-  TitleWithBackButton,
   ButtonToggleGroup,
   Tabs,
   DropZone,

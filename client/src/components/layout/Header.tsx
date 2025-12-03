@@ -1,7 +1,7 @@
 import { logos } from '_assets';
 import { SideNav } from './SideNav/SideNav';
 import { useStore } from '_store/useStore';
-import { Button, TitleWithBackButton } from '_components/shared';
+import { Button } from '_components/shared';
 import authServices from '_services/authServices/authServices';
 import { getInitialsFromName } from '_utils/helper';
 
@@ -25,7 +25,6 @@ export const Header = () => {
         <SideNav />
         <div className='flex items-center gap-x-5 flex-wrap mr-auto'>
           <img src={logos.librisLogo} className='w-24 h-24 shrink-0' />
-          <TitleWithBackButton className='hidden sm:flex' />
         </div>
         <div className='flex items-center gap-3'>
           <h1 className='font-black text-right'>
@@ -38,7 +37,6 @@ export const Header = () => {
           />
         </div>
       </div>
-      <TitleWithBackButton className='sm:hidden mt-3' />
     </div>
   );
 };
