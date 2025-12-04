@@ -56,6 +56,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   useEffect(() => {
     showControls();
     return () => clearHideTimer();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,6 +66,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
       return;
     }
     showControls();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, error, url]);
 
   useEffect(() => {
