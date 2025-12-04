@@ -12,6 +12,7 @@ export const Button = (props: ButtonPropsType) => {
     rightIcon,
     iconButton,
     loading,
+    iconProps,
     ...restProps
   } = props;
 
@@ -54,7 +55,7 @@ export const Button = (props: ButtonPropsType) => {
           circularSize={25}
         />
       ) : iconButton ? (
-        <Icon type={iconButton} />
+        <Icon {...iconProps} type={iconButton} />
       ) : (
         <>
           {leftIcon && <Icon type={leftIcon} />}
