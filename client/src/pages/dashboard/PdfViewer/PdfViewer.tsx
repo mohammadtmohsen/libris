@@ -105,34 +105,20 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     setPageNumber((p) => (numPages ? Math.min(numPages, p + 1) : p + 1));
   };
 
-  const handlePageAreaClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (controlsLayerRef.current?.contains(event.target as Node)) {
       return;
     }
     handleUserActivity();
+
+    const isTouch = event.pointerType === 'touch';
+    if (isTouch) {
+      event.preventDefault();
+    }
 
     if (!viewerRef.current) return;
     const { left, width } = viewerRef.current.getBoundingClientRect();
     const relativeX = event.clientX - left;
-
-    if (relativeX > width * 0.6) {
-      goToNextPage();
-    } else if (relativeX < width * 0.4) {
-      goToPrevPage();
-    } else {
-      setControlsVisible((prev) => !prev);
-    }
-  };
-
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (controlsLayerRef.current?.contains(event.target as Node)) {
-      return;
-    }
-    handleUserActivity();
-    const touch = event.changedTouches[0];
-    if (!viewerRef.current || !touch) return;
-    const { left, width } = viewerRef.current.getBoundingClientRect();
-    const relativeX = touch.clientX - left;
 
     if (relativeX > width * 0.6) {
       goToNextPage();
@@ -154,8 +140,8 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
         ref={viewerRef}
         className='relative flex-1 overflow-hidden'
         onMouseMove={handleUserActivity}
-        onClick={handlePageAreaClick}
-        onTouchStart={handleTouchStart}
+        onPointerMove={handleUserActivity}
+        onPointerDown={handlePointerDown}
       >
         <div className='absolute inset-0 overflow-auto flex items-start justify-center py-0 px-0'>
           {loading && <div className='p-4 text-sm'>Preparing viewer…</div>}
