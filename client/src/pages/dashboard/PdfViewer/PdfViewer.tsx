@@ -11,7 +11,7 @@ type PdfViewerProps = {
 };
 
 const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
-  const AUTO_HIDE_DELAY = 11112800;
+  const AUTO_HIDE_DELAY = 2800;
   const activeBook = contentProps?.book || null;
 
   const {
@@ -140,9 +140,9 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     const { left, width } = viewerRef.current.getBoundingClientRect();
     const relativeX = event.clientX - left;
 
-    if (relativeX > width * 0.6) {
+    if (relativeX > width * 0.85) {
       goToNextPage();
-    } else if (relativeX < width * 0.4) {
+    } else if (relativeX < width * 0.15) {
       goToPrevPage();
     }
   };
@@ -206,7 +206,13 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
               <div className='text-[11px] font-bold tracking-wide text-blue-1'>
                 ({activeBook?.status})
               </div>
-              <div className='text-sm font-bold truncate text-blue-1'>
+              <div
+                dir='rtl'
+                className={clsx(
+                  'text-sm font-bold truncate text-blue-1',
+                  'text-right'
+                )}
+              >
                 {activeBook?.title || 'Untitled'}
               </div>
             </div>

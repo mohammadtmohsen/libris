@@ -45,6 +45,7 @@ export interface CustomSelectProps<T extends OptionType>
   label?: string;
   value?: string | string[] | null;
   onChange?: (value: string | string[] | null) => void;
+  dir?: 'rtl' | 'ltr';
   error?: string;
   containerClass?: string;
   isMulti?: boolean;
@@ -60,6 +61,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
     value,
     onChange,
     error,
+    dir = 'ltr',
     containerClass,
     isMulti = false,
     options = [],
@@ -70,6 +72,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
   ref: ForwardedRef<SelectInstance<T, boolean, GroupBase<T>>>
 ) {
   const [internalValue, setInternalValue] = useState<PropsValue<T>>(null);
+  const isRtl = dir === 'rtl';
 
   // Convert string value to OptionType
   useEffect(() => {
@@ -105,7 +108,9 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
   return (
     <div className={clsx('w-full', containerClass)}>
       {label && (
-        <label className='block text-sm font-medium mb-1'>{label}</label>
+        <label className='block text-sm font-medium mb-1 text-left'>
+          {label}
+        </label>
       )}
 
       <Select
@@ -114,6 +119,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
         styles={{
           control: (base, { isFocused }) => ({
             ...base,
+            direction: dir,
             minHeight: '40px',
             backgroundColor: colors.black[5],
             borderColor: isFocused ? colors.blue[1] : colors.white[2],
@@ -126,6 +132,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
           }),
           menu: (base) => ({
             ...base,
+            direction: dir,
             backgroundColor: colors.black[5],
             border: `2px solid ${colors.blue[1]}`,
             borderRadius: '10px',
@@ -152,6 +159,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
               ? colors.blue[7]
               : 'transparent',
             color: colors.white[1],
+            textAlign: isRtl ? 'right' : 'left',
             '&:active': {
               backgroundColor: colors.blue[3],
             },
@@ -159,10 +167,12 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
           placeholder: (base) => ({
             ...base,
             color: colors.white[4],
+            textAlign: isRtl ? 'right' : 'left',
           }),
           singleValue: (base) => ({
             ...base,
             color: colors.white[1],
+            textAlign: isRtl ? 'right' : 'left',
           }),
           indicatorSeparator: (base) => ({
             ...base,
@@ -178,6 +188,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
           input: (base) => ({
             ...base,
             color: colors.white[1],
+            textAlign: isRtl ? 'right' : 'left',
           }),
           multiValue: (base) => ({
             ...base,
@@ -205,6 +216,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
         options={options}
         defaultValue={defaultValue}
         onChange={handleChange}
+        isRtl={isRtl}
         menuPortalTarget={document.body} // Render menu in a portal to avoid container issues
         menuPosition='fixed' // Use fixed position for better positioning
         {...rest}

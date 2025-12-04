@@ -36,7 +36,7 @@ export const FilterBooks = () => {
   return (
     <>
       <Button
-        variant='primary'
+        variant='outline'
         iconButton='filter'
         onClick={() => uploadModal.open({})}
       />

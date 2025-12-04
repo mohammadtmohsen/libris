@@ -73,6 +73,7 @@ export const UploadEditBookForm = ({
           <Input
             label='Title'
             placeholder='Book title'
+            dir='rtl'
             {...field}
             error={fieldState.error?.message}
           />
@@ -86,6 +87,7 @@ export const UploadEditBookForm = ({
           <Input
             label='Author'
             placeholder='Author name'
+            dir='rtl'
             {...field}
             error={fieldState.error?.message}
           />
@@ -100,6 +102,7 @@ export const UploadEditBookForm = ({
             options={ARABIC_BOOK_TAGS}
             placeholder='Select by category'
             label='Category'
+            dir='rtl'
             isMulti
             value={field.value}
             onChange={field.onChange}
@@ -128,6 +131,7 @@ export const UploadEditBookForm = ({
           <Input
             label='Description'
             placeholder='Short description'
+            dir='rtl'
             {...field}
             error={fieldState.error?.message}
           />

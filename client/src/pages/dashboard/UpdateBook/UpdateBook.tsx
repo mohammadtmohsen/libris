@@ -29,7 +29,7 @@ export const UpdateBook = ({ book }: { book: Book }) => {
   return (
     <>
       <Button
-        variant='primary'
+        variant='outline'
         iconButton='info'
         onClick={() => uploadModal.open({})}
         className='absolute top-3 right-3 z-10'

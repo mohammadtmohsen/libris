@@ -26,7 +26,11 @@ export const UploadBook = () => {
 
   return (
     <>
-      <Button iconButton='add' onClick={() => uploadModal.open({})} />
+      <Button
+        variant='outline'
+        iconButton='add'
+        onClick={() => uploadModal.open({})}
+      />
       <Modal {...uploadModal} />
     </>
   );
