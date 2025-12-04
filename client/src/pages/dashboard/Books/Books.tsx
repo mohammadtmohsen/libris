@@ -12,7 +12,7 @@ export const Books = ({
   isFetching: boolean;
 }) => {
   const pdfModal = useModal({
-    overrideStyle: '',
+    overrideStyle: '!p-0 sm:!p-0',
     fullScreen: true,
     content: ({ close, contentProps }) => (
       <PdfViewer
