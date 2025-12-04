@@ -13,6 +13,8 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
 export type IconType =
   | 'delete'
@@ -28,7 +30,9 @@ export type IconType =
   | 'remove'
   | 'kg'
   | 'plates'
-  | 'filter';
+  | 'filter'
+  | 'visibility'
+  | 'visibilityOff';
 
 interface IconProps {
   type: IconType;
@@ -81,6 +85,10 @@ export const Icon = ({
       return <ViewHeadlineIcon {...iconProps} />;
     case 'filter':
       return <FilterAltOutlinedIcon {...iconProps} />;
+    case 'visibility':
+      return <VisibilityOutlinedIcon {...iconProps} />;
+    case 'visibilityOff':
+      return <VisibilityOffOutlinedIcon {...iconProps} />;
     default:
       return null;
   }

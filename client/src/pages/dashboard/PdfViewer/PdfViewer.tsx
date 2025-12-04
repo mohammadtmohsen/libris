@@ -1,8 +1,9 @@
 import { Button } from '_components/shared';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Document, Page } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
 import { Book, useUpdateBookPages } from '_queries/booksQueries';
+import clsx from 'clsx';
 
 type PdfViewerProps = {
   onClose: () => void;
@@ -10,7 +11,7 @@ type PdfViewerProps = {
 };
 
 const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
-  const AUTO_HIDE_DELAY = 2800;
+  const AUTO_HIDE_DELAY = 11112800;
   const activeBook = contentProps?.book || null;
 
   const {
@@ -25,6 +26,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   const [pageNumber, setPageNumber] = useState(activeBook?.pagesRead || 1);
   const [scale, setScale] = useState(1);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [manualHidden, setManualHidden] = useState(false);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
   const viewerRef = useRef<HTMLDivElement | null>(null);
@@ -41,7 +43,9 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     }
   };
 
-  const showControls = () => {
+  const showControls = (options?: { respectManual?: boolean }) => {
+    const respectManual = options?.respectManual ?? true;
+    if (respectManual && manualHidden) return;
     setControlsVisible(true);
     clearHideTimer();
     hideControlsTimeout.current = setTimeout(() => {
@@ -50,7 +54,8 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   };
 
   const handleUserActivity = () => {
-    showControls();
+    if (manualHidden || !controlsVisible) return;
+    showControls({ respectManual: false });
   };
 
   useEffect(() => {
@@ -105,12 +110,22 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     setPageNumber((p) => (numPages ? Math.min(numPages, p + 1) : p + 1));
   };
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  const toggleControlsVisibility = () => {
+    if (manualHidden || !controlsVisible) {
+      setManualHidden(false);
+      showControls({ respectManual: false });
+      return;
+    }
+
+    setManualHidden(true);
+    clearHideTimer();
+    setControlsVisible(false);
+  };
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (controlsLayerRef.current?.contains(event.target as Node)) {
       return;
     }
-    handleUserActivity();
-
     const isTouch = event.pointerType === 'touch';
     if (isTouch) {
       event.preventDefault();
@@ -124,8 +139,6 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
       goToNextPage();
     } else if (relativeX < width * 0.4) {
       goToPrevPage();
-    } else {
-      setControlsVisible((prev) => !prev);
     }
   };
 
@@ -143,7 +156,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
         onPointerMove={handleUserActivity}
         onPointerDown={handlePointerDown}
       >
-        <div className='absolute inset-0 overflow-auto flex items-start justify-center py-0 px-0'>
+        <div className='absolute inset-0 overflow-auto flex items-center justify-center py-0 px-0'>
           {loading && <div className='p-4 text-sm'>Preparing viewer…</div>}
           {error && <div className='p-4 text-sm text-red-400'>{error}</div>}
           {!loading && !error && url ? (
@@ -178,50 +191,49 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
 
         <div
           ref={controlsLayerRef}
-          className={`absolute inset-0 transition-opacity duration-300 pointer-events-none ${
+          className={clsx(
+            'absolute inset-0 transition-opacity duration-300 pointer-events-none',
             controlsVisible ? 'opacity-100' : 'opacity-0'
-          }`}
+          )}
         >
           <div className='flex items-start justify-between gap-3 px-4 pt-4'>
-            <div className='pointer-events-auto bg-black/60 text-white rounded-2xl px-4 py-2 backdrop-blur-sm max-w-[60%]'>
-              <div className='text-[11px] uppercase tracking-wide text-white/70'>
+            <div className='pointer-events-auto bg-blue-7 text-white rounded-2xl px-3 py-2 backdrop-blur-sm max-w-[60%] flex items-center gap-1 rounded-full shadow-lg'>
+              <div className='text-[11px] font-bold tracking-wide text-blue-1'>
                 Reading
               </div>
-              <div className='text-sm font-medium truncate'>
+              <div className='text-sm font-bold truncate text-blue-1'>
                 {activeBook?.title || 'Untitled'}
               </div>
-              <div className='text-xs text-white/70'>
-                {pageNumber} / {numPages || '?'}
-              </div>
             </div>
-            <div className='pointer-events-auto flex items-center gap-2 bg-black/60 rounded-full px-3 py-2 backdrop-blur-sm shadow-lg'>
+            <div className='pointer-events-auto flex items-center gap-1 bg-blue-7 rounded-full px-3 py-2 backdrop-blur-sm shadow-lg'>
               <Button
                 variant='outline'
                 className='!py-1 !px-3 h-[32px]'
-                leftIcon='remove'
+                iconButton='remove'
                 onClick={() => {
                   setScale((s) => Math.max(0.5, s - 0.1));
                   handleUserActivity();
                 }}
                 disabled={!url}
-              >
-                Zoom-
-              </Button>
-              <span className='text-xs w-12 text-center text-white/80'>
-                {Math.round(scale * 100)}%
-              </span>
+              />
+              <div className='flex flex-col items-center'>
+                <span className='text-xs w-12 text-center text-blue-1'>
+                  Scale
+                </span>
+                <span className='text-xs w-12 text-center text-blue-1'>
+                  {Math.round(scale * 100)}%
+                </span>
+              </div>
               <Button
                 variant='outline'
                 className='!py-1 !px-3 h-[32px]'
-                leftIcon='add'
+                iconButton='add'
                 onClick={() => {
                   setScale((s) => Math.min(3, s + 0.1));
                   handleUserActivity();
                 }}
                 disabled={!url}
-              >
-                Zoom+
-              </Button>
+              />
               <Button
                 variant='outline'
                 className='!py-1 !px-3 h-[32px]'
@@ -248,16 +260,15 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
               </Button>
               <Button
                 variant='outline'
+                iconButton='logout'
                 className='!py-1 !px-3 h-[32px]'
                 onClick={handleClose}
-              >
-                Close
-              </Button>
+              />
             </div>
           </div>
 
           <div className='absolute bottom-0 left-0 right-0 px-4 pb-6'>
-            <div className='pointer-events-auto bg-black/60 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center gap-3'>
+            <div className='pointer-events-auto bg-blue-7 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center gap-3 rounded-full'>
               <input
                 type='range'
                 min={1}
@@ -265,13 +276,26 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
                 value={pageNumber}
                 onChange={(e) => handleSliderChange(Number(e.target.value))}
                 disabled={!numPages}
-                className='w-full accent-blue-400'
+                className='w-full accent-blue-1'
               />
-              <div className='text-xs text-white/90 min-w-[80px] text-right'>
+              <div className='text-xs text-blue-1 min-w-[80px] font-bold text-right'>
                 {pageNumber} / {numPages || '?'}
               </div>
             </div>
           </div>
+        </div>
+
+        <div className='absolute bottom-4 left-4 pointer-events-auto z-20'>
+          <Button
+            variant='outline'
+            className='!py-2 !px-3 h-[40px]'
+            iconButton={controlsVisible ? 'visibilityOff' : 'visibility'}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleControlsVisibility();
+            }}
+          />
         </div>
       </div>
     </div>
