@@ -2,7 +2,7 @@ import { Button } from '_components/shared';
 import { useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
-import { Book } from '_queries/booksQueries';
+import { Book, useUpdateBookPages } from '_queries/booksQueries';
 
 type PdfViewerProps = {
   onClose: () => void;
@@ -18,9 +18,25 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     bookUrlLoading: loading,
   } = usePdfViewer({ activeBook });
 
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const [numPages, setNumPages] = useState<number | null>(
+    activeBook?.pageCount || null
+  );
+  const [pageNumber, setPageNumber] = useState(activeBook?.pagesRead || 1);
   const [scale, setScale] = useState(1);
+
+  const updatePagesMutation = useUpdateBookPages();
+
+  const handleClose = () => {
+    if (activeBook?._id) {
+      // Update pages read with the current page number, and pageCount if known
+      updatePagesMutation.mutate({
+        bookId: activeBook._id,
+        pagesRead: pageNumber || undefined,
+        pageCount: numPages || undefined,
+      });
+    }
+    onClose();
+  };
 
   return (
     <div className='flex flex-col w-full h-full xw-[95vw] xh-[90vh] xmax-w-[1200px] xmax-h-[90vh]'>
@@ -76,7 +92,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
           <Button
             variant='outline'
             className='!py-1 !px-3 h-[32px]'
-            onClick={onClose}
+            onClick={handleClose}
           >
             Close
           </Button>
@@ -91,7 +107,6 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
             loading={<div className='p-4 text-sm'>Loading PDF…</div>}
             onLoadSuccess={({ numPages: np }) => {
               setNumPages(np);
-              setPageNumber(1);
             }}
             onLoadError={(e) => {
               console.error('Failed to load PDF:', e);

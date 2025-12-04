@@ -80,3 +80,9 @@ export type CompleteUploadRequest = {
   pagesRead?: number;
   pageCount?: number;
 };
+
+export type UpdateBookPagesRequest = {
+  bookId: string;
+  pagesRead?: number;
+  pageCount?: number;
+};

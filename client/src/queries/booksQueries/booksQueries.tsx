@@ -10,6 +10,7 @@ import type {
   CompleteUploadRequest,
   BooksListResponse,
   SignedUrlResponse,
+  UpdateBookPagesRequest,
 } from './booksQueries.types';
 import { BOOKS_QUERY_BASE, BOOK_QUERIES_KEYS } from './booksQueries.keys';
 
@@ -146,6 +147,25 @@ export const useUpdateBookById = () => {
       const res = await axiosInstance.patch<unknown, { data: { data: Book } }>(
         `${BOOKS_QUERY_BASE}/${bookId}`,
         updateData
+      );
+      return res.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['GET_BOOKS'] });
+    },
+  });
+};
+
+export const useUpdateBookPages = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: [BOOK_QUERIES_KEYS.UPDATE_BOOK_PAGES],
+    mutationFn: async ({ bookId, pagesRead }: UpdateBookPagesRequest) => {
+      const res = await axiosInstance.patch<unknown, { data: { data: Book } }>(
+        `${BOOKS_QUERY_BASE}/${bookId}/pages`,
+        {
+          ...(pagesRead !== undefined ? { pagesRead } : {}),
+        }
       );
       return res.data.data;
     },
