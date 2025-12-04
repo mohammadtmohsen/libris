@@ -8,7 +8,13 @@ import {
 import { useUpdateBook } from './useUpdateBook';
 import { Book } from '_queries/booksQueries';
 
-export const UpdateBook = ({ book }: { book: Book }) => {
+export const UpdateBook = ({
+  book,
+  buttonClassName,
+}: {
+  book: Book;
+  buttonClassName?: string;
+}) => {
   const { methods, handleSubmit, isSubmitting, onDeleteBook } =
     useUpdateBook(book);
 
@@ -32,7 +38,7 @@ export const UpdateBook = ({ book }: { book: Book }) => {
         variant='outline'
         iconButton='info'
         onClick={() => uploadModal.open({})}
-        className='absolute top-3 right-3 z-10'
+        className={buttonClassName ?? 'absolute top-3 right-3 z-10'}
       />
       <Modal {...uploadModal} />
     </>
