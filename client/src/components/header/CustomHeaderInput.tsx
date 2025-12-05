@@ -1,4 +1,4 @@
-import { Icon, IconType } from '_components/shared';
+import { Icon } from '_components/shared';
 import clsx from 'clsx';
 
 type CustomHeaderInputProps = {
@@ -8,7 +8,6 @@ type CustomHeaderInputProps = {
   onChange: (value: string) => void;
   onClear: () => void;
   onToggleExpand: () => void;
-  arrowIcon?: IconType;
   showClear?: boolean;
 };
 
@@ -19,7 +18,6 @@ export const CustomHeaderInput = ({
   onChange,
   onClear,
   onToggleExpand,
-  arrowIcon = 'chevronDown',
   showClear = true,
 }: CustomHeaderInputProps) => {
   return (
@@ -33,14 +31,14 @@ export const CustomHeaderInput = ({
       <button
         type='button'
         onClick={onToggleExpand}
-        className='p-0 text-blue-1 transition hover:text-blue-1 focus:outline-none'
+        className={clsx(
+          'p-0 text-blue-1 transition-all duration-300 hover:text-blue-1 outline-none focus-visible:outline-none',
+          isExpanded && 'rotate-180'
+        )}
         aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
+        style={{ outline: 'none', border: 'none' }}
       >
-        <Icon
-          type={isExpanded ? 'chevronUp' : arrowIcon}
-          fontSize='medium'
-          className='text-blue-1'
-        />
+        <Icon type='filterOn' fontSize='medium' className='text-blue-1' />
       </button>
 
       <input
@@ -58,7 +56,7 @@ export const CustomHeaderInput = ({
           className='p-0 text-blue-1 transition hover:text-blue-1 focus:outline-none'
           aria-label='Clear search and filters'
         >
-          <Icon type='clearAll' fontSize='medium' className='text-blue-1' />
+          <Icon type='filterOff' fontSize='medium' className='text-blue-1' />
         </button>
       )}
     </div>

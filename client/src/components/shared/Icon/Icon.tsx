@@ -18,6 +18,8 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
+import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
+import FilterListOffOutlinedIcon from '@mui/icons-material/FilterListOffOutlined';
 
 export type IconType =
   | 'delete'
@@ -38,7 +40,9 @@ export type IconType =
   | 'chevronUp'
   | 'visibility'
   | 'visibilityOff'
-  | 'editNote';
+  | 'editNote'
+  | 'filterOn'
+  | 'filterOff';
 
 interface IconProps {
   type: IconType;
@@ -101,6 +105,10 @@ export const Icon = ({
       return <VisibilityOffOutlinedIcon {...iconProps} />;
     case 'editNote':
       return <EditNoteOutlinedIcon {...iconProps} />;
+    case 'filterOn':
+      return <FilterListOutlinedIcon {...iconProps} />;
+    case 'filterOff':
+      return <FilterListOffOutlinedIcon {...iconProps} />;
     default:
       return null;
   }
