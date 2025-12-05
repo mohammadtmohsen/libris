@@ -17,7 +17,7 @@ import { UploadEditBookForm } from './UploadEditBookForm/UploadEditBookForm';
 import { ProgressBar } from './ProgressBar/ProgressBar';
 import { StatusToggle, StatusToggleOption } from './StatusToggle/StatusToggle';
 import { StatusBadge } from './StatusBadge/StatusBadge';
-
+import { CountBadge } from './CountBadge/CountBadge';
 export {
   CardSkeleton,
   Button,
@@ -38,6 +38,7 @@ export {
   ProgressBar,
   StatusToggle,
   StatusBadge,
+  CountBadge,
 };
 
 export type { ToggleOption, TabOption, DropZoneProps, StatusToggleOption };
