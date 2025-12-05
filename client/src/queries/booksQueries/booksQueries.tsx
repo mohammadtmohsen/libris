@@ -19,17 +19,12 @@ export const useGetBooks = (params?: object) => {
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const endPoint = BOOKS_QUERY_BASE;
-      const res = await axiosInstance.get<unknown, { data: { data: Book[] } }>(
-        endPoint,
-        {
-          params,
-        }
-      );
-      const items = res.data.data || [];
-      return {
-        items,
-        count: items.length,
-      } as BooksListResponse;
+      const res = await axiosInstance.get<BooksListResponse>(endPoint, {
+        params,
+      });
+      const items = res.data?.items ?? [];
+      const count = res.data?.count ?? 0;
+      return { items, count };
     },
   });
   return queryResult;
@@ -41,10 +36,8 @@ export const useGetBookById = (id?: string, enabled = true) => {
     enabled: Boolean(id) && enabled,
     queryFn: async () => {
       if (!id) return null;
-      const res = await axiosInstance.get<unknown, { data: { data: Book } }>(
-        `${BOOKS_QUERY_BASE}/${id}`
-      );
-      return res.data.data;
+      const res = await axiosInstance.get<Book>(`${BOOKS_QUERY_BASE}/${id}`);
+      return res.data;
     },
   });
   return queryResult;
@@ -55,11 +48,11 @@ export const useCompleteUpload = () => {
   return useMutation({
     mutationKey: [BOOK_QUERIES_KEYS.COMPLETE_BOOK_UPLOAD],
     mutationFn: async (payload: CompleteUploadRequest) => {
-      const res = await axiosInstance.post<unknown, { data: { data: Book } }>(
+      const res = await axiosInstance.post<Book>(
         `${BOOKS_QUERY_BASE}/complete`,
         payload
       );
-      return res.data.data;
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -95,11 +88,11 @@ export const useUpdateBookById = () => {
       bookId: string;
       updateData: Partial<Book>;
     }) => {
-      const res = await axiosInstance.patch<unknown, { data: { data: Book } }>(
+      const res = await axiosInstance.patch<Book>(
         `${BOOKS_QUERY_BASE}/${bookId}`,
         updateData
       );
-      return res.data.data;
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

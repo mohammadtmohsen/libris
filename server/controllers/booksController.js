@@ -58,8 +58,47 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     ];
   }
 
-  // Use lean() for plain objects so we can safely enhance the response
-  const books = await Book.find(query).sort({ createdAt: -1 }).lean();
+  const countPipeline = [{ $match: { ...query } }];
+  if (status) {
+    countPipeline.push(
+      {
+        $lookup: {
+          from: 'progresses',
+          let: { bookId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$book', '$$bookId'] },
+                    { $eq: ['$owner', req.user._id] },
+                  ],
+                },
+              },
+            },
+            { $project: { status: 1 } },
+          ],
+          as: 'progresses',
+        },
+      },
+      {
+        $addFields: {
+          progressStatus: {
+            $ifNull: [{ $arrayElemAt: ['$progresses.status', 0] }, 'not_started'],
+          },
+        },
+      },
+      { $match: { progressStatus: status } }
+    );
+  }
+  countPipeline.push({ $count: 'count' });
+
+  const [books, countResult] = await Promise.all([
+    // Use lean() for plain objects so we can safely enhance the response
+    Book.find(query).sort({ createdAt: -1 }).lean(),
+    Book.aggregate(countPipeline),
+  ]);
+  const totalCount = countResult?.[0]?.count ?? 0;
 
   let data = books;
   if (isStorageConfigured() && Array.isArray(books) && books.length > 0) {
@@ -108,7 +147,10 @@ export const getAllBooks = asyncHandler(async (req, res) => {
       )
     : dataWithProgress;
 
-  res.json({ success: true, data: filteredByStatus });
+  res.json({
+    success: true,
+    data: { items: filteredByStatus, count: totalCount },
+  });
 });
 
 export const searchBooks = getAllBooks;

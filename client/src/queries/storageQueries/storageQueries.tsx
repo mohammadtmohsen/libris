@@ -24,11 +24,11 @@ export const useGetBookSignedUrl = ({
     enabled: Boolean(bookId) && enabled,
     queryFn: async () => {
       if (!bookId) return null;
-      const res = await axiosInstance.get<
-        unknown,
-        { data: { data: SignedUrlResponse } }
-      >(`${STORAGE_QUERY_BASE}/${bookId}/url`, { params: { includeCover } });
-      return res.data.data;
+      const res = await axiosInstance.get<SignedUrlResponse>(
+        `${STORAGE_QUERY_BASE}/${bookId}/url`,
+        { params: { includeCover } }
+      );
+      return res.data;
     },
   });
   return queryResult;
@@ -38,11 +38,11 @@ export const usePresignUpload = () => {
   const mutation = useMutation({
     mutationKey: [STORAGE_QUERY_KEYS.PRESIGN_UPLOAD],
     mutationFn: async (payload: PresignUploadRequest) => {
-      const res = await axiosInstance.post<
-        unknown,
-        { data: { data: PresignUploadResponse } }
-      >(`${STORAGE_QUERY_BASE}/presign-upload`, payload);
-      return res.data.data;
+      const res = await axiosInstance.post<PresignUploadResponse>(
+        `${STORAGE_QUERY_BASE}/presign-upload`,
+        payload
+      );
+      return res.data;
     },
   });
   return mutation;

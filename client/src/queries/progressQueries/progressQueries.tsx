@@ -13,11 +13,11 @@ export const useUpsertProgress = () => {
   const mutation = useMutation({
     mutationKey: [PROGRESS_QUERY_KEYS.UPSERT_PROGRESS],
     mutationFn: async ({ bookId, ...update }: ProgressUpdateRequest) => {
-      const res = await axiosInstance.patch<
-        unknown,
-        { data: { data: Progress } }
-      >(`${PROGRESS_QUERY_BASE}/${bookId}`, update);
-      return res.data.data;
+      const res = await axiosInstance.patch<Progress>(
+        `${PROGRESS_QUERY_BASE}/${bookId}`,
+        update
+      );
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

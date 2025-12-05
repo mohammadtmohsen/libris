@@ -39,7 +39,7 @@ export type Book = {
 
 export type BooksListResponse = {
   items: Book[];
-  count?: number;
+  count: number;
 };
 
 export type CompleteUploadRequest = {

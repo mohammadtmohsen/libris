@@ -54,6 +54,12 @@ axiosInstance.interceptors.request.use(
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
+    const payload = response.data;
+    response.data =
+      payload && typeof payload === 'object' && 'data' in payload
+        ? (payload as { data: unknown }).data
+        : payload;
+
     return response;
   },
   async (error: AxiosError) => {
