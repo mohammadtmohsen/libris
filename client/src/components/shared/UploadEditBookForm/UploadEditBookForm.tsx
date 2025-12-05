@@ -117,9 +117,7 @@ export const UploadEditBookForm = ({
                     <div className='text-lg font-semibold leading-tight drop-shadow'>
                       {book?.title}
                     </div>
-                    <div className='text-xs text-white/75'>
-                      {book?.author}
-                    </div>
+                    <div className='text-xs text-white/75'>{book?.author}</div>
                   </div>
                   <div className='rounded-full bg-blue-1/20 px-3 py-1 text-xs text-blue-1 backdrop-blur-[2px]'>
                     View only
@@ -131,36 +129,34 @@ export const UploadEditBookForm = ({
         </div>
 
         <div className='space-y-4 rounded-primary bg-black-2/60 p-5 shadow-inner shadow-black/40 ring-1 ring-blue-1/15'>
-          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-            <Controller
-              name='title'
-              control={methods.control}
-              render={({ field, fieldState }) => (
-                <Input
-                  label='Title'
-                  placeholder='Book title'
-                  dir='rtl'
-                  {...field}
-                  error={fieldState.error?.message}
-                />
-              )}
-              rules={{ required: 'This Field is required ' }}
-            />
-            <Controller
-              name='author'
-              control={methods.control}
-              render={({ field, fieldState }) => (
-                <Input
-                  label='Author'
-                  placeholder='Author name'
-                  dir='rtl'
-                  {...field}
-                  error={fieldState.error?.message}
-                />
-              )}
-              rules={{ required: 'This Field is required ' }}
-            />
-          </div>
+          <Controller
+            name='title'
+            control={methods.control}
+            render={({ field, fieldState }) => (
+              <Input
+                label='Title'
+                placeholder='Book title'
+                dir='rtl'
+                {...field}
+                error={fieldState.error?.message}
+              />
+            )}
+            rules={{ required: 'This Field is required ' }}
+          />
+          <Controller
+            name='author'
+            control={methods.control}
+            render={({ field, fieldState }) => (
+              <Input
+                label='Author'
+                placeholder='Author name'
+                dir='rtl'
+                {...field}
+                error={fieldState.error?.message}
+              />
+            )}
+            rules={{ required: 'This Field is required ' }}
+          />
           <Controller
             name='tags'
             control={methods.control}
