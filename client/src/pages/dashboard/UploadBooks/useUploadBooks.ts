@@ -15,7 +15,6 @@ export const useUploadBooks = () => {
       description: '',
       file: null as File | null,
       tags: [],
-      status: 'not_started',
     },
   });
 
@@ -98,9 +97,7 @@ export const useUploadBooks = () => {
           title: payload.title || payload.file.name.replace(/\.[^.]+$/, ''),
           author: payload.author || undefined,
           description: payload.description || undefined,
-          status: payload.status || 'not_started',
           tags: payload.tags,
-          pagesRead: 0,
           pageCount,
           file: {
             key: pdfPresign.key,

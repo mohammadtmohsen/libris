@@ -3,6 +3,7 @@ import userRoutes from './userRoutes.js';
 import authRoutes from './authRoutes.js';
 import bookRoutes from './bookRoutes.js';
 import storageRoutes from './storageRoutes.js';
+import progressRoutes from './progressRoutes.js';
 const router = Router();
 
 // Health check route
@@ -19,5 +20,6 @@ router.use('/users', userRoutes);
 router.use('/auth', authRoutes);
 router.use('/books', bookRoutes);
 router.use('/storage', storageRoutes);
+router.use('/progress', progressRoutes);
 
 export default router;

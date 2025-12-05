@@ -15,8 +15,11 @@ export type BookCover = {
 };
 
 export type BookProgress = {
-  lastLocation?: string;
-  lastOpenedAt?: string;
+  status: ProgressStatus;
+  pagesRead: number;
+  book?: string;
+  updatedAt?: string;
+  createdAt?: string;
 };
 
 export type Book = {
@@ -26,13 +29,12 @@ export type Book = {
   author?: string;
   description?: string;
   tags?: string[];
-  status: 'not_started' | 'want_to_read' | 'reading' | 'finished' | 'abandoned';
   pageCount?: number;
-  pagesRead?: number;
   createdAt?: string;
   updatedAt?: string;
   file: BookFile;
   cover?: BookCover;
+  progress?: BookProgress;
 };
 
 export type BooksListResponse = {
@@ -45,15 +47,8 @@ export type CompleteUploadRequest = {
   author?: string;
   description?: string;
   tags?: string[];
-  status?: Book['status'];
   file: Book['file'];
   cover?: Book['cover'];
-  pagesRead?: number;
   pageCount?: number;
 };
-
-export type UpdateBookPagesRequest = {
-  bookId: string;
-  pagesRead?: number;
-  pageCount?: number;
-};
+import type { ProgressStatus } from '../progressQueries/progressQueries.types';

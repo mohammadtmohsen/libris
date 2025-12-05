@@ -7,7 +7,6 @@ import {
   deleteBook,
   searchBooks,
   updateBook,
-  updatePages,
 } from '../controllers/booksController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { handleValidationErrors } from '../validators/helpers.js';
@@ -23,9 +22,6 @@ router.post(
   body('description').optional().isString(),
   body('tags').optional().isArray(),
   body('tags.*').optional().isString(),
-  body('status')
-    .optional()
-    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
   body('file.key').isString().notEmpty(),
   body('file.mime').isString().notEmpty(),
   body('file.size').isInt({ min: 1 }).toInt(),
@@ -76,20 +72,8 @@ router.patch(
   body('description').optional().isString(),
   body('tags').optional().isArray(),
   body('tags.*').optional().isString(),
-  body('status')
-    .optional()
-    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
   handleValidationErrors,
   updateBook
-);
-
-router.patch(
-  '/:id/pages',
-  param('id').isMongoId(),
-  body('pagesRead').optional().isInt({ min: 0 }).toInt(),
-  body('pageCount').optional().isInt({ min: 0 }).toInt(),
-  handleValidationErrors,
-  updatePages
 );
 
 router.delete(

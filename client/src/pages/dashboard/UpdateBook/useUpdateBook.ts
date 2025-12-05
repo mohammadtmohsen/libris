@@ -10,7 +10,6 @@ export const useUpdateBook = (book: Book) => {
       description: book.description || '',
       file: null as File | null,
       tags: book.tags || [],
-      status: book.status || 'not_started',
     },
   });
 
@@ -48,7 +47,6 @@ export const useUpdateBook = (book: Book) => {
             title: payload?.title || '',
             author: payload?.author || undefined,
             description: payload.description || undefined,
-            status: payload.status || 'not_started',
             tags: payload.tags,
           },
         });

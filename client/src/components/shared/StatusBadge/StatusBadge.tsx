@@ -1,8 +1,9 @@
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Book, useUpdateBookById } from '_queries/booksQueries';
+import { useUpsertProgress } from '_queries/progressQueries';
+import type { ProgressStatus } from '_queries/progressQueries';
 
-const STATUS_ORDER: Book['status'][] = [
+const STATUS_ORDER: ProgressStatus[] = [
   'not_started',
   'want_to_read',
   'reading',
@@ -11,7 +12,7 @@ const STATUS_ORDER: Book['status'][] = [
 ];
 
 const STATUS_CONFIG: Record<
-  Book['status'],
+  ProgressStatus,
   { label: string; badgeClass: string; dotClass: string }
 > = {
   not_started: {
@@ -42,12 +43,12 @@ const STATUS_CONFIG: Record<
 };
 
 type StatusBadgeProps = {
-  status?: Book['status'];
+  status?: ProgressStatus;
   bookId?: string;
   className?: string;
   condensed?: boolean;
   enableDropdown?: boolean;
-  onStatusChange?: (status: Book['status']) => void;
+  onStatusChange?: (status: ProgressStatus) => void;
 };
 
 export const StatusBadge = ({
@@ -64,8 +65,8 @@ export const StatusBadge = ({
     : 'px-3.5 py-2 text-[11px] gap-2';
   const dotSize = condensed ? 'h-2.5 w-2.5' : 'h-3 w-3';
 
-  const { mutateAsync: updateBook, isPending: isUpdating } =
-    useUpdateBookById();
+  const { mutateAsync: upsertProgress, isPending: isUpdating } =
+    useUpsertProgress();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -86,15 +87,12 @@ export const StatusBadge = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
-  const handleSelect = async (nextStatus: Book['status']) => {
+  const handleSelect = async (nextStatus: ProgressStatus) => {
     if (!canChange || nextStatus === status) return;
     setOpen(false);
     try {
       if (bookId) {
-        await updateBook({
-          bookId,
-          updateData: { status: nextStatus },
-        });
+        await upsertProgress({ bookId, status: nextStatus });
       }
       onStatusChange?.(nextStatus);
     } catch (error) {

@@ -37,18 +37,11 @@ const BookSchema = new Schema(
     author: { type: String },
     description: { type: String },
     tags: [{ type: String }],
-    status: {
-      type: String,
-      enum: ['not_started', 'want_to_read', 'reading', 'finished', 'abandoned'],
-      default: 'not_started',
-      index: true,
-    },
     file: { type: FileSchema, required: true },
     cover: { type: CoverSchema },
     pageCount: { type: Number, default: 0, min: 0 },
-    pagesRead: { type: Number, default: 0, min: 0 },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 const Book = mongoose.models.Book || mongoose.model('Book', BookSchema);

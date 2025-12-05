@@ -48,7 +48,7 @@ export const BookCard = ({
       <div className='relative z-10 flex h-full w-full flex-col justify-between p-4 sm:p-5'>
         <div className='flex items-start justify-between gap-3'>
           <StatusBadge
-            status={book?.status}
+            status={book?.progress?.status}
             bookId={book?._id}
             condensed
             className='shrink-0'
@@ -75,7 +75,7 @@ export const BookCard = ({
         <div className='space-y-3'>
           <div className='flex items-center justify-between text-xs text-white/70'>
             <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
-              {book?.pagesRead || 0} / {book?.pageCount || 0} pages
+              {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
             </span>
             <span className='text-[11px] uppercase tracking-[0.09em] text-white/60'>
               Progress
@@ -83,7 +83,7 @@ export const BookCard = ({
           </div>
           <ProgressBar
             pageCount={book?.pageCount || 0}
-            pagesRead={book?.pagesRead || 0}
+            pagesRead={book?.progress?.pagesRead || 0}
           />
           <div className='flex items-center justify-end'>
             <div

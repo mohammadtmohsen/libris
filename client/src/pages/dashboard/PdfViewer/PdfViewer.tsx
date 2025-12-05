@@ -2,7 +2,8 @@ import { Button, StatusBadge } from '_components/shared';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Document, Page } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
-import { Book, useUpdateBookPages } from '_queries/booksQueries';
+import { Book } from '_queries/booksQueries';
+import { useUpsertProgress } from '_queries/progressQueries';
 import clsx from 'clsx';
 
 type PdfViewerProps = {
@@ -23,7 +24,11 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   const [numPages, setNumPages] = useState<number | null>(
     activeBook?.pageCount || null
   );
-  const [pageNumber, setPageNumber] = useState(activeBook?.pagesRead || 1);
+  const [pageNumber, setPageNumber] = useState(
+    activeBook?.progress?.pagesRead && activeBook.progress.pagesRead > 0
+      ? activeBook.progress.pagesRead
+      : 1
+  );
   const [scale, setScale] = useState(1);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [manualHidden, setManualHidden] = useState(false);
@@ -35,13 +40,22 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     null
   );
 
-  const updatePagesMutation = useUpdateBookPages();
+  const updateProgressMutation = useUpsertProgress();
 
   const clearHideTimer = () => {
     if (hideControlsTimeout.current) {
       clearTimeout(hideControlsTimeout.current);
     }
   };
+
+  useEffect(() => {
+    setPageNumber(
+      activeBook?.progress?.pagesRead && activeBook.progress.pagesRead > 0
+        ? activeBook.progress.pagesRead
+        : 1
+    );
+    setNumPages(activeBook?.pageCount || null);
+  }, [activeBook?._id, activeBook?.progress?.pagesRead, activeBook?.pageCount]);
 
   const showControls = (options?: { respectManual?: boolean }) => {
     const respectManual = options?.respectManual ?? true;
@@ -93,15 +107,15 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   const handleClose = () => {
     if (
       activeBook?._id &&
-      activeBook.pagesRead !== pageNumber &&
+      activeBook.progress?.pagesRead !== pageNumber &&
       pageNumber > 0 &&
-      activeBook?.status === 'reading'
+      activeBook.progress?.status === 'reading'
     ) {
-      // Update pages read with the current page number, and pageCount if known
-      updatePagesMutation.mutate({
+      // Update pages read with the current page number
+      updateProgressMutation.mutate({
         bookId: activeBook._id,
         pagesRead: pageNumber || undefined,
-        pageCount: numPages || undefined,
+        status: activeBook.progress?.status,
       });
     }
     onClose();
@@ -215,7 +229,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
               )}
             >
               <StatusBadge
-                status={activeBook?.status}
+                status={activeBook?.progress?.status}
                 bookId={activeBook?._id}
                 condensed
                 enableDropdown={false}
