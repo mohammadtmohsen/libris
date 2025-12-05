@@ -42,7 +42,7 @@ router.post(
   body('tags.*').optional().isString(),
   body('status')
     .optional()
-    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
+    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
   body('visibility').optional().isIn(['private', 'public']),
   body('file.key').isString().notEmpty(),
   body('file.mime').isString().notEmpty(),
@@ -62,7 +62,7 @@ router.get(
   '/',
   query('status')
     .optional()
-    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
+    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
   query('tag').optional().isString(),
   query('search').optional().isString(),
   handleValidationErrors,
@@ -74,7 +74,7 @@ router.get(
   query('search').optional().isString(),
   query('status')
     .optional()
-    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
+    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
   handleValidationErrors,
   searchBooks
 );
@@ -119,7 +119,7 @@ router.patch(
   body('tags.*').optional().isString(),
   body('status')
     .optional()
-    .isIn(['not_started', 'reading', 'finished', 'abandoned']),
+    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
   body('visibility').optional().isIn(['private', 'public']),
   handleValidationErrors,
   updateBook

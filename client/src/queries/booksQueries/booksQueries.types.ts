@@ -26,7 +26,7 @@ export type Book = {
   author?: string;
   description?: string;
   tags?: string[];
-  status: 'not_started' | 'reading' | 'finished' | 'abandoned';
+  status: 'not_started' | 'want_to_read' | 'reading' | 'finished' | 'abandoned';
   visibility: 'private' | 'public';
   pageCount?: number;
   pagesRead?: number;

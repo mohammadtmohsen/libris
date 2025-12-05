@@ -77,7 +77,6 @@ export const BookCard = ({
           <ProgressBar
             pageCount={book?.pageCount || 0}
             pagesRead={book?.pagesRead || 0}
-            className='bg-white/70 backdrop-blur-sm border border-white/10'
           />
           <div className='flex items-center justify-end'>
             <div

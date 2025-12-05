@@ -15,7 +15,10 @@ export type DropZoneProps = {
 const formatBytes = (bytes?: number) => {
   if (!bytes) return '';
   const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), sizes.length - 1);
+  const i = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)),
+    sizes.length - 1
+  );
   const value = bytes / 1024 ** i;
   return `${value.toFixed(value >= 10 ? 0 : 1)} ${sizes[i]}`;
 };
@@ -101,12 +104,20 @@ export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
             </div>
             <div className='flex flex-col gap-1 text-sm'>
               <div className='font-semibold leading-tight text-white'>
-                {currentFile ? 'Ready to upload' : 'Drop your PDF or click to browse'}
+                {currentFile
+                  ? 'Ready to upload'
+                  : 'Drop your PDF or click to browse'}
               </div>
               <div className='text-xs text-white/70 leading-snug line-clamp-2'>
                 {currentFile
-                  ? `${currentFile.name}${currentFile.size ? ` · ${formatBytes(currentFile.size)}` : ''}`
-                  : `We accept ${accept || 'files'}. We’ll auto-name using the file title.`}
+                  ? `${currentFile.name}${
+                      currentFile.size
+                        ? ` · ${formatBytes(currentFile.size)}`
+                        : ''
+                    }`
+                  : `We accept ${
+                      accept || 'files'
+                    }. We’ll auto-name using the file title.`}
               </div>
             </div>
           </div>

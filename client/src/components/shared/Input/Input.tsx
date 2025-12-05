@@ -30,7 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={clsx('w-full', containerClass)}>
         {label && (
-          <label className='block text-sm font-medium mb-1 text-white-1 text-left'>
+          <label className='mb-1 block text-left text-sm font-medium text-white-1'>
             {label}
           </label>
         )}
@@ -39,20 +39,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...field}
           ref={ref}
           className={clsx(
-            'w-full px-4 py-3 rounded-primary border-2 text-sm transition-colors',
-            'bg-black-5 text-white-1 placeholder-white-4',
-            'focus:outline-none focus:ring-0 focus:border-blue-1',
-            'disabled:opacity-50 disabled:cursor-not-allowed h-[40px]',
+            'h-[44px] w-full rounded-primary border border-transparent px-4 py-3 text-sm transition-all',
+            'bg-black-3/70 text-white placeholder-white/60 ring-1 ring-blue-1/15 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-[2px]',
+            'focus:outline-none focus:ring-2 focus:ring-blue-1 focus:ring-offset-0 focus:border-blue-1/60',
+            'hover:ring-blue-1/30',
+            'disabled:cursor-not-allowed disabled:opacity-50',
             error
-              ? 'border-red-1 hover:border-red-1 focus:border-red-1'
-              : 'border-white-2 hover:border-white-1',
+              ? 'ring-red-1/60 focus:ring-red-1 focus:border-red-1/70'
+              : 'ring-blue-1/15',
             className
           )}
           type={type}
           onChange={handleChange}
         />
 
-        {error && <p className='text-red-1 text-sm mt-1'>{error}</p>}
+        {error && <p className='mt-1 text-sm text-red-1'>{error}</p>}
       </div>
     );
   }

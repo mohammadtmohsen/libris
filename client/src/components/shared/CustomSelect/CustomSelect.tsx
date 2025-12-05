@@ -108,7 +108,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
   return (
     <div className={clsx('w-full', containerClass)}>
       {label && (
-        <label className='block text-sm font-medium mb-1 text-left'>
+        <label className='mb-1 block text-left text-sm font-medium text-white/90'>
           {label}
         </label>
       )}
@@ -120,23 +120,31 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
           control: (base, { isFocused }) => ({
             ...base,
             direction: dir,
-            minHeight: '40px',
-            backgroundColor: colors.black[5],
-            borderColor: isFocused ? colors.blue[1] : colors.white[2],
-            borderWidth: '2px',
-            borderRadius: '8px',
-            boxShadow: 'none',
+            minHeight: '44px',
+            backgroundColor: 'rgba(34,34,34,0.85)',
+            borderColor: error
+              ? colors.red[1]
+              : isFocused
+              ? colors.blue[1]
+              : colors.blue[1] + '33',
+            borderWidth: '1px',
+            borderRadius: 12,
+            boxShadow: isFocused
+              ? `0 0 0 2px ${colors.blue[1]}55`
+              : '0 8px 30px rgba(0,0,0,0.25)',
+            backdropFilter: 'blur(6px)',
             '&:hover': {
-              borderColor: isFocused ? colors.blue[1] : colors.white[1],
+              borderColor: error ? colors.red[1] : colors.blue[1],
             },
           }),
           menu: (base) => ({
             ...base,
             direction: dir,
-            backgroundColor: colors.black[5],
-            border: `2px solid ${colors.blue[1]}`,
-            borderRadius: '10px',
+            backgroundColor: 'rgba(20,22,28,0.95)',
+            border: `1px solid ${colors.blue[1]}33`,
+            borderRadius: 14,
             overflow: 'hidden',
+            backdropFilter: 'blur(6px)',
             zIndex: 9999, // Ensure menu is above other elements
             position: 'absolute',
             width: '100%',
@@ -148,20 +156,21 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
           menuList: (base) => ({
             ...base,
             maxHeight: '300px', // Set a reasonable max height
-            paddingTop: '5px',
-            paddingBottom: '5px',
+            paddingTop: '6px',
+            paddingBottom: '6px',
           }),
           option: (base, { isFocused, isSelected }) => ({
             ...base,
             backgroundColor: isSelected
-              ? colors.blue[3]
+              ? colors.blue[1] + '33'
               : isFocused
-              ? colors.blue[7]
+              ? colors.blue[1] + '22'
               : 'transparent',
             color: colors.white[1],
+            borderRadius: 10,
             textAlign: isRtl ? 'right' : 'left',
             '&:active': {
-              backgroundColor: colors.blue[3],
+              backgroundColor: colors.blue[1] + '44',
             },
           }),
           placeholder: (base) => ({
@@ -176,7 +185,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
           }),
           indicatorSeparator: (base) => ({
             ...base,
-            backgroundColor: colors.white[4],
+            backgroundColor: colors.white[4] + '80',
           }),
           dropdownIndicator: (base, { isFocused }) => ({
             ...base,
@@ -192,12 +201,15 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
           }),
           multiValue: (base) => ({
             ...base,
-            backgroundColor: colors.blue[1],
-            borderRadius: '4px',
+            backgroundColor: colors.blue[1] + '26',
+            borderRadius: 8,
+            border: `1px solid ${colors.blue[1]}55`,
           }),
           multiValueLabel: (base) => ({
             ...base,
             color: colors.white[1],
+            paddingRight: 6,
+            paddingLeft: 8,
           }),
           multiValueRemove: (base) => ({
             ...base,
@@ -222,7 +234,7 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
         {...rest}
       />
 
-      {error && <p className='text-red-600 text-sm mt-1'>{error}</p>}
+      {error && <p className='mt-1 text-sm text-red-1'>{error}</p>}
     </div>
   );
 });

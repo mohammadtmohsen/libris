@@ -15,6 +15,7 @@ import { DropZoneProps, DropZone } from './DropZone/DropZone';
 import { BookCard } from './BookCard/BookCard';
 import { UploadEditBookForm } from './UploadEditBookForm/UploadEditBookForm';
 import { ProgressBar } from './ProgressBar/ProgressBar';
+import { StatusToggle, StatusToggleOption } from './StatusToggle/StatusToggle';
 
 export {
   CardSkeleton,
@@ -34,6 +35,7 @@ export {
   BookCard,
   UploadEditBookForm,
   ProgressBar,
+  StatusToggle,
 };
 
-export type { ToggleOption, TabOption, DropZoneProps };
+export type { ToggleOption, TabOption, DropZoneProps, StatusToggleOption };

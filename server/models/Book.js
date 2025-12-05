@@ -39,7 +39,7 @@ const BookSchema = new Schema(
     tags: [{ type: String }],
     status: {
       type: String,
-      enum: ['not_started', 'reading', 'finished', 'abandoned'],
+      enum: ['not_started', 'want_to_read', 'reading', 'finished', 'abandoned'],
       default: 'not_started',
       index: true,
     },

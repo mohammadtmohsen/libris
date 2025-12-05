@@ -5,6 +5,7 @@ import { Button } from '../Button/Button';
 import { Book } from '_queries/booksQueries';
 import { CustomSelect } from '../CustomSelect/CustomSelect';
 import { ARABIC_BOOK_TAGS, READING_STATUSES } from '_constants/filtersOptions';
+import { StatusToggle } from '../StatusToggle/StatusToggle';
 
 export type UploadEditBookFormPayload = {
   title: string;
@@ -35,6 +36,26 @@ export const UploadEditBookForm = ({
   onDelete?: (next: () => void) => Promise<void>;
 }) => {
   const coverUrl = book?.cover?.coverUrl;
+  const statusOptions: {
+    value: string;
+    label: string;
+    description?: string;
+  }[] = READING_STATUSES.map((status) => {
+    switch (status.value) {
+      case 'want_to_read':
+        return { ...status, description: 'Queued to start' };
+      case 'not_started':
+        return { ...status, description: 'Queued for later' };
+      case 'reading':
+        return { ...status, description: 'In progress' };
+      case 'finished':
+        return { ...status, description: 'Completed' };
+      case 'abandoned':
+        return { ...status, description: 'Stopped' };
+      default:
+        return status;
+    }
+  });
 
   return (
     <form
@@ -177,10 +198,9 @@ export const UploadEditBookForm = ({
             name='status'
             control={methods.control}
             render={({ field, fieldState }) => (
-              <CustomSelect
-                options={READING_STATUSES}
-                placeholder='Select reading status'
+              <StatusToggle
                 label='Reading Status'
+                options={statusOptions}
                 value={field.value}
                 onChange={field.onChange}
                 error={fieldState.error?.message}

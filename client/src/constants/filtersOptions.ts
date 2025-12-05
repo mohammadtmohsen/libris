@@ -175,6 +175,7 @@ export const ARABIC_BOOK_TAGS = [
 
 export const READING_STATUSES = [
   { value: 'not_started', label: 'Not Started' },
+  { value: 'want_to_read', label: 'Want to Read' },
   { value: 'reading', label: 'Reading' },
   { value: 'finished', label: 'Finished' },
   { value: 'abandoned', label: 'Abandoned' },
