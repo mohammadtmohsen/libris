@@ -8,6 +8,30 @@ import {
 } from '../services/storage/bookStorage.js';
 
 const bookStorage = getBookStorage();
+export const READING_STATUS_VALUES = [
+  'not_started',
+  'want_to_read',
+  'reading',
+  'finished',
+  'abandoned',
+];
+
+const parseArrayQuery = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .filter((v) => typeof v === 'string')
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
 
 export const completeUpload = asyncHandler(async (req, res) => {
   const {
@@ -48,18 +72,26 @@ export const completeUpload = asyncHandler(async (req, res) => {
 });
 
 export const getAllBooks = asyncHandler(async (req, res) => {
-  const { status, tag, search } = req.query;
+  const { search } = req.query;
+  const searchTerm = typeof search === 'string' ? search.trim() : '';
+  const statusFilter = parseArrayQuery(req.query.status).filter((s) =>
+    READING_STATUS_VALUES.includes(s)
+  );
+  const tagFilters = [
+    ...parseArrayQuery(req.query.tag),
+    ...parseArrayQuery(req.query.tags),
+  ];
   const query = { owner: req.user._id };
-  if (tag) query.tags = tag;
-  if (search) {
+  if (tagFilters.length > 0) query.tags = { $in: tagFilters };
+  if (searchTerm) {
     query.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { author: { $regex: search, $options: 'i' } },
+      { title: { $regex: searchTerm, $options: 'i' } },
+      { author: { $regex: searchTerm, $options: 'i' } },
     ];
   }
 
   const countPipeline = [{ $match: { ...query } }];
-  if (status) {
+  if (statusFilter.length > 0) {
     countPipeline.push(
       {
         $lookup: {
@@ -88,7 +120,7 @@ export const getAllBooks = asyncHandler(async (req, res) => {
           },
         },
       },
-      { $match: { progressStatus: status } }
+      { $match: { progressStatus: { $in: statusFilter } } }
     );
   }
   countPipeline.push({ $count: 'count' });
@@ -141,11 +173,12 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     return progress ? { ...b, progress } : b;
   });
 
-  const filteredByStatus = status
-    ? dataWithProgress.filter(
-        (b) => (b.progress?.status || 'not_started') === status
-      )
-    : dataWithProgress;
+  const filteredByStatus =
+    statusFilter.length > 0
+      ? dataWithProgress.filter((b) =>
+          statusFilter.includes(b.progress?.status || 'not_started')
+        )
+      : dataWithProgress;
 
   res.json({
     success: true,

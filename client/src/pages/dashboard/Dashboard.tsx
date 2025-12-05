@@ -1,16 +1,35 @@
-import { Books } from './Books/Books';
+import { useState } from 'react';
 import clsx from 'clsx';
+import { Books } from './Books/Books';
 import { useMainHook } from './useMainHook';
 import { Header } from '_components/header';
 import { CountBadge } from '_components/shared';
+import type { BookFilters } from '_queries/booksQueries';
+
+const cleanFilters = (next?: BookFilters): BookFilters => ({
+  search: next?.search ?? '',
+  status: [...(next?.status ?? [])],
+  tags: [...(next?.tags ?? [])],
+});
 
 export const Dashboard = () => {
-  const { books, count, isFetching } = useMainHook();
+  const [filters, setFilters] = useState<BookFilters>(cleanFilters());
+  const { books, count, isFetching } = useMainHook(filters);
+
+  const handleApplyFilters = (nextFilters: BookFilters) => {
+    setFilters(cleanFilters(nextFilters));
+  };
+
+  const handleResetFilters = () => setFilters(cleanFilters());
 
   return (
     <main className='flex gap-4 h-screen max-h-screen m-3 sm:m-4'>
       <div className='relative flex flex-col gap-4 grow mb-4 overflow-hidden'>
-        <Header />
+        <Header
+          filters={filters}
+          onFilterChange={handleApplyFilters}
+          onResetFilters={handleResetFilters}
+        />
         <div className={clsx('flex-1 overflow-auto', 'p-0 ', '')}>
           <Books books={books} isFetching={isFetching} />
           <CountBadge isFetching={isFetching} count={count} />

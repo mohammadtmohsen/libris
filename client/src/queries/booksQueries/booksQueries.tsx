@@ -10,10 +10,11 @@ import type {
   Book,
   CompleteUploadRequest,
   BooksListResponse,
+  BookFilters,
 } from './booksQueries.types';
 import { BOOKS_QUERY_BASE, BOOK_QUERIES_KEYS } from './booksQueries.keys';
 
-export const useGetBooks = (params?: object) => {
+export const useGetBooks = (params?: BookFilters) => {
   const queryResult = useQuery({
     queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS, params],
     placeholderData: keepPreviousData,

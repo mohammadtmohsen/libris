@@ -1,3 +1,5 @@
+import type { ProgressStatus } from '../progressQueries/progressQueries.types';
+
 export type BookFile = {
   key: string;
   mime: string;
@@ -51,4 +53,9 @@ export type CompleteUploadRequest = {
   cover?: Book['cover'];
   pageCount?: number;
 };
-import type { ProgressStatus } from '../progressQueries/progressQueries.types';
+
+export type BookFilters = {
+  search?: string;
+  status?: ProgressStatus[];
+  tags?: string[];
+};

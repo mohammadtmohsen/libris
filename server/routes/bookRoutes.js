@@ -7,6 +7,7 @@ import {
   deleteBook,
   searchBooks,
   updateBook,
+  READING_STATUS_VALUES,
 } from '../controllers/booksController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { handleValidationErrors } from '../validators/helpers.js';
@@ -40,7 +41,24 @@ router.get(
   '/',
   query('status')
     .optional()
-    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
+    .custom((value) => {
+      const statuses = Array.isArray(value) ? value : [value];
+      const isValid = statuses.every((s) => READING_STATUS_VALUES.includes(s));
+      if (!isValid) {
+        throw new Error('Invalid status value');
+      }
+      return true;
+    }),
+  query('tags').optional().custom((value) => {
+    if (Array.isArray(value)) {
+      const allStrings = value.every((tag) => typeof tag === 'string');
+      if (!allStrings) throw new Error('Tags must be strings');
+      return true;
+    }
+    if (typeof value === 'string') return true;
+    throw new Error('Invalid tags value');
+  }),
+  query('tags.*').optional().isString(),
   query('tag').optional().isString(),
   query('search').optional().isString(),
   handleValidationErrors,
@@ -52,7 +70,14 @@ router.get(
   query('search').optional().isString(),
   query('status')
     .optional()
-    .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
+    .custom((value) => {
+      const statuses = Array.isArray(value) ? value : [value];
+      const isValid = statuses.every((s) => READING_STATUS_VALUES.includes(s));
+      if (!isValid) {
+        throw new Error('Invalid status value');
+      }
+      return true;
+    }),
   handleValidationErrors,
   searchBooks
 );

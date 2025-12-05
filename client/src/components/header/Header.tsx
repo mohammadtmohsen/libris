@@ -5,8 +5,17 @@ import authServices from '_services/authServices/authServices';
 import { getInitialsFromName } from '_utils/helper';
 import { UploadBook } from '_pages/dashboard/UploadBooks/UploadBooks';
 import { FilterBooks } from './FilterBooks/FilterBooks';
+import type { BookFilters } from '_queries/booksQueries';
 
-export const Header = () => {
+export const Header = ({
+  filters,
+  onFilterChange,
+  onResetFilters,
+}: {
+  filters: BookFilters;
+  onFilterChange: (filters: BookFilters) => void;
+  onResetFilters: () => void;
+}) => {
   const { loggingData, logoutUser } = useStore();
   const displayName = loggingData?.displayName;
 
@@ -27,7 +36,11 @@ export const Header = () => {
           <img src={logos.librisLogo} className='w-24 h-24 shrink-0' />
         </div>
         <div className='flex items-center gap-3'>
-          <FilterBooks />
+          <FilterBooks
+            filters={filters}
+            onApplyFilters={onFilterChange}
+            onResetFilters={onResetFilters}
+          />
           <UploadBook />
           <h1 className='font-black text-right'>
             {getInitialsFromName(displayName)}
