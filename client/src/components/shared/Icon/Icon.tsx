@@ -13,6 +13,8 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
@@ -32,6 +34,8 @@ export type IconType =
   | 'kg'
   | 'plates'
   | 'filter'
+  | 'chevronDown'
+  | 'chevronUp'
   | 'visibility'
   | 'visibilityOff'
   | 'editNote';
@@ -87,6 +91,10 @@ export const Icon = ({
       return <ViewHeadlineIcon {...iconProps} />;
     case 'filter':
       return <FilterAltOutlinedIcon {...iconProps} />;
+    case 'chevronDown':
+      return <ExpandMoreIcon {...iconProps} />;
+    case 'chevronUp':
+      return <ExpandLessIcon {...iconProps} />;
     case 'visibility':
       return <VisibilityOutlinedIcon {...iconProps} />;
     case 'visibilityOff':

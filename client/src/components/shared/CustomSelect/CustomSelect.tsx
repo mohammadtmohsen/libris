@@ -121,20 +121,23 @@ export const CustomSelect = React.forwardRef(function CustomSelect<
             ...base,
             direction: dir,
             minHeight: '44px',
-            backgroundColor: 'rgba(34,34,34,0.85)',
-            borderColor: error
-              ? colors.red[1]
-              : isFocused
-              ? colors.blue[1]
-              : colors.blue[1] + '33',
-            borderWidth: '1px',
-            borderRadius: 12,
-            boxShadow: isFocused
-              ? `0 0 0 2px ${colors.blue[1]}55`
-              : '0 8px 30px rgba(0,0,0,0.25)',
-            backdropFilter: 'blur(6px)',
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderBottom: `1px solid ${
+              error
+                ? colors.red[1]
+                : isFocused
+                ? colors.blue[1]
+                : colors.blue[1] + '26'
+            }`,
+            borderRadius: 0,
+            boxShadow: 'none',
             '&:hover': {
-              borderColor: error ? colors.red[1] : colors.blue[1],
+              borderBottomColor: error
+                ? colors.red[1]
+                : isFocused
+                ? colors.blue[1]
+                : colors.blue[1] + '26',
             },
           }),
           menu: (base) => ({

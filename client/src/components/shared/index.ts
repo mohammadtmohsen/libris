@@ -7,7 +7,7 @@ import { Modal } from './Modal/Modal';
 import { Table } from './Table/Table';
 import { CustomSelect } from './CustomSelect/CustomSelect';
 import { useModal } from './Modal/useModal';
-import { Icon } from './Icon/Icon';
+import { Icon, IconType } from './Icon/Icon';
 import { Loader } from './Loader/Loader';
 import { ButtonToggleGroup, ToggleOption } from './ButtonToggleGroup';
 import { Tabs, TabOption } from './Tabs';
@@ -41,4 +41,10 @@ export {
   CountBadge,
 };
 
-export type { ToggleOption, TabOption, DropZoneProps, StatusToggleOption };
+export type {
+  ToggleOption,
+  TabOption,
+  DropZoneProps,
+  StatusToggleOption,
+  IconType,
+};

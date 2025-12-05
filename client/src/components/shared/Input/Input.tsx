@@ -39,14 +39,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...field}
           ref={ref}
           className={clsx(
-            'h-[44px] w-full rounded-primary border border-transparent px-4 py-3 text-sm transition-all',
-            'bg-black-3/70 text-white placeholder-white/60 ring-1 ring-blue-1/15 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-[2px]',
-            'focus:outline-none focus:ring-2 focus:ring-blue-1 focus:ring-offset-0 focus:border-blue-1/60',
-            'hover:ring-blue-1/30',
+            'h-[44px] w-full px-4 py-3 text-sm transition-colors',
+            'bg-black-3/70 text-white placeholder-white/60 backdrop-blur-[2px]',
+            'border-0 border-b border-blue-1/15 rounded-none shadow-none',
+            'focus:outline-none focus:border-blue-1',
+            'hover:border-blue-1/30',
             'disabled:cursor-not-allowed disabled:opacity-50',
             error
-              ? 'ring-red-1/60 focus:ring-red-1 focus:border-red-1/70'
-              : 'ring-blue-1/15',
+              ? 'border-red-1/60 focus:border-red-1'
+              : 'border-blue-1/15',
             className
           )}
           type={type}

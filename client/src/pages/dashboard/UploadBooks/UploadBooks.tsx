@@ -7,7 +7,7 @@ import {
 
 import { useUploadBooks } from './useUploadBooks';
 
-export const UploadBook = () => {
+export const UploadBook = ({ onOpen }: { onOpen?: () => void }) => {
   const { methods, handleSubmit, isSubmitting, onClose } = useUploadBooks();
 
   const uploadModal = useModal({
@@ -24,13 +24,14 @@ export const UploadBook = () => {
     ),
   });
 
+  const handleOpen = () => {
+    onOpen?.();
+    uploadModal.open({});
+  };
+
   return (
     <>
-      <Button
-        variant='outline'
-        iconButton='add'
-        onClick={() => uploadModal.open({})}
-      />
+      <Button variant='outline' iconButton='add' onClick={handleOpen} />
       <Modal {...uploadModal} />
     </>
   );

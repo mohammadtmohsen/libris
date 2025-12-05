@@ -66,7 +66,7 @@ export const Modal = ({
       <DialogContent
         classes={{
           root: clsx(
-            '!bg-black-3 !p-3 sm:!p-5 xrounded-secondary text-white-1',
+            '!bg-black-3 !p-0 sm:!p-0 rounded-secondary text-white-1',
             overrideStyle
           ),
         }}
