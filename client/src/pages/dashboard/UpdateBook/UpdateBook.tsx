@@ -36,7 +36,7 @@ export const UpdateBook = ({
     <>
       <Button
         variant='outline'
-        iconButton='info'
+        iconButton='editNote'
         onClick={() => uploadModal.open({})}
         className={buttonClassName ?? 'absolute top-3 right-3 z-10'}
       />

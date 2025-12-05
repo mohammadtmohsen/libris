@@ -133,7 +133,7 @@ export const StatusBadge = ({
             isUpdating && 'animate-pulse'
           )}
         />
-        <span className='leading-none'>{config.label}</span>
+        <span className='leading-none whitespace-nowrap'>{config.label}</span>
       </button>
 
       {canChange && (

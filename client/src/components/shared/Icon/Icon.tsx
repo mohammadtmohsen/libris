@@ -15,6 +15,7 @@ import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
 
 export type IconType =
   | 'delete'
@@ -32,7 +33,8 @@ export type IconType =
   | 'plates'
   | 'filter'
   | 'visibility'
-  | 'visibilityOff';
+  | 'visibilityOff'
+  | 'editNote';
 
 interface IconProps {
   type: IconType;
@@ -89,6 +91,8 @@ export const Icon = ({
       return <VisibilityOutlinedIcon {...iconProps} />;
     case 'visibilityOff':
       return <VisibilityOffOutlinedIcon {...iconProps} />;
+    case 'editNote':
+      return <EditNoteOutlinedIcon {...iconProps} />;
     default:
       return null;
   }

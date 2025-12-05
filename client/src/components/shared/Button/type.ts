@@ -11,7 +11,8 @@ export type ButtonPropsType = ButtonHTMLAttributes<HTMLButtonElement> & {
     | 'secondaryOutline'
     | 'danger'
     | 'dangerOutline'
-    | 'outline';
+    | 'outline'
+    | 'neutral';
   style?: CSSProperties;
   leftIcon?: IconType;
   rightIcon?: IconType;

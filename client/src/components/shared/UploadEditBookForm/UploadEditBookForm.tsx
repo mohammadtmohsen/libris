@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { Controller, UseFormReturn } from 'react-hook-form';
 import { DropZone } from '../DropZone/DropZone';
 import { Input } from '../Input/Input';
@@ -223,28 +224,42 @@ export const UploadEditBookForm = ({
         </div>
       </div>
 
-      <div className='flex justify-end gap-3'>
-        <Button
-          type='button'
-          variant='outline'
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button type='submit' disabled={isSubmitting} loading={isSubmitting}>
-          {isEdit ? 'Save' : 'Upload'}
-        </Button>
+      <div
+        className={clsx(
+          'flex flex-col gap-3 rounded-primary bg-black-2/60 p-4 shadow-[0_12px_35px_rgba(0,0,0,0.28)] ring-1 ring-blue-1/12 backdrop-blur-[2px] sm:flex-row sm:items-center',
+          isEdit && onDelete ? 'sm:justify-between' : 'sm:justify-end'
+        )}
+      >
         {isEdit && onDelete && (
           <Button
             type='button'
+            variant='dangerOutline'
             onClick={() => onDelete(onCancel)}
             disabled={isSubmitting}
             loading={isSubmitting}
+            className='w-full sm:w-auto'
           >
             Delete
           </Button>
         )}
+        <div className='flex flex-wrap justify-end gap-3 sm:justify-end'>
+          <Button
+            type='button'
+            variant='neutral'
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type='submit'
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            className='min-w-[110px]'
+          >
+            {isEdit ? 'Save' : 'Upload'}
+          </Button>
+        </div>
       </div>
     </form>
   );
