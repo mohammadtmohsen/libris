@@ -24,7 +24,7 @@ export const Books = ({
 
   return (
     <div className='flex flex-col gap-5'>
-      <div className='grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 sm:gap-6 overflow-auto x!h-[calc(100vh-170px)] xbg-black-5'>
+      <div className='grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 sm:gap-4 overflow-auto x!h-[calc(100vh-170px)] xbg-black-5'>
         <CardSkeleton loading={isFetching} count={1} rows={12} />
         {!isFetching &&
           books.map((book: Book) => {
