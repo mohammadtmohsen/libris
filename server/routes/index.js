@@ -2,6 +2,7 @@ import { Router } from 'express';
 import userRoutes from './userRoutes.js';
 import authRoutes from './authRoutes.js';
 import bookRoutes from './bookRoutes.js';
+import storageRoutes from './storageRoutes.js';
 const router = Router();
 
 // Health check route
@@ -17,5 +18,6 @@ router.get('/', (req, res) => {
 router.use('/users', userRoutes);
 router.use('/auth', authRoutes);
 router.use('/books', bookRoutes);
+router.use('/storage', storageRoutes);
 
 export default router;

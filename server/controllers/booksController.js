@@ -1,58 +1,12 @@
 import asyncHandler from 'express-async-handler';
-import path from 'path';
-import { randomUUID } from 'crypto';
 import Book from '../models/Book.js';
 import {
-  createReadUrl,
-  createUploadUrl,
-  deleteObject,
-  isR2Configured,
-} from '../services/r2Client.js';
+  DEFAULT_BOOK_URL_TTL_SECONDS,
+  getBookStorage,
+  isStorageConfigured,
+} from '../services/storage/bookStorage.js';
 
-const DEFAULT_URL_TTL_SECONDS = 3600; // 60 minutes
-const MAX_URL_TTL_SECONDS = 7200; // 2 hours cap to limit signed URL churn
-
-export const getServiceStatus = asyncHandler(async (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      configured: isR2Configured(),
-    },
-    message: isR2Configured()
-      ? 'Cloudflare R2 configured for book and cover storage'
-      : 'Cloudflare R2 is not fully configured',
-  });
-});
-
-export const presignUpload = asyncHandler(async (req, res) => {
-  if (!isR2Configured()) {
-    return res
-      .status(503)
-      .json({ success: false, error: 'Storage not configured' });
-  }
-
-  const { fileName, mimeType, isCover = false, contentLength } = req.body;
-  const ext = fileName ? path.extname(fileName) : '';
-  const folder = isCover ? 'covers' : 'books';
-  const key = `${folder}/${req.user._id}/${randomUUID()}${ext}`;
-
-  const uploadUrl = await createUploadUrl({
-    key,
-    contentType: mimeType,
-    contentLength,
-    expiresIn: DEFAULT_URL_TTL_SECONDS,
-  });
-
-  res.json({
-    success: true,
-    data: {
-      key,
-      uploadUrl,
-      expiresIn: DEFAULT_URL_TTL_SECONDS,
-      headers: { 'Content-Type': mimeType },
-    },
-  });
-});
+const bookStorage = getBookStorage();
 
 export const completeUpload = asyncHandler(async (req, res) => {
   const {
@@ -111,14 +65,14 @@ export const getAllBooks = asyncHandler(async (req, res) => {
   const books = await Book.find(query).sort({ updatedAt: -1 }).lean();
 
   let data = books;
-  if (isR2Configured() && Array.isArray(books) && books.length > 0) {
+  if (isStorageConfigured() && Array.isArray(books) && books.length > 0) {
     data = await Promise.all(
       books.map(async (b) => {
         if (b?.cover?.key) {
           try {
-            const coverUrl = await createReadUrl({
+            const coverUrl = await bookStorage.getReadUrl({
               key: b.cover.key,
-              expiresIn: DEFAULT_URL_TTL_SECONDS,
+              expiresIn: DEFAULT_BOOK_URL_TTL_SECONDS,
             });
             return { ...b, cover: { ...b.cover, coverUrl } };
           } catch (_err) {
@@ -142,106 +96,6 @@ export const getBookById = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, error: 'Book not found' });
   }
   res.json({ success: true, data: book });
-});
-
-export const getSignedUrlForBook = asyncHandler(async (req, res) => {
-  if (!isR2Configured()) {
-    return res
-      .status(503)
-      .json({ success: false, error: 'Storage not configured' });
-  }
-
-  const { includeCover = false } = req.query;
-  const rawExpiresIn = parseInt(req.query.expiresIn, 10);
-  const expiresIn =
-    Number.isFinite(rawExpiresIn) && rawExpiresIn > 0
-      ? Math.min(rawExpiresIn, MAX_URL_TTL_SECONDS)
-      : DEFAULT_URL_TTL_SECONDS;
-
-  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
-  if (!book || !book.file?.key) {
-    return res.status(404).json({ success: false, error: 'Book not found' });
-  }
-
-  const signedUrl = await createReadUrl({
-    key: book.file.key,
-    expiresIn,
-  });
-
-  const response = {
-    signedUrl,
-    expiresIn,
-    expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
-    mime: book.file.mime,
-  };
-
-  if (includeCover && book.cover?.key) {
-    response.coverUrl = await createReadUrl({
-      key: book.cover.key,
-      expiresIn,
-    });
-  }
-
-  res.json({ success: true, data: response });
-});
-
-export const downloadBook = asyncHandler(async (req, res) => {
-  if (!isR2Configured()) {
-    return res
-      .status(503)
-      .json({ success: false, error: 'Storage not configured' });
-  }
-
-  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
-  if (!book || !book.file?.key) {
-    return res.status(404).json({ success: false, error: 'Book not found' });
-  }
-
-  const signedUrl = await createReadUrl({
-    key: book.file.key,
-    expiresIn: DEFAULT_URL_TTL_SECONDS,
-    downloadName: book.file.originalName || `${book.title}.pdf`,
-  });
-
-  res.json({
-    success: true,
-    data: {
-      signedUrl,
-      expiresIn: DEFAULT_URL_TTL_SECONDS,
-      expiresAt: new Date(
-        Date.now() + DEFAULT_URL_TTL_SECONDS * 1000
-      ).toISOString(),
-    },
-  });
-});
-
-export const getBookThumbnail = asyncHandler(async (req, res) => {
-  if (!isR2Configured()) {
-    return res
-      .status(503)
-      .json({ success: false, error: 'Storage not configured' });
-  }
-
-  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
-  if (!book?.cover?.key) {
-    return res.status(404).json({ success: false, error: 'Cover not found' });
-  }
-
-  const coverUrl = await createReadUrl({
-    key: book.cover.key,
-    expiresIn: DEFAULT_URL_TTL_SECONDS,
-  });
-
-  res.json({
-    success: true,
-    data: {
-      coverUrl,
-      expiresIn: DEFAULT_URL_TTL_SECONDS,
-      expiresAt: new Date(
-        Date.now() + DEFAULT_URL_TTL_SECONDS * 1000
-      ).toISOString(),
-    },
-  });
 });
 
 export const updateBook = asyncHandler(async (req, res) => {
@@ -307,23 +161,10 @@ export const deleteBook = asyncHandler(async (req, res) => {
   await Book.deleteOne({ _id: book._id, owner: req.user._id });
 
   // Best-effort cleanup of files; failures reported but do not block deletion response.
-  const errors = [];
-  if (book.file?.key) {
-    try {
-      await deleteObject({ key: book.file.key });
-    } catch (err) {
-      errors.push('Failed to delete book file from storage');
-      console.error('R2 delete file error', err);
-    }
-  }
-  if (book.cover?.key) {
-    try {
-      await deleteObject({ key: book.cover.key });
-    } catch (err) {
-      errors.push('Failed to delete cover from storage');
-      console.error('R2 delete cover error', err);
-    }
-  }
+  const { errors = [] } = await bookStorage.deleteAssets({
+    fileKey: book.file?.key,
+    coverKey: book.cover?.key,
+  });
 
   res.json({
     success: errors.length === 0,

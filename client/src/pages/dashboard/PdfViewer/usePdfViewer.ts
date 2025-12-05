@@ -1,4 +1,5 @@
-import { Book, useGetBookSignedUrl } from '_queries/booksQueries';
+import { Book } from '_queries/booksQueries';
+import { useGetBookSignedUrl } from '_queries/storageQueries';
 
 export const usePdfViewer = ({ activeBook }: { activeBook: Book | null }) => {
   const {

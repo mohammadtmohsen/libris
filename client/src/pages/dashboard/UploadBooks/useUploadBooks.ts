@@ -1,8 +1,8 @@
+import { useCompleteUpload } from '_queries/booksQueries';
 import {
-  useCompleteUpload,
   usePresignUpload,
   useUploadToPresignedUrl,
-} from '_queries/booksQueries';
+} from '_queries/storageQueries';
 import { useForm } from 'react-hook-form';
 import { extractFirstPageAsImage } from '_utils/pdfCover';
 import { UploadEditBookFormPayload } from '_components/shared/UploadEditBookForm/UploadEditBookForm';
