@@ -49,7 +49,6 @@ export const useUpdateBook = (book: Book) => {
             author: payload?.author || undefined,
             description: payload.description || undefined,
             status: payload.status || 'not_started',
-            visibility: 'private',
             tags: payload.tags,
           },
         });

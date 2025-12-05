@@ -27,7 +27,6 @@ export type Book = {
   description?: string;
   tags?: string[];
   status: 'not_started' | 'want_to_read' | 'reading' | 'finished' | 'abandoned';
-  visibility: 'private' | 'public';
   pageCount?: number;
   pagesRead?: number;
   createdAt?: string;
@@ -74,7 +73,6 @@ export type CompleteUploadRequest = {
   description?: string;
   tags?: string[];
   status?: Book['status'];
-  visibility?: Book['visibility'];
   file: Book['file'];
   cover?: Book['cover'];
   pagesRead?: number;

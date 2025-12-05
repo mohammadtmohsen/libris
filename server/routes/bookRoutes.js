@@ -43,7 +43,6 @@ router.post(
   body('status')
     .optional()
     .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
-  body('visibility').optional().isIn(['private', 'public']),
   body('file.key').isString().notEmpty(),
   body('file.mime').isString().notEmpty(),
   body('file.size').isInt({ min: 1 }).toInt(),
@@ -120,7 +119,6 @@ router.patch(
   body('status')
     .optional()
     .isIn(['not_started', 'want_to_read', 'reading', 'finished', 'abandoned']),
-  body('visibility').optional().isIn(['private', 'public']),
   handleValidationErrors,
   updateBook
 );

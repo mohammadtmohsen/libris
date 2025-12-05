@@ -43,11 +43,6 @@ const BookSchema = new Schema(
       default: 'not_started',
       index: true,
     },
-    visibility: {
-      type: String,
-      enum: ['private', 'public'],
-      default: 'private',
-    },
     file: { type: FileSchema, required: true },
     cover: { type: CoverSchema },
     pageCount: { type: Number, default: 0, min: 0 },

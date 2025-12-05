@@ -99,7 +99,6 @@ export const useUploadBooks = () => {
           author: payload.author || undefined,
           description: payload.description || undefined,
           status: payload.status || 'not_started',
-          visibility: 'private',
           tags: payload.tags,
           pagesRead: 0,
           pageCount,

@@ -61,7 +61,6 @@ export const completeUpload = asyncHandler(async (req, res) => {
     description,
     tags = [],
     status = 'not_started',
-    visibility = 'private',
     file,
     cover,
     pageCount,
@@ -74,7 +73,6 @@ export const completeUpload = asyncHandler(async (req, res) => {
     description,
     tags,
     status,
-    visibility,
     file: {
       key: file.key,
       mime: file.mime,
@@ -247,14 +245,13 @@ export const getBookThumbnail = asyncHandler(async (req, res) => {
 });
 
 export const updateBook = asyncHandler(async (req, res) => {
-  const { title, author, description, tags, status, visibility } = req.body;
+  const { title, author, description, tags, status } = req.body;
   const updates = {};
   if (title !== undefined) updates.title = title;
   if (author !== undefined) updates.author = author;
   if (description !== undefined) updates.description = description;
   if (tags !== undefined) updates.tags = tags;
   if (status !== undefined) updates.status = status;
-  if (visibility !== undefined) updates.visibility = visibility;
 
   if (Object.keys(updates).length === 0) {
     return res
