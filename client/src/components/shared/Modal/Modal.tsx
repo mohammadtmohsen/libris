@@ -57,6 +57,10 @@ export const Modal = ({
         '& .MuiDialog-container': {
           alignItems: 'flex-end',
         },
+        '& .MuiBackdrop-root': {
+          backgroundColor: 'rgba(6, 10, 18, 0.65)',
+          backdropFilter: 'blur(4px)',
+        },
       }}
       //     backgroundColor: 'transparent',
       //     borderRadius: '0px',
@@ -66,7 +70,7 @@ export const Modal = ({
       <DialogContent
         classes={{
           root: clsx(
-            '!bg-black-3 !p-0 sm:!p-0 rounded-secondary text-white-1',
+            '!bg-black-transparent !p-0 sm:!p-0 rounded-secondary text-white-1',
             overrideStyle
           ),
         }}

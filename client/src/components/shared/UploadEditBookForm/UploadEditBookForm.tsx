@@ -39,7 +39,7 @@ export const UploadEditBookForm = ({
   return (
     <form
       onSubmit={onSubmit(onCancel)}
-      className='m-auto w-[95vw] max-w-5xl space-y-6 rounded-primary bg-black-3/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] ring-1 ring-blue-1/15 backdrop-blur-sm'
+      className='m-auto w-[100vw] max-w-5xl space-y-6 rounded-primary bg-black-3/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] ring-1 ring-blue-1/15 backdrop-blur-sm'
     >
       <div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between'>
         <div>
