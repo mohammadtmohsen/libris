@@ -83,29 +83,36 @@ export const Header = ({
 
         <div
           className={clsx(
-            'grid gap-3 overflow-hidden transition-all duration-300 ease-out md:grid-cols-[1fr_auto]',
-            isExpanded
-              ? 'max-h-fit opacity-100 pb-4'
-              : 'pointer-events-none max-h-0 opacity-0'
+            'overflow-hidden transition-[max-height] duration-300 ease-in-out',
+            isExpanded ? 'max-h-[1200px]' : 'max-h-0'
           )}
         >
-          <div className={clsx('flex flex-wrap items-center gap-3')}>
-            <FilterBooks filters={filters} onApplyFilters={onFilterChange} />
-          </div>
-
-          <div className={clsx('flex flex-wrap items-end justify-end gap-3')}>
-            <UploadBook onOpen={handleUploadOpen} />
-            <div className='flex items-center gap-2 rounded-full bg-white/5 xpx-3 xpy-1.5 text-sm font-semibold text-white/85'>
-              <span className='grid h-[42px] w-[42px] place-items-center rounded-full bg-blue-1/20 text-white'>
-                {getInitialsFromName(displayName)}
-              </span>
+          <div
+            className={clsx(
+              'grid gap-3 md:grid-cols-[1fr_auto] transition-[opacity,transform,padding] duration-300 ease-in-out',
+              isExpanded
+                ? 'opacity-100 translate-y-0 pt-3 pb-4'
+                : 'pointer-events-none opacity-0 -translate-y-3 pt-0 pb-0'
+            )}
+          >
+            <div className={clsx('flex flex-wrap items-center gap-3')}>
+              <FilterBooks filters={filters} onApplyFilters={onFilterChange} />
             </div>
-            <Button
-              iconButton='logout'
-              onClick={handleLogout}
-              variant='primaryOutline'
-              aria-label='Logout'
-            />
+
+            <div className={clsx('flex flex-wrap items-end justify-end gap-3')}>
+              <UploadBook onOpen={handleUploadOpen} />
+              <div className='flex items-center gap-2 rounded-full bg-white/5 xpx-3 xpy-1.5 text-sm font-semibold text-white/85'>
+                <span className='grid h-[42px] w-[42px] place-items-center rounded-full bg-blue-1/20 text-white'>
+                  {getInitialsFromName(displayName)}
+                </span>
+              </div>
+              <Button
+                iconButton='logout'
+                onClick={handleLogout}
+                variant='primaryOutline'
+                aria-label='Logout'
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -24,7 +24,7 @@ export const CustomHeaderInput = ({
     <div
       className={clsx(
         'group flex flex-row-reverse items-center gap-3 rounded-xl bg-transparent px-3 py-2',
-        'border-b border-blue-1/15 transition-colors duration-200',
+        'border-b border-blue-1/15 transition-colors duration-300',
         'focus-within:border-blue-1'
       )}
     >
@@ -32,10 +32,11 @@ export const CustomHeaderInput = ({
         type='button'
         onClick={onToggleExpand}
         className={clsx(
-          'p-0 text-blue-1 transition-all duration-300 hover:text-blue-1 outline-none focus-visible:outline-none',
-          isExpanded && 'rotate-180'
+          'p-0 text-blue-1 transition-transform duration-300 ease-in-out hover:text-blue-1 outline-none focus-visible:outline-none',
+          isExpanded && 'rotate-180 scale-110'
         )}
         aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
+        aria-expanded={isExpanded}
         style={{ outline: 'none', border: 'none' }}
       >
         <Icon type='filterOn' fontSize='medium' className='text-blue-1' />
