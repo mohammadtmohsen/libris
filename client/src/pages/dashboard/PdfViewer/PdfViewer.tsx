@@ -144,6 +144,8 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
       goToNextPage();
     } else if (relativeX < width * 0.15) {
       goToPrevPage();
+    } else {
+      toggleControlsVisibility();
     }
   };
 
@@ -151,6 +153,10 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     setPageNumber(() => value);
     handleUserActivity();
   };
+
+  const controlInteractivityClass = controlsVisible
+    ? 'pointer-events-auto'
+    : 'pointer-events-none';
 
   return (
     <div className='flex flex-col w-full h-full bg-black-2'>
@@ -202,7 +208,12 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
           )}
         >
           <div className='flex items-start justify-center gap-3 px-4 pt-4'>
-            <div className='pointer-events-auto flex justify-center items-center gap-2 bg-blue-7 rounded-secondary px-3 py-2 backdrop-blur-sm shadow-lg max-w-[100%]'>
+            <div
+              className={clsx(
+                'flex justify-center items-center gap-2 bg-blue-7 rounded-secondary px-3 py-2 backdrop-blur-sm shadow-lg max-w-[100%]',
+                controlInteractivityClass
+              )}
+            >
               <div className='text-[11px] font-bold tracking-wide text-blue-1'>
                 ({activeBook?.status})
               </div>
@@ -219,7 +230,12 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
           </div>
 
           <div className='absolute bottom-11 left-4 right-4 pb-6'>
-            <div className='pointer-events-auto flex justify-center items-center gap-1 bg-blue-7 rounded-secondary px-3 py-2 backdrop-blur-sm shadow-lg w-fit mx-auto mb-5'>
+            <div
+              className={clsx(
+                'flex justify-center items-center gap-1 bg-blue-7 rounded-secondary px-1 py-1 backdrop-blur-sm shadow-lg w-fit mx-auto mb-5',
+                controlInteractivityClass
+              )}
+            >
               <Button
                 variant='outline'
                 className='!py-1 !px-3 !h-[32px] !w-[32px]'
@@ -245,8 +261,13 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
               />
             </div>
           </div>
-          <div className='absolute bottom-0 left-14 right-4 xpx-4 pb-6'>
-            <div className='pointer-events-auto bg-blue-7 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center gap-3 rounded-full'>
+          <div className='flex items-center gap-1 justify-between absolute bottom-0 right-0 left-0 px-4 pb-6'>
+            <div
+              className={clsx(
+                'bg-blue-7 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg flex items-center gap-3 rounded-full flex-1',
+                controlInteractivityClass
+              )}
+            >
               <input
                 type='range'
                 min={1}
@@ -260,28 +281,20 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
                 {pageNumber} / {numPages || '?'}
               </div>
             </div>
+            <div
+              className={clsx(
+                'bg-blue-7 backdrop-blur-sm rounded-2xl px-1 py-1 shadow-lg flex items-center gap-3 rounded-full',
+                controlInteractivityClass
+              )}
+            >
+              <Button
+                variant='outline'
+                iconButton='logout'
+                className='!py-1 !px-3 !h-[32px] !w-[32px]'
+                onClick={handleClose}
+              />
+            </div>
           </div>
-          <div className='pointer-events-auto absolute bottom-12 left-4 pb-6'>
-            <Button
-              variant='outline'
-              iconButton='logout'
-              className='!py-1 !px-3 !h-[32px] !w-[32px]'
-              onClick={handleClose}
-            />
-          </div>
-        </div>
-
-        <div className='absolute bottom-7 left-4 pointer-events-auto z-20'>
-          <Button
-            variant='outline'
-            className='!py-1 !px-3 !h-[32px] !w-[32px]'
-            iconButton={controlsVisible ? 'visibilityOff' : 'visibility'}
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleControlsVisibility();
-            }}
-          />
         </div>
       </div>
     </div>
