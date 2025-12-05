@@ -33,6 +33,9 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   const [controlsVisible, setControlsVisible] = useState(true);
   const [manualHidden, setManualHidden] = useState(false);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const touchMovedRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const MOVE_TOLERANCE_PX = 25;
 
   const viewerRef = useRef<HTMLDivElement | null>(null);
   const controlsLayerRef = useRef<HTMLDivElement | null>(null);
@@ -141,26 +144,71 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     setControlsVisible(false);
   };
 
-  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (controlsLayerRef.current?.contains(event.target as Node)) {
-      return;
-    }
-    const isTouch = event.pointerType === 'touch';
-    if (isTouch) {
-      event.preventDefault();
-    }
+  const performTapAction = (clientX: number) => {
+    const bounds = viewerRef.current?.getBoundingClientRect();
+    const width =
+      bounds?.width && bounds.width > 0 ? bounds.width : window.innerWidth;
+    const left = bounds?.left ?? 0;
+    const relativeX = clientX - left;
+    const NEXT_THRESHOLD = width * 0.8;
+    const PREV_THRESHOLD = width * 0.2;
 
-    if (!viewerRef.current) return;
-    const { left, width } = viewerRef.current.getBoundingClientRect();
-    const relativeX = event.clientX - left;
-
-    if (relativeX > width * 0.85) {
+    if (relativeX >= NEXT_THRESHOLD) {
       goToNextPage();
-    } else if (relativeX < width * 0.15) {
+    } else if (relativeX <= PREV_THRESHOLD) {
       goToPrevPage();
     } else {
       toggleControlsVisibility();
     }
+  };
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (controlsLayerRef.current?.contains(event.target as Node)) {
+      touchStartRef.current = null;
+      touchMovedRef.current = false;
+      return;
+    }
+
+    if (event.pointerType === 'touch') {
+      touchStartRef.current = { x: event.clientX, y: event.clientY };
+      touchMovedRef.current = false;
+      return;
+    }
+
+    performTapAction(event.clientX);
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    handleUserActivity();
+
+    const start = touchStartRef.current;
+    if (event.pointerType !== 'touch' || !start) return;
+
+    const deltaX = Math.abs(event.clientX - start.x);
+    const deltaY = Math.abs(event.clientY - start.y);
+
+    if (deltaX > MOVE_TOLERANCE_PX || deltaY > MOVE_TOLERANCE_PX) {
+      touchMovedRef.current = true;
+    }
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    if (event.pointerType !== 'touch' || !start) return;
+
+    const shouldIgnore = touchMovedRef.current;
+    touchStartRef.current = null;
+    touchMovedRef.current = false;
+
+    if (shouldIgnore) return;
+    if (controlsLayerRef.current?.contains(event.target as Node)) return;
+
+    performTapAction(start.x);
+  };
+
+  const handlePointerCancel = () => {
+    touchStartRef.current = null;
+    touchMovedRef.current = false;
   };
 
   const handleSliderChange = (value: number) => {
@@ -178,8 +226,10 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
         ref={viewerRef}
         className='relative flex-1 overflow-hidden'
         onMouseMove={handleUserActivity}
-        onPointerMove={handleUserActivity}
+        onPointerMove={handlePointerMove}
         onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
       >
         <div className='absolute inset-0 overflow-auto flex items-start justify-center py-0 px-0'>
           {loading && <div className='p-4 text-sm'>Preparing viewer…</div>}
