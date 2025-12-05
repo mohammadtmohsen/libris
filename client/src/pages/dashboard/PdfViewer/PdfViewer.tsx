@@ -1,4 +1,4 @@
-import { Button } from '_components/shared';
+import { Button, StatusBadge } from '_components/shared';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Document, Page } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
@@ -210,13 +210,16 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
           <div className='flex items-start justify-center gap-3 px-4 pt-4'>
             <div
               className={clsx(
-                'flex justify-center items-center gap-2 bg-blue-7 rounded-secondary px-3 py-2 backdrop-blur-sm shadow-lg max-w-[100%]',
+                'flex flex-wrap items-center justify-center gap-2 bg-blue-7 rounded-secondary px-3 py-2 backdrop-blur-sm shadow-lg max-w-[100%]',
                 controlInteractivityClass
               )}
             >
-              <div className='text-[11px] font-bold tracking-wide text-blue-1'>
-                ({activeBook?.status})
-              </div>
+              <StatusBadge
+                status={activeBook?.status}
+                bookId={activeBook?._id}
+                condensed
+                enableDropdown={false}
+              />
               <div
                 dir='rtl'
                 className={clsx(

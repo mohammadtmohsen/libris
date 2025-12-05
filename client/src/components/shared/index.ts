@@ -16,6 +16,7 @@ import { BookCard } from './BookCard/BookCard';
 import { UploadEditBookForm } from './UploadEditBookForm/UploadEditBookForm';
 import { ProgressBar } from './ProgressBar/ProgressBar';
 import { StatusToggle, StatusToggleOption } from './StatusToggle/StatusToggle';
+import { StatusBadge } from './StatusBadge/StatusBadge';
 
 export {
   CardSkeleton,
@@ -36,6 +37,7 @@ export {
   UploadEditBookForm,
   ProgressBar,
   StatusToggle,
+  StatusBadge,
 };
 
 export type { ToggleOption, TabOption, DropZoneProps, StatusToggleOption };

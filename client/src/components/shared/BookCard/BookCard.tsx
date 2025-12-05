@@ -1,6 +1,7 @@
 import { Book } from '_queries/booksQueries';
 import { ReactNode } from 'react';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
+import { StatusBadge } from '../StatusBadge/StatusBadge';
 
 // const statusLabel: Record<Book['status'], string> = {
 //   not_started: 'Not started',
@@ -45,7 +46,13 @@ export const BookCard = ({
     >
       <div className='absolute inset-0 bg-gradient-to-b from-white/10 via-blue-4/10 to-black/70 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100' />
       <div className='relative z-10 flex h-full w-full flex-col justify-between p-4 sm:p-5'>
-        <div className='flex items-end justify-end gap-3'>
+        <div className='flex items-start justify-between gap-3'>
+          <StatusBadge
+            status={book?.status}
+            bookId={book?._id}
+            condensed
+            className='shrink-0'
+          />
           <div
             className='flex flex-col items-start justify-end space-y-1 text-right'
             dir='rtl'
