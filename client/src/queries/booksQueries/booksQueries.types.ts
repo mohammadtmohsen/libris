@@ -42,6 +42,9 @@ export type Book = {
 export type BooksListResponse = {
   items: Book[];
   count: number;
+  page?: number;
+  pageSize?: number;
+  hasMore?: boolean;
 };
 
 export type CompleteUploadRequest = {

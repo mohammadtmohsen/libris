@@ -1,8 +1,8 @@
 import {
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
-  keepPreviousData,
 } from '@tanstack/react-query';
 import axiosInstance from '_axios';
 
@@ -14,18 +14,42 @@ import type {
 } from './booksQueries.types';
 import { BOOKS_QUERY_BASE, BOOK_QUERIES_KEYS } from './booksQueries.keys';
 
+const DEFAULT_PAGE_SIZE = 20;
+
 export const useGetBooks = (params?: BookFilters) => {
-  const queryResult = useQuery({
-    queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS, params],
-    placeholderData: keepPreviousData,
-    queryFn: async () => {
-      const endPoint = BOOKS_QUERY_BASE;
-      const res = await axiosInstance.get<BooksListResponse>(endPoint, {
-        params,
+  const queryResult = useInfiniteQuery({
+    queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS, params, DEFAULT_PAGE_SIZE],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam = 1 }) => {
+      const page =
+        typeof pageParam === 'number' && Number.isFinite(pageParam)
+          ? pageParam
+          : 1;
+      const res = await axiosInstance.get<BooksListResponse>(BOOKS_QUERY_BASE, {
+        params: { ...params, page, limit: DEFAULT_PAGE_SIZE },
       });
+
       const items = res.data?.items ?? [];
       const count = res.data?.count ?? 0;
-      return { items, count };
+      const pageSize = res.data?.pageSize ?? DEFAULT_PAGE_SIZE;
+      const hasMore =
+        res.data?.hasMore ??
+        (pageSize > 0 && Number.isFinite(count) && page * pageSize < count);
+
+      return {
+        items,
+        count,
+        page: res.data?.page ?? page,
+        pageSize,
+        hasMore,
+      };
+    },
+    getNextPageParam: (lastPage) => {
+      if (!lastPage?.hasMore) return undefined;
+      const currentPage = Number.isFinite(lastPage.page)
+        ? (lastPage.page as number)
+        : 1;
+      return currentPage + 1;
     },
   });
   return queryResult;

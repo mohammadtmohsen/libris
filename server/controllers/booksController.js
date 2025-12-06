@@ -15,6 +15,8 @@ export const READING_STATUS_VALUES = [
   'finished',
   'abandoned',
 ];
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 100;
 
 const parseArrayQuery = (value) => {
   if (!value) return [];
@@ -87,6 +89,14 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     ...parseArrayQuery(req.query.tag),
     ...parseArrayQuery(req.query.tags),
   ];
+  const page =
+    Number.isFinite(req.query.page) && req.query.page > 0 ? req.query.page : 1;
+  const requestedLimit =
+    Number.isFinite(req.query.limit) && req.query.limit > 0
+      ? req.query.limit
+      : DEFAULT_PAGE_SIZE;
+  const pageSize = Math.min(Math.max(requestedLimit, 1), MAX_PAGE_SIZE);
+  const skip = (page - 1) * pageSize;
   const query = {};
   if (tagFilters.length > 0) query.tags = { $in: tagFilters };
   if (searchTerm) {
@@ -96,47 +106,61 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     ];
   }
 
-  const countPipeline = [{ $match: { ...query } }];
-  if (statusFilter.length > 0) {
-    countPipeline.push(
-      {
-        $lookup: {
-          from: 'progresses',
-          let: { bookId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$book', '$$bookId'] },
-                    { $eq: ['$owner', req.user._id] },
-                  ],
-                },
+  const matchStage = { $match: { ...query } };
+  const withProgressPipeline = [
+    matchStage,
+    {
+      $lookup: {
+        from: 'progresses',
+        let: { bookId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$book', '$$bookId'] },
+                  { $eq: ['$owner', req.user._id] },
+                ],
               },
             },
-            { $project: { status: 1 } },
-          ],
-          as: 'progresses',
-        },
-      },
-      {
-        $addFields: {
-          progressStatus: {
-            $ifNull: [{ $arrayElemAt: ['$progresses.status', 0] }, 'not_started'],
           },
+          { $project: { book: 1, status: 1, pagesRead: 1 } },
+        ],
+        as: 'progresses',
+      },
+    },
+    {
+      $addFields: {
+        progress: {
+          $ifNull: [
+            { $arrayElemAt: ['$progresses', 0] },
+            { book: '$_id', status: 'not_started', pagesRead: 0 },
+          ],
         },
       },
-      { $match: { progressStatus: { $in: statusFilter } } }
-    );
-  }
-  countPipeline.push({ $count: 'count' });
+    },
+    { $project: { progresses: 0 } },
+  ];
 
-  const [books, countResult] = await Promise.all([
-    // Use lean() for plain objects so we can safely enhance the response
-    Book.find(query).sort({ createdAt: -1 }).lean(),
-    Book.aggregate(countPipeline),
+  const statusPipeline =
+    statusFilter.length > 0
+      ? [{ $match: { 'progress.status': { $in: statusFilter } } }]
+      : [];
+
+  const [countResult, books] = await Promise.all([
+    Book.aggregate([
+      ...(statusFilter.length > 0 ? withProgressPipeline : [matchStage]),
+      ...statusPipeline,
+      { $count: 'count' },
+    ]),
+    Book.aggregate([
+      ...withProgressPipeline,
+      ...statusPipeline,
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: pageSize },
+    ]),
   ]);
-  const totalCount = countResult?.[0]?.count ?? 0;
 
   let data = books;
   if (isStorageConfigured() && Array.isArray(books) && books.length > 0) {
@@ -158,37 +182,19 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     );
   }
 
-  const bookIds = books.map((b) => b._id);
-  const progresses =
-    bookIds.length > 0
-      ? await Progress.find({
-          owner: req.user._id,
-          book: { $in: bookIds },
-        })
-          .select('book status pagesRead')
-          .lean()
-      : [];
-  const progressMap = new Map(
-    progresses.map((p) => [String(p.book), p])
-  );
-
-  const dataWithProgress = data.map((b) => {
-    const progress =
-      progressMap.get(String(b._id)) ||
-      { book: b._id, status: 'not_started', pagesRead: 0 };
-    return progress ? { ...b, progress } : b;
-  });
-
-  const filteredByStatus =
-    statusFilter.length > 0
-      ? dataWithProgress.filter((b) =>
-          statusFilter.includes(b.progress?.status || 'not_started')
-        )
-      : dataWithProgress;
+  const totalCount = countResult?.[0]?.count ?? 0;
+  const totalPages = pageSize > 0 ? Math.ceil(totalCount / pageSize) : 0;
+  const hasMore = page < totalPages;
 
   res.json({
     success: true,
-    data: { items: filteredByStatus, count: totalCount },
+    data: {
+      items: data,
+      count: totalCount,
+      page,
+      pageSize,
+      hasMore,
+    },
   });
 });
 

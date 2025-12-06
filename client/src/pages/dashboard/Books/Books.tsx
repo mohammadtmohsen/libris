@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Modal, useModal, BookCard, OverlayLoader } from '_components/shared';
 import { Book } from '_queries/booksQueries';
 import { useStore } from '_store/useStore';
@@ -8,12 +9,19 @@ import PdfViewer from '../PdfViewer/PdfViewer';
 export const Books = ({
   books,
   isFetching,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
 }: {
   books: Book[];
   isFetching: boolean;
+  hasNextPage?: boolean;
+  fetchNextPage: () => void;
+  isFetchingNextPage: boolean;
 }) => {
   const { loggingData } = useStore();
   const isAdmin = (loggingData?.role ?? 'user') === 'admin';
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const pdfModal = useModal({
     overrideStyle: '!p-0 sm:!p-0',
     fullScreen: true,
@@ -25,9 +33,31 @@ export const Books = ({
     ),
   });
 
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '100px', threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
   return (
     <div className='relative flex min-h-[calc(100vh-170px)] w-full flex-col gap-5'>
-      <div className='grid min-h-full w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 sm:gap-4 overflow-auto x!h-[calc(100vh-170px)] xbg-black-5'>
+      <div className='grid min-h-full w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 sm:gap-4'>
         {books.map((book: Book) => {
           return (
             <BookCard
@@ -48,6 +78,12 @@ export const Books = ({
           );
         })}
       </div>
+      {isFetchingNextPage && (
+        <div className='pb-4 text-center text-sm text-white/80'>
+          Loading more books...
+        </div>
+      )}
+      <div ref={sentinelRef} className='h-4 w-full' />
       <OverlayLoader show={isFetching} />
       <Modal {...pdfModal} />
     </div>

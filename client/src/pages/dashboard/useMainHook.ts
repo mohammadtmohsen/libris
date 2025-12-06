@@ -16,8 +16,29 @@ export const useMainHook = (filters?: BookFilters) => {
     return Object.keys(params).length ? params : undefined;
   }, [filters]);
 
-  const { data, isFetching } = useGetBooks(queryParams);
-  const books = data?.items ?? [];
-  const count = data?.count ?? 0;
-  return { books, count, isFetching };
+  const {
+    data,
+    isFetching,
+    isFetchingNextPage,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+  } = useGetBooks(queryParams);
+
+  const books = useMemo(
+    () => data?.pages?.flatMap((page) => page.items) ?? [],
+    [data]
+  );
+  const count = data?.pages?.[0]?.count ?? 0;
+  const isInitialLoading =
+    (isLoading || isFetching) && (data?.pages?.length ?? 0) === 0;
+
+  return {
+    books,
+    count,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching: isInitialLoading,
+  };
 };

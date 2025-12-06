@@ -14,7 +14,14 @@ const cleanFilters = (next?: BookFilters): BookFilters => ({
 
 export const Dashboard = () => {
   const [filters, setFilters] = useState<BookFilters>(cleanFilters());
-  const { books, count, isFetching } = useMainHook(filters);
+  const {
+    books,
+    count,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMainHook(filters);
 
   const handleApplyFilters = (nextFilters: BookFilters) => {
     setFilters(cleanFilters(nextFilters));
@@ -31,7 +38,13 @@ export const Dashboard = () => {
           onResetFilters={handleResetFilters}
         />
         <div className={clsx('flex-1 overflow-auto', 'p-0 ', '')}>
-          <Books books={books} isFetching={isFetching} />
+          <Books
+            books={books}
+            isFetching={isFetching}
+            hasNextPage={hasNextPage}
+            fetchNextPage={fetchNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+          />
           <CountBadge isFetching={isFetching} count={count} />
           <div className='h-20' />
         </div>
