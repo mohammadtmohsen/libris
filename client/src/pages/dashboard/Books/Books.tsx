@@ -57,7 +57,7 @@ export const Books = ({
 
   return (
     <div className='relative flex min-h-[calc(100vh-170px)] w-full flex-col gap-5'>
-      <div className='grid min-h-full w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 sm:gap-4'>
+      <div className='grid min-h-full w-full grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 xs:gap-4'>
         {books.map((book: Book) => {
           return (
             <BookCard
