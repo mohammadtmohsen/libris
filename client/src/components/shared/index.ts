@@ -18,6 +18,7 @@ import { ProgressBar } from './ProgressBar/ProgressBar';
 import { StatusToggle, StatusToggleOption } from './StatusToggle/StatusToggle';
 import { StatusBadge } from './StatusBadge/StatusBadge';
 import { CountBadge } from './CountBadge/CountBadge';
+import { OverlayLoader } from './OverlayLoader/OverlayLoader';
 export {
   CardSkeleton,
   Button,
@@ -39,6 +40,7 @@ export {
   StatusToggle,
   StatusBadge,
   CountBadge,
+  OverlayLoader,
 };
 
 export type {
