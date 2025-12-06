@@ -3,20 +3,6 @@ import { ReactNode } from 'react';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
 
-// const statusLabel: Record<Book['status'], string> = {
-//   not_started: 'Not started',
-//   reading: 'Reading',
-//   finished: 'Finished',
-//   abandoned: 'Abandoned',
-// };
-
-// const statusColor: Record<Book['status'], string> = {
-//   not_started: 'bg-gray-600',
-//   reading: 'bg-blue-500',
-//   finished: 'bg-green-500',
-//   abandoned: 'bg-red-500',
-// };
-
 export const BookCard = ({
   book,
   onClickBook,
@@ -26,6 +12,8 @@ export const BookCard = ({
   onClickBook: () => void;
   infoButton: ReactNode;
 }) => {
+  const tags = book?.tags ?? [];
+
   return (
     <div
       onClick={onClickBook}
@@ -96,6 +84,21 @@ export const BookCard = ({
               {infoButton}
             </div>
           </div>
+          {tags?.length > 0 && (
+            <div
+              className='flex flex-wrap items-center gap-2 text-[11px] text-white/80'
+              dir='rtl'
+            >
+              {tags?.map((tag, index) => (
+                <span
+                  key={`${tag}-${index}`}
+                  className='rounded-full border border-white/15 bg-black/40 px-3 py-1 font-medium backdrop-blur-[2px]'
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
