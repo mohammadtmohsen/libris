@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Icon } from '_components/shared';
 import clsx from 'clsx';
 
@@ -6,6 +7,8 @@ type CustomHeaderInputProps = {
   placeholder?: string;
   isExpanded: boolean;
   onChange: (value: string) => void;
+  onDebouncedChange?: (value: string) => void;
+  debounceDelay?: number;
   onClear: () => void;
   onToggleExpand: () => void;
   showClear?: boolean;
@@ -16,10 +19,54 @@ export const CustomHeaderInput = ({
   placeholder,
   isExpanded,
   onChange,
+  onDebouncedChange,
+  debounceDelay = 400,
   onClear,
   onToggleExpand,
   showClear = true,
 }: CustomHeaderInputProps) => {
+  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onDebouncedChangeRef = useRef(onDebouncedChange);
+
+  useEffect(() => {
+    onDebouncedChangeRef.current = onDebouncedChange;
+  }, [onDebouncedChange]);
+
+  useEffect(
+    () => () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    },
+    []
+  );
+
+  const clearDebounce = () => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+      debounceTimeout.current = null;
+    }
+  };
+
+  const handleInputChange = (nextValue: string) => {
+    onChange(nextValue);
+
+    if (!onDebouncedChangeRef.current) {
+      clearDebounce();
+      return;
+    }
+
+    clearDebounce();
+    debounceTimeout.current = setTimeout(() => {
+      onDebouncedChangeRef.current?.(nextValue);
+    }, debounceDelay);
+  };
+
+  const handleClear = () => {
+    clearDebounce();
+    onClear();
+  };
+
   return (
     <div
       className={clsx(
@@ -47,13 +94,13 @@ export const CustomHeaderInput = ({
         className='flex-1 bg-transparent text-right text-white placeholder-white/55 outline-none focus:outline-none border-none ring-0 text-sm'
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => handleInputChange(e.target.value)}
       />
 
       {showClear && (
         <button
           type='button'
-          onClick={onClear}
+          onClick={handleClear}
           className='p-0 text-blue-1 transition hover:text-blue-1 focus:outline-none'
           aria-label='Clear search and filters'
         >

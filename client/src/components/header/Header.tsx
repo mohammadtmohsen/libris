@@ -48,6 +48,11 @@ export const Header = ({
   const handleSearchChange = (value: string) => {
     const nextValue = typeof value === 'string' ? value : '';
     setSearchValue(nextValue);
+  };
+
+  const handleDebouncedSearchChange = (value: string) => {
+    const nextValue = typeof value === 'string' ? value : '';
+    if (nextValue === filters.search) return;
     onFilterChange({ ...filters, search: nextValue });
   };
 
@@ -77,6 +82,7 @@ export const Header = ({
               placeholder='ابحث عن كتاب أو مؤلف'
               isExpanded={isExpanded}
               onChange={handleSearchChange}
+              onDebouncedChange={handleDebouncedSearchChange}
               onClear={handleResetAll}
               onToggleExpand={toggleExpanded}
               showClear={hasFiltersApplied}
