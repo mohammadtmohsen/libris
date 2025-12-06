@@ -1,5 +1,6 @@
 import { CardSkeleton, Modal, useModal, BookCard } from '_components/shared';
 import { Book } from '_queries/booksQueries';
+import { useStore } from '_store/useStore';
 
 import { UpdateBook } from '../UpdateBook/UpdateBook';
 import PdfViewer from '../PdfViewer/PdfViewer';
@@ -11,6 +12,8 @@ export const Books = ({
   books: Book[];
   isFetching: boolean;
 }) => {
+  const { loggingData } = useStore();
+  const isAdmin = (loggingData?.role ?? 'user') === 'admin';
   const pdfModal = useModal({
     overrideStyle: '!p-0 sm:!p-0',
     fullScreen: true,
@@ -36,10 +39,12 @@ export const Books = ({
                   pdfModal.open({ book });
                 }}
                 infoButton={
-                  <UpdateBook
-                    book={book}
-                    buttonClassName='relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white shadow-lg backdrop-blur hover:bg-white/35 focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-white'
-                  />
+                  isAdmin ? (
+                    <UpdateBook
+                      book={book}
+                      buttonClassName='relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white shadow-lg backdrop-blur hover:bg-white/35 focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-white'
+                    />
+                  ) : null
                 }
               />
             );

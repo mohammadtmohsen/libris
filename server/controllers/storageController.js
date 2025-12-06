@@ -68,7 +68,7 @@ export const getSignedUrlForBook = asyncHandler(async (req, res) => {
       ? Math.min(rawExpiresIn, MAX_BOOK_URL_TTL_SECONDS)
       : DEFAULT_BOOK_URL_TTL_SECONDS;
 
-  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  const book = await Book.findOne({ _id: req.params.id });
   if (!book || !book.file?.key) {
     return res.status(404).json({ success: false, error: 'Book not found' });
   }
@@ -102,7 +102,7 @@ export const downloadBook = asyncHandler(async (req, res) => {
       .json({ success: false, error: 'Storage not configured' });
   }
 
-  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  const book = await Book.findOne({ _id: req.params.id });
   if (!book || !book.file?.key) {
     return res.status(404).json({ success: false, error: 'Book not found' });
   }
@@ -132,7 +132,7 @@ export const getBookThumbnail = asyncHandler(async (req, res) => {
       .json({ success: false, error: 'Storage not configured' });
   }
 
-  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  const book = await Book.findOne({ _id: req.params.id });
   if (!book?.cover?.key) {
     return res.status(404).json({ success: false, error: 'Cover not found' });
   }

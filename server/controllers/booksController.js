@@ -34,6 +34,12 @@ const parseArrayQuery = (value) => {
 };
 
 export const completeUpload = asyncHandler(async (req, res) => {
+  if (req.user?.role !== 'admin') {
+    return res
+      .status(403)
+      .json({ success: false, error: 'Only admins can upload books' });
+  }
+
   const {
     title,
     author,
@@ -81,7 +87,7 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     ...parseArrayQuery(req.query.tag),
     ...parseArrayQuery(req.query.tags),
   ];
-  const query = { owner: req.user._id };
+  const query = {};
   if (tagFilters.length > 0) query.tags = { $in: tagFilters };
   if (searchTerm) {
     query.$or = [
@@ -189,7 +195,7 @@ export const getAllBooks = asyncHandler(async (req, res) => {
 export const searchBooks = getAllBooks;
 
 export const getBookById = asyncHandler(async (req, res) => {
-  const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
+  const book = await Book.findOne({ _id: req.params.id });
   if (!book) {
     return res.status(404).json({ success: false, error: 'Book not found' });
   }
@@ -204,6 +210,12 @@ export const getBookById = asyncHandler(async (req, res) => {
 });
 
 export const updateBook = asyncHandler(async (req, res) => {
+  if (req.user?.role !== 'admin') {
+    return res
+      .status(403)
+      .json({ success: false, error: 'Only admins can update books' });
+  }
+
   const { title, author, description, tags } = req.body;
   const updates = {};
   if (title !== undefined) updates.title = title;
@@ -231,6 +243,12 @@ export const updateBook = asyncHandler(async (req, res) => {
 });
 
 export const deleteBook = asyncHandler(async (req, res) => {
+  if (req.user?.role !== 'admin') {
+    return res
+      .status(403)
+      .json({ success: false, error: 'Only admins can delete books' });
+  }
+
   const book = await Book.findOne({ _id: req.params.id, owner: req.user._id });
   if (!book) {
     return res.status(404).json({ success: false, error: 'Book not found' });

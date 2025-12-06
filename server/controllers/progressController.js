@@ -27,7 +27,6 @@ export const upsertProgress = asyncHandler(async (req, res) => {
 
   const book = await Book.findOne({
     _id: req.params.bookId,
-    owner: req.user._id,
   }).select('_id pageCount');
 
   if (!book) {

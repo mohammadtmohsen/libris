@@ -4,6 +4,7 @@ import authRoutes from './authRoutes.js';
 import bookRoutes from './bookRoutes.js';
 import storageRoutes from './storageRoutes.js';
 import progressRoutes from './progressRoutes.js';
+import invitationRoutes from './invitationRoutes.js';
 const router = Router();
 
 // Health check route
@@ -21,5 +22,6 @@ router.use('/auth', authRoutes);
 router.use('/books', bookRoutes);
 router.use('/storage', storageRoutes);
 router.use('/progress', progressRoutes);
+router.use('/invitations', invitationRoutes);
 
 export default router;

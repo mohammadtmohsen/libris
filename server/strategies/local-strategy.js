@@ -17,14 +17,12 @@ export default passport.use(
       if (!isPasswordMatch) {
         return done(null, false, { message: 'Invalid Credential' });
       }
-
-      // Create a new object without the password to avoid any issues
-      // with object references or destructuring
       const userWithoutPassword = {
         _id: user._id,
         username: user.username,
         displayName: user.displayName,
         email: user.email,
+        role: user.role || 'user',
       };
 
       // Add more debugging to verify user object structure

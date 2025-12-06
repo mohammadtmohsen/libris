@@ -9,6 +9,7 @@ import { UploadBook } from '_pages/dashboard/UploadBooks/UploadBooks';
 import { CustomHeaderInput } from './CustomHeaderInput';
 import { FilterBooks } from './FilterBooks/FilterBooks';
 import type { BookFilters } from '_queries/booksQueries';
+import { UsersModalTrigger } from './UsersModal';
 
 export const Header = ({
   filters,
@@ -21,6 +22,7 @@ export const Header = ({
 }) => {
   const { loggingData, logoutUser } = useStore();
   const displayName = loggingData?.displayName;
+  const isAdmin = (loggingData?.role ?? 'user') === 'admin';
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState(filters.search ?? '');
   const hasFiltersApplied = Boolean(
@@ -51,6 +53,7 @@ export const Header = ({
 
   const toggleExpanded = () => setIsExpanded((prev) => !prev);
   const handleUploadOpen = () => setIsExpanded(false);
+  const handleUsersOpen = () => setIsExpanded(false);
   const handleResetAll = () => {
     setIsExpanded(false);
     setSearchValue('');
@@ -100,7 +103,12 @@ export const Header = ({
             </div>
 
             <div className={clsx('flex flex-wrap items-end justify-end gap-3')}>
-              <UploadBook onOpen={handleUploadOpen} />
+              {isAdmin && (
+                <>
+                  <UploadBook onOpen={handleUploadOpen} />
+                  <UsersModalTrigger onOpen={handleUsersOpen} />
+                </>
+              )}
               <div className='flex items-center gap-2 rounded-full bg-white/5 xpx-3 xpy-1.5 text-sm font-semibold text-white/85'>
                 <span className='grid h-[42px] w-[42px] place-items-center rounded-full bg-blue-1/20 text-white'>
                   {getInitialsFromName(displayName)}

@@ -5,6 +5,7 @@ export interface LoggingData {
   email: string;
   username: string;
   _id: string;
+  role?: 'admin' | 'user';
 }
 
 interface AuthState {

@@ -65,6 +65,15 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryAxiosRequestConfig;
 
+    // If refresh itself fails, force logout/cleanup immediately
+    if (
+      error.response?.status === 401 &&
+      originalRequest?.url?.includes('/auth/refresh')
+    ) {
+      store.dispatch({ type: 'auth/logout' });
+      return Promise.reject(error);
+    }
+
     // If the error is 401 and we haven't tried refreshing yet
     if (
       error.response?.status === 401 &&

@@ -10,7 +10,7 @@ export const BookCard = ({
 }: {
   book: Book;
   onClickBook: () => void;
-  infoButton: ReactNode;
+  infoButton?: ReactNode;
 }) => {
   const tags = book?.tags ?? [];
 
@@ -73,17 +73,19 @@ export const BookCard = ({
             pageCount={book?.pageCount || 0}
             pagesRead={book?.progress?.pagesRead || 0}
           />
-          <div className='flex items-center justify-end'>
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className='flex items-center gap-2 text-xs text-white/80'
-            >
-              <span className='hidden sm:inline text-[11px] uppercase tracking-[0.08em]'>
-                Details
-              </span>
-              {infoButton}
+          {infoButton ? (
+            <div className='flex items-center justify-end'>
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className='flex items-center gap-2 text-xs text-white/80'
+              >
+                <span className='hidden sm:inline text-[11px] uppercase tracking-[0.08em]'>
+                  Details
+                </span>
+                {infoButton}
+              </div>
             </div>
-          </div>
+          ) : null}
           {tags?.length > 0 && (
             <div
               className='flex flex-wrap items-center gap-2 text-[11px] text-white/80'

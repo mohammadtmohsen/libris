@@ -20,14 +20,22 @@ const login = async (req, res) => {
     }
 
     // Create access token - short lived
-    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    const accessToken = jwt.sign(
+      { id: user._id, role: user.role || 'user' },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1h',
+      }
+    );
 
     // Create refresh token - longer lived
-    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '30d',
-    });
+    const refreshToken = jwt.sign(
+      { id: user._id, role: user.role || 'user' },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '30d',
+      }
+    );
 
     // Log the response we're sending back
     console.log('Login successful - Sending response with token and user');
@@ -35,7 +43,7 @@ const login = async (req, res) => {
     res.status(200).json({
       accessToken,
       refreshToken,
-      user: req.user,
+      user: { ...req.user, role: req.user?.role || 'user' },
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -68,21 +76,31 @@ const refreshTokenHandler = async (req, res) => {
     }
 
     // Generate a new access token
-    const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    const safeUser = user?.toObject ? user.toObject() : user;
+
+    const newAccessToken = jwt.sign(
+      { id: user._id, role: user.role || 'user' },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1h',
+      }
+    );
 
     // Generate a new refresh token
-    const newRefreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '30d',
-    });
+    const newRefreshToken = jwt.sign(
+      { id: user._id, role: user.role || 'user' },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '30d',
+      }
+    );
 
     console.log('Token refreshed for user:', user._id);
 
     res.status(200).json({
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      user,
+      user: { ...safeUser, role: user.role || 'user' },
       message: 'Token refreshed successfully',
     });
   } catch (error) {
