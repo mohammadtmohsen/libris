@@ -68,15 +68,12 @@ export const Header = ({
   return (
     <div className='shrink-0 rounded-2xl bg-black-1 shadow-[0_16px_46px_rgba(0,0,0,0.32)]'>
       <div className='flex flex-col gap-3 rounded-secondary'>
-        <div className='flex flex-wrap items-center gap-3'>
-          <div className='flex items-center gap-3'>
-            <img
-              src={logos.librisLogo}
-              className='h-12 w-16 shrink-0 object-contain'
-            />
-          </div>
-
-          <div className='flex-1 min-w-[240px]'>
+        <div className='flex items-center gap-2'>
+          <img
+            src={logos.librisLogo}
+            className='h-12 w-16 shrink-0 object-contain'
+          />
+          <div className='flex-1 min-w-[100px]'>
             <CustomHeaderInput
               value={searchValue}
               placeholder='ابحث عن كتاب أو مؤلف'

@@ -70,7 +70,7 @@ export const CustomHeaderInput = ({
   return (
     <div
       className={clsx(
-        'group flex flex-row-reverse items-center gap-3 rounded-xl bg-transparent px-3 py-2',
+        'group flex flex-row-reverse items-center gap-3 rounded-xl bg-transparent py-2',
         'border-b border-blue-1/15 transition-colors duration-300',
         'focus-within:border-blue-1'
       )}
@@ -91,7 +91,7 @@ export const CustomHeaderInput = ({
 
       <input
         dir='rtl'
-        className='flex-1 bg-transparent text-right text-white placeholder-white/55 outline-none focus:outline-none border-none ring-0 text-sm'
+        className='flex-1 bg-transparent text-right text-white placeholder-white/55 outline-none focus:outline-none border-none ring-0 text-sm min-w-[100px]'
         placeholder={placeholder}
         value={value}
         onChange={(e) => handleInputChange(e.target.value)}
