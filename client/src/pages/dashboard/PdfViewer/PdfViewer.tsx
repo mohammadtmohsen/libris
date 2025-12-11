@@ -232,7 +232,16 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
         onPointerCancel={handlePointerCancel}
       >
         <div className='absolute inset-0 overflow-auto flex items-start justify-center py-0 px-0'>
-          {loading && <div className='p-4 text-sm'>Preparing viewer…</div>}
+          {loading && (
+            <OverlayLoader
+              show
+              withBackdrop
+              title='Loading your Book…'
+              subtitle='We are preparing the pages and optimizing the view.'
+              badgeLabel='Viewer Sync'
+              className='min-h-screen h-full px-4 sm:px-6'
+            />
+          )}
           {error && <div className='p-4 text-sm text-red-400'>{error}</div>}
           {!loading && !error && url ? (
             <Document
