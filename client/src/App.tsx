@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { dashboardRouter, loginRouter } from './router';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { OverlayLoader } from '_components/shared';
 
 import { useStore } from './store/useStore';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -22,7 +23,15 @@ export default function App() {
   }, [loadUser]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <OverlayLoader
+        show
+        withBackdrop
+        title='Loading Libris…'
+        subtitle='Preparing your dashboard and syncing your books.'
+        className='h-screen fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6'
+      />
+    );
   }
 
   return (

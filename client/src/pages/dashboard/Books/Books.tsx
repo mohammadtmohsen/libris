@@ -78,13 +78,11 @@ export const Books = ({
           );
         })}
       </div>
-      {isFetchingNextPage && (
-        <div className='pb-4 text-center text-sm text-white/80'>
-          Loading more books...
-        </div>
-      )}
+
       <div ref={sentinelRef} className='h-4 w-full' />
-      <OverlayLoader show={isFetching} />
+
+      <OverlayLoader show={isFetchingNextPage || isFetching} mini className='mt-auto' />
+
       <Modal {...pdfModal} />
     </div>
   );
