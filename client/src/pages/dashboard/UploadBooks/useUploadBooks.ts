@@ -6,6 +6,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { extractFirstPageAsImage } from '_utils/pdfCover';
 import { UploadEditBookFormPayload } from '_components/shared/UploadEditBookForm/UploadEditBookForm';
+import { toSignedPublicationYear } from '_utils/publicationYear';
 
 export const useUploadBooks = () => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -15,6 +16,8 @@ export const useUploadBooks = () => {
       description: '',
       file: null as File | null,
       tags: [],
+      publicationYear: '',
+      publicationEra: 'AD',
     },
   });
 
@@ -93,12 +96,18 @@ export const useUploadBooks = () => {
           coverOriginalName = effectiveCover.name;
         }
 
+        const signedPublicationYear = toSignedPublicationYear(
+          payload.publicationYear,
+          payload.publicationEra
+        );
+
         await completeUploadMutateAsync({
           title: payload.title || payload.file.name.replace(/\.[^.]+$/, ''),
           author: payload.author || undefined,
           description: payload.description || undefined,
           tags: payload.tags,
           pageCount,
+          publicationYear: signedPublicationYear,
           file: {
             key: pdfPresign.key,
             mime: payload.file.type || 'application/pdf',

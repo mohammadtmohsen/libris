@@ -13,6 +13,8 @@ export type UploadEditBookFormPayload = {
   description: string;
   file?: File | null;
   tags: string[];
+  publicationYear?: number | '';
+  publicationEra?: 'BC' | 'AD' | '';
 };
 
 export const UploadEditBookForm = ({
@@ -186,6 +188,44 @@ export const UploadEditBookForm = ({
               />
             )}
           />
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]'>
+            <Controller
+              name='publicationYear'
+              control={methods.control}
+              render={({ field, fieldState }) => (
+                <Input
+                  label='Publication Year'
+                  placeholder='e.g., 2021 or 350'
+                  type='number'
+                  min={1}
+                  maxLength={9999}
+                  value={field?.value || ''}
+                  onChange={(v) => {
+                    field.onChange(v === '' ? '' : Number(v));
+                  }}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />
+            <Controller
+              name='publicationEra'
+              control={methods.control}
+              render={({ field, fieldState }) => (
+                <CustomSelect
+                  options={[
+                    { label: 'AD', value: 'AD' },
+                    { label: 'BC', value: 'BC' },
+                  ]}
+                  placeholder='Era'
+                  label='Era'
+                  dir='rtl'
+                  isMulti={false}
+                  {...field}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />
+          </div>
         </div>
       </div>
 

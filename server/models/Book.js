@@ -40,9 +40,22 @@ const BookSchema = new Schema(
     file: { type: FileSchema, required: true },
     cover: { type: CoverSchema },
     pageCount: { type: Number, default: 0, min: 0 },
+    publicationYear: {
+      type: Number,
+      min: -9999,
+      max: 9999,
+      validate: {
+        validator: (value) =>
+          value === undefined || value === null || value !== 0,
+        message: 'publicationYear cannot be zero',
+      },
+    },
   },
   { timestamps: true, versionKey: false }
 );
+
+// Composite index to support default sorting
+BookSchema.index({ publicationYear: -1, author: 1, title: 1 });
 
 const Book = mongoose.models.Book || mongoose.model('Book', BookSchema);
 

@@ -1,6 +1,11 @@
 import { Book, useDeleteBook, useUpdateBookById } from '_queries/booksQueries';
 import { useForm } from 'react-hook-form';
 import { UploadEditBookFormPayload } from '_components/shared/UploadEditBookForm/UploadEditBookForm';
+import {
+  getAbsolutePublicationYear,
+  getPublicationEraFromYear,
+  toSignedPublicationYear,
+} from '_utils/publicationYear';
 
 export const useUpdateBook = (book: Book) => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -10,6 +15,8 @@ export const useUpdateBook = (book: Book) => {
       description: book.description || '',
       file: null as File | null,
       tags: book.tags || [],
+      publicationYear: getAbsolutePublicationYear(book.publicationYear) ?? '',
+      publicationEra: getPublicationEraFromYear(book.publicationYear) ?? 'AD',
     },
   });
 
@@ -48,6 +55,13 @@ export const useUpdateBook = (book: Book) => {
             author: payload?.author || undefined,
             description: payload.description || undefined,
             tags: payload.tags,
+            publicationYear:
+              payload.publicationYear === ''
+                ? null
+                : toSignedPublicationYear(
+                    payload.publicationYear,
+                    payload.publicationEra
+                  ),
           },
         });
         next();

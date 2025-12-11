@@ -1,4 +1,5 @@
 import { Book } from '_queries/booksQueries';
+import { getAbsolutePublicationYear, getPublicationEraFromYear } from '_utils/publicationYear';
 import { ReactNode } from 'react';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
@@ -13,6 +14,8 @@ export const BookCard = ({
   infoButton?: ReactNode;
 }) => {
   const tags = book?.tags ?? [];
+  const publicationEra = getPublicationEraFromYear(book.publicationYear);
+  const publicationYear = getAbsolutePublicationYear(book.publicationYear);
 
   return (
     <div
@@ -61,6 +64,16 @@ export const BookCard = ({
         </div>
 
         <div className='space-y-3'>
+          {publicationYear && publicationEra ? (
+            <div className='flex items-center justify-between text-xs text-white/70'>
+              <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
+                {publicationYear} {publicationEra}
+              </span>
+              <span className='text-[11px] uppercase tracking-[0.09em] text-white/60'>
+                Publication
+              </span>
+            </div>
+          ) : null}
           <div className='flex items-center justify-between text-xs text-white/70'>
             <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
               {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages

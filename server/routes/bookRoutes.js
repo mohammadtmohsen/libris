@@ -23,6 +23,24 @@ router.post(
   body('description').optional().isString(),
   body('tags').optional().isArray(),
   body('tags.*').optional().isString(),
+  body('publicationYear')
+    .optional({ nullable: true })
+    .customSanitizer((value) => {
+      if (value === null) return null;
+      const cast = Number(value);
+      return Number.isNaN(cast) ? value : cast;
+    })
+    .custom((value) => {
+      if (value === null || value === undefined) {
+        return true;
+      }
+      return (
+        Number.isInteger(value) &&
+        value >= -9999 &&
+        value <= 9999 &&
+        value !== 0
+      );
+    }),
   body('file.key').isString().notEmpty(),
   body('file.mime').isString().notEmpty(),
   body('file.size').isInt({ min: 1 }).toInt(),
@@ -49,15 +67,17 @@ router.get(
       }
       return true;
     }),
-  query('tags').optional().custom((value) => {
-    if (Array.isArray(value)) {
-      const allStrings = value.every((tag) => typeof tag === 'string');
-      if (!allStrings) throw new Error('Tags must be strings');
-      return true;
-    }
-    if (typeof value === 'string') return true;
-    throw new Error('Invalid tags value');
-  }),
+  query('tags')
+    .optional()
+    .custom((value) => {
+      if (Array.isArray(value)) {
+        const allStrings = value.every((tag) => typeof tag === 'string');
+        if (!allStrings) throw new Error('Tags must be strings');
+        return true;
+      }
+      if (typeof value === 'string') return true;
+      throw new Error('Invalid tags value');
+    }),
   query('tags.*').optional().isString(),
   query('tag').optional().isString(),
   query('search').optional().isString(),
@@ -99,6 +119,24 @@ router.patch(
   body('description').optional().isString(),
   body('tags').optional().isArray(),
   body('tags.*').optional().isString(),
+  body('publicationYear')
+    .optional({ nullable: true })
+    .customSanitizer((value) => {
+      if (value === null) return null;
+      const cast = Number(value);
+      return Number.isNaN(cast) ? value : cast;
+    })
+    .custom((value) => {
+      if (value === null || value === undefined) {
+        return true;
+      }
+      return (
+        Number.isInteger(value) &&
+        value >= -9999 &&
+        value <= 9999 &&
+        value !== 0
+      );
+    }),
   handleValidationErrors,
   updateBook
 );

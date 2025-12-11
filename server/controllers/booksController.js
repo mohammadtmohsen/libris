@@ -50,6 +50,7 @@ export const completeUpload = asyncHandler(async (req, res) => {
     file,
     cover,
     pageCount,
+    publicationYear,
   } = req.body;
 
   const book = await Book.create({
@@ -74,6 +75,7 @@ export const completeUpload = asyncHandler(async (req, res) => {
       : undefined,
     // initialize page tracking
     pageCount: Number.isFinite(pageCount) ? pageCount : 0,
+    publicationYear,
   });
 
   res.status(201).json({ success: true, data: book });
@@ -156,7 +158,7 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     Book.aggregate([
       ...withProgressPipeline,
       ...statusPipeline,
-      { $sort: { createdAt: -1 } },
+      { $sort: { publicationYear: -1, author: 1, title: 1 } },
       { $skip: skip },
       { $limit: pageSize },
     ]),
@@ -205,13 +207,12 @@ export const getBookById = asyncHandler(async (req, res) => {
   if (!book) {
     return res.status(404).json({ success: false, error: 'Book not found' });
   }
-  const progress =
-    (await Progress.findOne({
-      owner: req.user._id,
-      book: book._id,
-    })
-      .select('book status pagesRead')
-      .lean()) || { book: book._id, status: 'not_started', pagesRead: 0 };
+  const progress = (await Progress.findOne({
+    owner: req.user._id,
+    book: book._id,
+  })
+    .select('book status pagesRead')
+    .lean()) || { book: book._id, status: 'not_started', pagesRead: 0 };
   res.json({ success: true, data: { ...book.toObject(), progress } });
 });
 
@@ -222,22 +223,39 @@ export const updateBook = asyncHandler(async (req, res) => {
       .json({ success: false, error: 'Only admins can update books' });
   }
 
-  const { title, author, description, tags } = req.body;
+  const { title, author, description, tags, publicationYear } = req.body;
   const updates = {};
+  const unsets = {};
+
   if (title !== undefined) updates.title = title;
   if (author !== undefined) updates.author = author;
   if (description !== undefined) updates.description = description;
   if (tags !== undefined) updates.tags = tags;
+  if (Object.prototype.hasOwnProperty.call(req.body, 'publicationYear')) {
+    if (publicationYear === undefined || publicationYear === null) {
+      unsets.publicationYear = '';
+    } else {
+      updates.publicationYear = publicationYear;
+    }
+  }
 
-  if (Object.keys(updates).length === 0) {
+  if (Object.keys(updates).length === 0 && Object.keys(unsets).length === 0) {
     return res
       .status(400)
       .json({ success: false, error: 'No updates provided' });
   }
 
+  const updateDocument = {};
+  if (Object.keys(updates).length > 0) {
+    updateDocument.$set = updates;
+  }
+  if (Object.keys(unsets).length > 0) {
+    updateDocument.$unset = unsets;
+  }
+
   const book = await Book.findOneAndUpdate(
     { _id: req.params.id, owner: req.user._id },
-    { $set: updates },
+    updateDocument,
     { new: true }
   );
 

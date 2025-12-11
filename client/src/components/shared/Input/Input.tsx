@@ -12,7 +12,7 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement> &
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, containerClass, className, type, ...field }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { value } = e.target;
+      const value = e.target?.value;
       if (type === 'number') {
         if (value === '') {
           return field.onChange?.(value);
@@ -45,9 +45,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             'focus:outline-none focus:border-blue-1',
             'hover:border-blue-1/30',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            error
-              ? 'border-red-1/60 focus:border-red-1'
-              : 'border-blue-1/15',
+            error ? 'border-red-1/60 focus:border-red-1' : 'border-blue-1/15',
             className
           )}
           type={type}

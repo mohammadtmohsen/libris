@@ -34,6 +34,7 @@ export type Book = {
   pageCount?: number;
   createdAt?: string;
   updatedAt?: string;
+  publicationYear?: number | null;
   file: BookFile;
   cover?: BookCover;
   progress?: BookProgress;
@@ -52,6 +53,7 @@ export type CompleteUploadRequest = {
   author?: string;
   description?: string;
   tags?: string[];
+  publicationYear?: number | null;
   file: Book['file'];
   cover?: Book['cover'];
   pageCount?: number;
