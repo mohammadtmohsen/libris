@@ -1,4 +1,4 @@
-import { Button, StatusBadge } from '_components/shared';
+import { Button, OverlayLoader, StatusBadge } from '_components/shared';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Document, Page } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
@@ -237,7 +237,16 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
           {!loading && !error && url ? (
             <Document
               file={url?.signedUrl}
-              loading={<div className='p-4 text-sm'>Loading PDF…</div>}
+              loading={
+                <OverlayLoader
+                  show
+                  withBackdrop
+                  title='Loading your Book…'
+                  subtitle='We are preparing the pages and optimizing the view.'
+                  badgeLabel='Viewer Sync'
+                  className='min-h-screen h-full px-4 sm:px-6'
+                />
+              }
               onLoadSuccess={({ numPages: np }) => {
                 setNumPages(np);
                 setPageNumber((prev) => Math.min(prev || 1, np));

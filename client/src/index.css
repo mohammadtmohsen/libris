@@ -23,3 +23,7 @@ body {
   height: 100vh;
   max-height: 100vh;
 }
+
+.react-pdf__message {
+  width: 100% !important;
+}
