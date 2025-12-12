@@ -6,6 +6,8 @@ import {
   getPublicationEraFromYear,
   toSignedPublicationYear,
 } from '_utils/publicationYear';
+import { useGetSeries } from '_queries/seriesQueries';
+import { useMemo } from 'react';
 
 export const useUpdateBook = (book: Book) => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -17,6 +19,8 @@ export const useUpdateBook = (book: Book) => {
       tags: book.tags || [],
       publicationYear: getAbsolutePublicationYear(book.publicationYear) ?? '',
       publicationEra: getPublicationEraFromYear(book.publicationYear) ?? 'AD',
+      seriesId: book.seriesId ?? (book.series?._id || null) ?? null,
+      part: book.part ?? null,
     },
   });
 
@@ -25,6 +29,21 @@ export const useUpdateBook = (book: Book) => {
 
   const { mutateAsync: updateBookMutateAsync, isPending: isUpdateBookPending } =
     useUpdateBookById();
+
+  const { data: seriesList = [], isLoading: isSeriesLoading } = useGetSeries();
+  const seriesOptions = useMemo(
+    () =>
+      seriesList.map((s) => ({
+        value: s._id,
+        label: s.name,
+        totalParts: s.totalParts,
+        customLabel:
+          typeof s.totalParts === 'number'
+            ? `${s.name} (${s.totalParts} parts)`
+            : s.name,
+      })),
+    [seriesList]
+  );
 
   const onDeleteBook = async (next: () => void) => {
     if (!book._id) {
@@ -48,6 +67,14 @@ export const useUpdateBook = (book: Book) => {
         return;
       }
       try {
+        const selectedSeriesId = payload.seriesId || null;
+        const partValue =
+          payload.part === '' ||
+          payload.part === undefined ||
+          payload.part === null
+            ? null
+            : Number(payload.part);
+
         await updateBookMutateAsync({
           bookId: book._id,
           updateData: {
@@ -55,6 +82,13 @@ export const useUpdateBook = (book: Book) => {
             author: payload?.author || undefined,
             description: payload.description || undefined,
             tags: payload.tags,
+            seriesId:
+              selectedSeriesId === null
+                ? null
+                : selectedSeriesId
+                ? selectedSeriesId
+                : undefined,
+            part: selectedSeriesId ? partValue : null,
             publicationYear:
               payload.publicationYear === ''
                 ? null
@@ -71,5 +105,12 @@ export const useUpdateBook = (book: Book) => {
         console.error('Failed to upload book:', detailed);
       }
     });
-  return { methods, handleSubmit, isSubmitting, onDeleteBook };
+  return {
+    methods,
+    handleSubmit,
+    isSubmitting,
+    onDeleteBook,
+    seriesOptions,
+    isSeriesLoading,
+  };
 };

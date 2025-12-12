@@ -2,8 +2,6 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-// Removed ProgressSchema as progress tracking is no longer used
-
 const FileSchema = new Schema(
   {
     key: { type: String, required: true },
@@ -37,6 +35,40 @@ const BookSchema = new Schema(
     author: { type: String },
     description: { type: String },
     tags: [{ type: String }],
+    seriesId: { type: Schema.Types.ObjectId, ref: 'Series' },
+    part: {
+      type: Number,
+      min: 1,
+      validate: {
+        validator: function (value) {
+          if (value === undefined || value === null) return true;
+          const isUpdate = typeof this.getUpdate === 'function';
+          if (isUpdate) {
+            const update = this.getUpdate() || {};
+            const set = update.$set || {};
+            const unset = update.$unset || {};
+            if (Object.prototype.hasOwnProperty.call(unset, 'part')) return true;
+
+            const seriesUnset = Object.prototype.hasOwnProperty.call(
+              unset,
+              'seriesId'
+            );
+            const nextSeriesId = Object.prototype.hasOwnProperty.call(
+              set,
+              'seriesId'
+            )
+              ? set.seriesId
+              : update.seriesId;
+
+            if (seriesUnset) return false;
+            if (nextSeriesId === null || nextSeriesId === undefined) return false;
+            return true;
+          }
+          return Boolean(this.seriesId);
+        },
+        message: 'part requires an associated series',
+      },
+    },
     file: { type: FileSchema, required: true },
     cover: { type: CoverSchema },
     pageCount: { type: Number, default: 0, min: 0 },
@@ -54,8 +86,44 @@ const BookSchema = new Schema(
   { timestamps: true, versionKey: false }
 );
 
-// Composite index to support default sorting
-BookSchema.index({ publicationYear: -1, author: 1, title: 1 });
+BookSchema.index({
+  seriesId: 1,
+  part: 1,
+});
+BookSchema.index({
+  publicationYear: -1,
+  seriesId: 1,
+  part: 1,
+  author: 1,
+  title: 1,
+});
+
+BookSchema.pre('validate', function (next) {
+  if (!this.seriesId) {
+    this.part = undefined;
+  }
+  next();
+});
+
+BookSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate() || {};
+  const unsetSeries =
+    (update.$unset && Object.prototype.hasOwnProperty.call(update.$unset, 'seriesId')) ||
+    (update.$set &&
+      Object.prototype.hasOwnProperty.call(update.$set, 'seriesId') &&
+      (update.$set.seriesId === null || update.$set.seriesId === undefined));
+
+  if (unsetSeries) {
+    update.$unset = { ...(update.$unset || {}), part: '' };
+  }
+
+  if (update.$set && update.$set.seriesId === null) {
+    update.$set.seriesId = undefined;
+  }
+
+  this.setUpdate(update);
+  next();
+});
 
 const Book = mongoose.models.Book || mongoose.model('Book', BookSchema);
 

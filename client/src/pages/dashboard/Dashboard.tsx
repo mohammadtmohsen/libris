@@ -5,15 +5,18 @@ import { useMainHook } from './useMainHook';
 import { Header } from '_components/header';
 import { CountBadge } from '_components/shared';
 import type { BookFilters } from '_queries/booksQueries';
+import { useGetSeries } from '_queries/seriesQueries';
 
 const cleanFilters = (next?: BookFilters): BookFilters => ({
   search: next?.search ?? '',
   status: [...(next?.status ?? [])],
   tags: [...(next?.tags ?? [])],
+  seriesIds: [...(next?.seriesIds ?? [])],
 });
 
 export const Dashboard = () => {
   const [filters, setFilters] = useState<BookFilters>(cleanFilters());
+  useGetSeries();
   const {
     books,
     count,

@@ -10,6 +10,7 @@ import { CustomHeaderInput } from './CustomHeaderInput';
 import { FilterBooks } from './FilterBooks/FilterBooks';
 import type { BookFilters } from '_queries/booksQueries';
 import { UsersModalTrigger } from './UsersModal';
+import { SeriesModalTrigger } from './SeriesModal';
 
 export const Header = ({
   filters,
@@ -28,7 +29,8 @@ export const Header = ({
   const hasFiltersApplied = Boolean(
     (filters.search ?? '').trim() ||
       (filters.status?.length ?? 0) ||
-      (filters.tags?.length ?? 0)
+      (filters.tags?.length ?? 0) ||
+      (filters.seriesIds?.length ?? 0)
   );
 
   useEffect(() => {
@@ -59,6 +61,8 @@ export const Header = ({
   const toggleExpanded = () => setIsExpanded((prev) => !prev);
   const handleUploadOpen = () => setIsExpanded(false);
   const handleUsersOpen = () => setIsExpanded(false);
+  const handleSeriesOpen = () => setIsExpanded(false);
+
   const handleResetAll = () => {
     setIsExpanded(false);
     setSearchValue('');
@@ -109,6 +113,7 @@ export const Header = ({
               {isAdmin && (
                 <>
                   <UploadBook onOpen={handleUploadOpen} />
+                  <SeriesModalTrigger onOpen={handleSeriesOpen} />
                   <UsersModalTrigger onOpen={handleUsersOpen} />
                 </>
               )}

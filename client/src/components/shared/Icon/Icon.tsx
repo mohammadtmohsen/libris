@@ -21,6 +21,7 @@ import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import FilterListOffOutlinedIcon from '@mui/icons-material/FilterListOffOutlined';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
 
 export type IconType =
   | 'delete'
@@ -44,7 +45,8 @@ export type IconType =
   | 'editNote'
   | 'filterOn'
   | 'filterOff'
-  | 'users';
+  | 'users'
+  | 'series';
 
 interface IconProps {
   type: IconType;
@@ -113,6 +115,8 @@ export const Icon = ({
       return <FilterListOffOutlinedIcon {...iconProps} />;
     case 'users':
       return <GroupOutlinedIcon {...iconProps} />;
+    case 'series':
+      return <LibraryBooksOutlinedIcon {...iconProps} />;
     default:
       return null;
   }

@@ -5,6 +5,7 @@ import bookRoutes from './bookRoutes.js';
 import storageRoutes from './storageRoutes.js';
 import progressRoutes from './progressRoutes.js';
 import invitationRoutes from './invitationRoutes.js';
+import seriesRoutes from './seriesRoutes.js';
 const router = Router();
 
 // Health check route
@@ -20,6 +21,7 @@ router.get('/', (req, res) => {
 router.use('/users', userRoutes);
 router.use('/auth', authRoutes);
 router.use('/books', bookRoutes);
+router.use('/series', seriesRoutes);
 router.use('/storage', storageRoutes);
 router.use('/progress', progressRoutes);
 router.use('/invitations', invitationRoutes);

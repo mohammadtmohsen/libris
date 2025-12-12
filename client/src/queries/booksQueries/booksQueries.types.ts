@@ -1,4 +1,5 @@
 import type { ProgressStatus } from '../progressQueries/progressQueries.types';
+import type { Series } from '../seriesQueries/seriesQueries.types';
 
 export type BookFile = {
   key: string;
@@ -30,6 +31,9 @@ export type Book = {
   title: string;
   author?: string;
   description?: string;
+  seriesId?: string | null;
+  part?: number;
+  series?: Series;
   tags?: string[];
   pageCount?: number;
   createdAt?: string;
@@ -54,6 +58,8 @@ export type CompleteUploadRequest = {
   description?: string;
   tags?: string[];
   publicationYear?: number | null;
+  seriesId?: string | null;
+  part?: number;
   file: Book['file'];
   cover?: Book['cover'];
   pageCount?: number;
@@ -63,4 +69,7 @@ export type BookFilters = {
   search?: string;
   status?: ProgressStatus[];
   tags?: string[];
+  part?: number;
+  seriesIds?: string[];
+  seriesId?: string;
 };

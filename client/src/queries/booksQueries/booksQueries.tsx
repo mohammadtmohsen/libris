@@ -111,7 +111,10 @@ export const useUpdateBookById = () => {
       updateData,
     }: {
       bookId: string;
-      updateData: Partial<Book>;
+      updateData: Partial<Omit<Book, 'series' | 'part'>> & {
+        seriesId?: string | null;
+        part?: number | null;
+      };
     }) => {
       const res = await axiosInstance.patch<Book>(
         `${BOOKS_QUERY_BASE}/${bookId}`,

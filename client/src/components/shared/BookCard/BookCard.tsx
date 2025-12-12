@@ -1,5 +1,8 @@
 import { Book } from '_queries/booksQueries';
-import { getAbsolutePublicationYear, getPublicationEraFromYear } from '_utils/publicationYear';
+import {
+  getAbsolutePublicationYear,
+  getPublicationEraFromYear,
+} from '_utils/publicationYear';
 import { ReactNode } from 'react';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
@@ -16,6 +19,12 @@ export const BookCard = ({
   const tags = book?.tags ?? [];
   const publicationEra = getPublicationEraFromYear(book.publicationYear);
   const publicationYear = getAbsolutePublicationYear(book.publicationYear);
+  const partLabel = book?.part
+    ? `Part ${book.part}${
+        book?.series?.totalParts ? ` of ${book.series.totalParts}` : ''
+      }`
+    : null;
+  const seriesName = book?.series?.name || null;
 
   return (
     <div
@@ -64,6 +73,20 @@ export const BookCard = ({
         </div>
 
         <div className='space-y-3'>
+          {(seriesName || partLabel) && (
+            <div className='flex flex-wrap items-center gap-2 text-[11px] text-white/85'>
+              {seriesName && (
+                <span className='rounded-full border border-white/15 bg-black/40 px-3 py-1 font-medium backdrop-blur-[2px]'>
+                  {seriesName}
+                </span>
+              )}
+              {partLabel && (
+                <span className='rounded-full border border-white/15 bg-black/40 px-3 py-1 font-medium backdrop-blur-[2px]'>
+                  {partLabel}
+                </span>
+              )}
+            </div>
+          )}
           {publicationYear && publicationEra ? (
             <div className='flex items-center justify-between text-xs text-white/70'>
               <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>

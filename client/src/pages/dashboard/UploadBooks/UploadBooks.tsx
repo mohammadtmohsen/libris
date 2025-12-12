@@ -8,7 +8,14 @@ import {
 import { useUploadBooks } from './useUploadBooks';
 
 export const UploadBook = ({ onOpen }: { onOpen?: () => void }) => {
-  const { methods, handleSubmit, isSubmitting, onClose } = useUploadBooks();
+  const {
+    methods,
+    handleSubmit,
+    isSubmitting,
+    onClose,
+    seriesOptions,
+    isSeriesLoading,
+  } = useUploadBooks();
 
   const uploadModal = useModal({
     content: ({ close }) => (
@@ -20,6 +27,8 @@ export const UploadBook = ({ onOpen }: { onOpen?: () => void }) => {
           close();
         }}
         onSubmit={handleSubmit}
+        seriesOptions={seriesOptions}
+        isSeriesLoading={isSeriesLoading}
       />
     ),
   });

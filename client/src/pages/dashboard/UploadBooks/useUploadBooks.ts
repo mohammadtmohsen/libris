@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { extractFirstPageAsImage } from '_utils/pdfCover';
 import { UploadEditBookFormPayload } from '_components/shared/UploadEditBookForm/UploadEditBookForm';
 import { toSignedPublicationYear } from '_utils/publicationYear';
+import { useGetSeries } from '_queries/seriesQueries';
+import { useMemo } from 'react';
 
 export const useUploadBooks = () => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -18,6 +20,8 @@ export const useUploadBooks = () => {
       tags: [],
       publicationYear: '',
       publicationEra: 'AD',
+      seriesId: null,
+      part: '',
     },
   });
 
@@ -31,6 +35,21 @@ export const useUploadBooks = () => {
     mutateAsync: completeUploadMutateAsync,
     isPending: isCompleteUploadPending,
   } = useCompleteUpload();
+
+  const { data: seriesList = [], isLoading: isSeriesLoading } = useGetSeries();
+  const seriesOptions = useMemo(
+    () =>
+      seriesList.map((s) => ({
+        value: s._id,
+        label: s.name,
+        totalParts: s.totalParts,
+        customLabel:
+          typeof s.totalParts === 'number'
+            ? `${s.name} (${s.totalParts} parts)`
+            : s.name,
+      })),
+    [seriesList]
+  );
 
   const isSubmitting =
     isPresignPending || isUploadPending || isCompleteUploadPending;
@@ -101,6 +120,14 @@ export const useUploadBooks = () => {
           payload.publicationEra
         );
 
+        const selectedSeriesId = payload.seriesId || null;
+        const part =
+          payload.part === '' ||
+          payload.part === undefined ||
+          payload.part === null
+            ? undefined
+            : Number(payload.part);
+
         await completeUploadMutateAsync({
           title: payload.title || payload.file.name.replace(/\.[^.]+$/, ''),
           author: payload.author || undefined,
@@ -108,6 +135,8 @@ export const useUploadBooks = () => {
           tags: payload.tags,
           pageCount,
           publicationYear: signedPublicationYear,
+          seriesId: selectedSeriesId || undefined,
+          part: selectedSeriesId ? part : undefined,
           file: {
             key: pdfPresign.key,
             mime: payload.file.type || 'application/pdf',
@@ -130,5 +159,12 @@ export const useUploadBooks = () => {
         console.error('Failed to upload book:', detailed);
       }
     });
-  return { methods, handleSubmit, isSubmitting, onClose };
+  return {
+    methods,
+    handleSubmit,
+    isSubmitting,
+    onClose,
+    seriesOptions,
+    isSeriesLoading,
+  };
 };

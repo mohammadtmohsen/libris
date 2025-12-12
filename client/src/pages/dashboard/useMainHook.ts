@@ -12,6 +12,7 @@ export const useMainHook = (filters?: BookFilters) => {
     if (trimmedSearch) params.search = trimmedSearch;
     if (filters.status?.length) params.status = filters.status;
     if (filters.tags?.length) params.tags = filters.tags;
+    if (filters.seriesIds?.length) params.seriesIds = filters.seriesIds;
 
     return Object.keys(params).length ? params : undefined;
   }, [filters]);

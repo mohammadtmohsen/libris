@@ -1,5 +1,7 @@
 import clsx from 'clsx';
 import { Controller, UseFormReturn } from 'react-hook-form';
+import { useEffect } from 'react';
+import type { BaseSyntheticEvent, ReactNode } from 'react';
 import { DropZone } from '../DropZone/DropZone';
 import { Input } from '../Input/Input';
 import { Button } from '../Button/Button';
@@ -15,6 +17,8 @@ export type UploadEditBookFormPayload = {
   tags: string[];
   publicationYear?: number | '';
   publicationEra?: 'BC' | 'AD' | '';
+  seriesId?: string | null;
+  part?: number | null | '';
 };
 
 export const UploadEditBookForm = ({
@@ -25,18 +29,35 @@ export const UploadEditBookForm = ({
   isEdit = false,
   book,
   onDelete,
+  seriesOptions = [],
+  isSeriesLoading = false,
 }: {
-  onSubmit: (
-    next: () => void
-  ) => (e?: React.BaseSyntheticEvent) => Promise<void>;
+  onSubmit: (next: () => void) => (e?: BaseSyntheticEvent) => Promise<void>;
   methods: UseFormReturn<UploadEditBookFormPayload>;
   onCancel: () => void;
   isSubmitting: boolean;
   isEdit?: boolean;
   book?: Book;
   onDelete?: (next: () => void) => Promise<void>;
+  seriesOptions?: {
+    label: string;
+    value: string;
+    customLabel?: ReactNode;
+    totalParts?: number | null;
+  }[];
+  isSeriesLoading?: boolean;
 }) => {
   const coverUrl = book?.cover?.coverUrl;
+  const selectedSeriesId = methods.watch('seriesId');
+  const selectedSeries = seriesOptions.find(
+    (s) => s.value === selectedSeriesId
+  );
+
+  useEffect(() => {
+    if (!selectedSeries?.totalParts) {
+      methods.setValue('part', null);
+    }
+  }, [methods, selectedSeries]);
 
   return (
     <form
@@ -188,6 +209,74 @@ export const UploadEditBookForm = ({
               />
             )}
           />
+          <div className='flex items-center gap-2'>
+            <div className='flex-1'>
+              <Controller
+                name='seriesId'
+                control={methods.control}
+                render={({ field, fieldState }) => (
+                  <CustomSelect
+                    options={seriesOptions}
+                    placeholder='Select series (optional)'
+                    label='Series'
+                    isMulti={false}
+                    isClearable
+                    isLoading={isSeriesLoading}
+                    value={field.value || null}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      const pickedSeries = seriesOptions.find(
+                        (s) => s.value === value
+                      );
+                      if (!value || !pickedSeries?.totalParts) {
+                        methods.setValue('part', null);
+                      }
+                    }}
+                    error={fieldState.error?.message}
+                  />
+                )}
+              />
+            </div>
+            {selectedSeriesId &&
+              typeof selectedSeries?.totalParts === 'number' && (
+              <span className='shrink-0 rounded-full bg-blue-1/15 px-3 py-1 text-xs font-semibold text-blue-1 ring-1 ring-blue-1/25 mt-auto'>
+                {selectedSeries.totalParts} Parts
+              </span>
+            )}
+          </div>
+          {selectedSeriesId &&
+          typeof selectedSeries?.totalParts === 'number' ? (
+            <Controller
+              name='part'
+              control={methods.control}
+              rules={{
+                validate: (value) => {
+                  if (value === '' || value === undefined || value === null)
+                    return true;
+                  if (typeof value !== 'number') return 'Part must be a number';
+                  if (value < 1) return 'Part must be at least 1';
+                  if (
+                    typeof selectedSeries?.totalParts === 'number' &&
+                    value > selectedSeries.totalParts
+                  ) {
+                    return `Part cannot exceed total parts (${selectedSeries.totalParts})`;
+                  }
+                  return true;
+                },
+              }}
+              render={({ field, fieldState }) => (
+                <Input
+                  label='Part (optional)'
+                  placeholder='e.g., 1'
+                  type='number'
+                  min={1}
+                  value={field?.value ?? ''}
+                  onChange={(v) => field.onChange(v === '' ? null : Number(v))}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />
+          ) : null}
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]'>
             <Controller
               name='publicationYear'

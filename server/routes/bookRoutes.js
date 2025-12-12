@@ -41,6 +41,15 @@ router.post(
         value !== 0
       );
     }),
+  body('seriesId').optional({ nullable: true }).isMongoId(),
+  body('part').optional({ nullable: true }).isInt({ min: 1 }).toInt(),
+  body('part').custom((value, { req }) => {
+    if (value === undefined || value === null) return true;
+    if (!req.body.seriesId) {
+      throw new Error('part requires a seriesId');
+    }
+    return true;
+  }),
   body('file.key').isString().notEmpty(),
   body('file.mime').isString().notEmpty(),
   body('file.size').isInt({ min: 1 }).toInt(),
@@ -81,6 +90,8 @@ router.get(
   query('tags.*').optional().isString(),
   query('tag').optional().isString(),
   query('search').optional().isString(),
+  query('seriesId').optional().isMongoId(),
+  query('part').optional().isInt({ min: 1 }).toInt(),
   query('page').optional().isInt({ min: 1 }).toInt(),
   query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
   handleValidationErrors,
@@ -100,6 +111,8 @@ router.get(
       }
       return true;
     }),
+  query('seriesId').optional().isMongoId(),
+  query('part').optional().isInt({ min: 1 }).toInt(),
   handleValidationErrors,
   searchBooks
 );
@@ -137,6 +150,15 @@ router.patch(
         value !== 0
       );
     }),
+  body('seriesId').optional({ nullable: true }).isMongoId(),
+  body('part').optional({ nullable: true }).isInt({ min: 1 }).toInt(),
+  body('part').custom((value, { req }) => {
+    if (value === undefined || value === null) return true;
+    if (req.body.seriesId === null) {
+      throw new Error('part cannot be set when removing seriesId');
+    }
+    return true;
+  }),
   handleValidationErrors,
   updateBook
 );

@@ -15,8 +15,14 @@ export const UpdateBook = ({
   book: Book;
   buttonClassName?: string;
 }) => {
-  const { methods, handleSubmit, isSubmitting, onDeleteBook } =
-    useUpdateBook(book);
+  const {
+    methods,
+    handleSubmit,
+    isSubmitting,
+    onDeleteBook,
+    seriesOptions,
+    isSeriesLoading,
+  } = useUpdateBook(book);
 
   const uploadModal = useModal({
     content: ({ close }) => (
@@ -28,6 +34,8 @@ export const UpdateBook = ({
         isEdit={true}
         book={book}
         onDelete={onDeleteBook}
+        seriesOptions={seriesOptions}
+        isSeriesLoading={isSeriesLoading}
       />
     ),
   });
