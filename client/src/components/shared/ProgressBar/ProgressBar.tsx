@@ -25,12 +25,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <div
       className={clsx(
-        'relative h-2 w-full overflow-hidden rounded-full bg-black-3/70 ring-1 ring-blue-1/15 shadow-[0_6px_20px_rgba(0,0,0,0.25)] backdrop-blur-sm border border-white-6 ',
+        'relative h-2 w-full overflow-hidden bg-transparent',
         className
       )}
     >
       <div
-        className='h-full rounded-full bg-gradient-to-r from-blue-1/70 via-blue-1 to-blue-1/80 transition-all'
+        className='h-full rounded-full bg-gradient-to-r from-blue-1 via-blue-2 to-blue-3 transition-all'
         style={{ width: `${percent}%` }}
       />
     </div>

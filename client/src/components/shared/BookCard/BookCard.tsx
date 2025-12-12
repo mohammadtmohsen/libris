@@ -18,6 +18,7 @@ export const BookCard = ({
   infoButton?: ReactNode;
 }) => {
   const tags = book?.tags ?? [];
+  const tagsDisplay = tags.length > 0 ? tags.join(' • ') : null;
   const publicationEra = getPublicationEraFromYear(book.publicationYear);
   const publicationYear = getAbsolutePublicationYear(book.publicationYear);
   const publicationDisplay =
@@ -84,7 +85,7 @@ export const BookCard = ({
       }
     >
       <div className='absolute inset-0 bg-gradient-to-b from-white/10 via-blue-4/10 to-black/70 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100' />
-      <div className='relative z-10 flex h-full w-full flex-col justify-between p-1'>
+      <div className='relative z-10 flex h-full w-full flex-col justify-between p-1 pb-2'>
         <div className='flex items-start justify-between gap-3'>
           <StatusBadge
             status={book?.progress?.status}
@@ -119,26 +120,27 @@ export const BookCard = ({
             </span>
           )}
 
-          {tags?.length > 0 && (
-            <div className='text-[11px] font-medium text-white/80 line-clamp-1'>
-              {`التصنيفات: ${tags.join(' • ')}`}
+          {(tagsDisplay || book?.pageCount !== undefined) && (
+            <div className='mt-1 flex items-center justify-between gap-2 text-[11px] font-medium text-white/80'>
+              <div className='min-w-0 flex-1 text-white/80'>
+                {tagsDisplay ? `التصنيفات: ${tagsDisplay}` : '\u00a0'}
+              </div>
+              <span
+                className='shrink-0 text-[10px] text-white/55 shadow-sm mt-auto'
+                dir='ltr'
+              >
+                {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
+              </span>
             </div>
           )}
-
-          <div
-            className='flex items-center gap-2 text-[11px] text-white/75'
-            dir='ltr'
-          >
-            <span className='rounded-full bg-white/15 px-2 py-[2px] font-medium backdrop-blur-[1px]'>
-              {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
-            </span>
-            <ProgressBar
-              pageCount={book?.pageCount || 0}
-              pagesRead={book?.progress?.pagesRead || 0}
-              className='flex-1 min-w-0 h-[6px]'
-            />
-          </div>
         </div>
+      </div>
+      <div className='absolute inset-x-0 bottom-0'>
+        <ProgressBar
+          pageCount={book?.pageCount || 0}
+          pagesRead={book?.progress?.pagesRead || 0}
+          className='h-[6px] rounded-none border-0 shadow-none ring-0 bg-white/20'
+        />
       </div>
     </div>
   );
