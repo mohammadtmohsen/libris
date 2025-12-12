@@ -301,7 +301,19 @@ export const getAllBooks = asyncHandler(async (req, res) => {
               },
             },
           },
-          { $project: { book: 1, status: 1, pagesRead: 1 } },
+          {
+            $project: {
+              book: 1,
+              status: 1,
+              pagesRead: 1,
+              wantToReadAt: 1,
+              startedAt: 1,
+              finishedAt: 1,
+              abandonedAt: 1,
+              createdAt: 1,
+              updatedAt: 1,
+            },
+          },
         ],
         as: 'progresses',
       },
@@ -311,7 +323,17 @@ export const getAllBooks = asyncHandler(async (req, res) => {
         progress: {
           $ifNull: [
             { $arrayElemAt: ['$progresses', 0] },
-            { book: '$_id', status: 'not_started', pagesRead: 0 },
+            {
+              book: '$_id',
+              status: 'not_started',
+              pagesRead: 0,
+              wantToReadAt: null,
+              startedAt: null,
+              finishedAt: null,
+              abandonedAt: null,
+              createdAt: null,
+              updatedAt: null,
+            },
           ],
         },
       },
@@ -398,8 +420,20 @@ export const getBookById = asyncHandler(async (req, res) => {
     owner: req.user._id,
     book: book._id,
   })
-    .select('book status pagesRead')
-    .lean()) || { book: book._id, status: 'not_started', pagesRead: 0 };
+    .select(
+      'book status pagesRead wantToReadAt startedAt finishedAt abandonedAt createdAt updatedAt'
+    )
+    .lean()) || {
+    book: book._id,
+    status: 'not_started',
+    pagesRead: 0,
+    wantToReadAt: null,
+    startedAt: null,
+    finishedAt: null,
+    abandonedAt: null,
+    createdAt: null,
+    updatedAt: null,
+  };
   res.json({ success: true, data: { ...shapeBookResponse(book), progress } });
 });
 

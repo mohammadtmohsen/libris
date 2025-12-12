@@ -11,6 +11,10 @@ export type Progress = {
   owner?: string;
   status: ProgressStatus;
   pagesRead: number;
+  wantToReadAt?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  abandonedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 };

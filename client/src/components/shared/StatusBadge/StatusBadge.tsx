@@ -49,6 +49,7 @@ type StatusBadgeProps = {
   condensed?: boolean;
   enableDropdown?: boolean;
   onStatusChange?: (status: ProgressStatus) => void;
+  statusDateLabel?: string | null;
 };
 
 export const StatusBadge = ({
@@ -57,6 +58,7 @@ export const StatusBadge = ({
   className,
   condensed = false,
   enableDropdown = true,
+  statusDateLabel,
   onStatusChange,
 }: StatusBadgeProps) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.not_started;
@@ -114,7 +116,7 @@ export const StatusBadge = ({
           setOpen((prev) => !prev);
         }}
         className={clsx(
-          'inline-flex items-center rounded-full font-semibold uppercase tracking-[0.09em] ring-1 ring-inset shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-[2px]',
+          'inline-flex items-center rounded-full ring-1 ring-inset shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-[2px]',
           'transition-all duration-200 hover:-translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60',
           isUpdating && 'opacity-75',
           config.badgeClass,
@@ -131,7 +133,16 @@ export const StatusBadge = ({
             isUpdating && 'animate-pulse'
           )}
         />
-        <span className='leading-none whitespace-nowrap'>{config.label}</span>
+        <span className='flex items-center gap-1 leading-tight text-left'>
+          <span className='leading-none whitespace-nowrap uppercase font-semibold tracking-[0.09em]'>
+            {config.label}
+          </span>
+          {statusDateLabel ? (
+            <span className='text-[10px] font-medium normal-case tracking-normal whitespace-nowrap text-white/90 leading-none'>
+              on {statusDateLabel}
+            </span>
+          ) : null}
+        </span>
       </button>
 
       {canChange && (

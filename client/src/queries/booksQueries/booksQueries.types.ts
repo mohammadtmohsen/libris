@@ -21,6 +21,10 @@ export type BookProgress = {
   status: ProgressStatus;
   pagesRead: number;
   book?: string;
+  wantToReadAt?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  abandonedAt?: string | null;
   updatedAt?: string;
   createdAt?: string;
 };

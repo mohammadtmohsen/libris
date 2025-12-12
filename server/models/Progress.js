@@ -21,6 +21,10 @@ const ProgressSchema = new Schema(
       enum: ['not_started', 'want_to_read', 'reading', 'finished', 'abandoned'],
       default: 'not_started',
     },
+    wantToReadAt: { type: Date },
+    startedAt: { type: Date },
+    finishedAt: { type: Date },
+    abandonedAt: { type: Date },
     pagesRead: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true, versionKey: false }

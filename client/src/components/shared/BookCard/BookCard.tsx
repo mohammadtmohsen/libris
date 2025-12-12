@@ -4,6 +4,7 @@ import {
   getPublicationEraFromYear,
 } from '_utils/publicationYear';
 import { ReactNode } from 'react';
+import { formatDate } from '_utils/helper';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
 
@@ -25,6 +26,37 @@ export const BookCard = ({
       }`
     : null;
   const seriesName = book?.series?.name || null;
+  const progressStatusLabelMap = {
+    want_to_read: 'Want to Read',
+    reading: 'Started',
+    finished: 'Finished',
+    abandoned: 'Abandoned',
+  } as const;
+  const progressDateDisplay = (() => {
+    const progress = book?.progress;
+    if (!progress || !progress.status || progress.status === 'not_started') {
+      return null;
+    }
+    const statusLabel = progressStatusLabelMap[progress.status];
+    if (!statusLabel) return null;
+    const statusDate =
+      progress.status === 'want_to_read'
+        ? progress.wantToReadAt
+        : progress.status === 'reading'
+          ? progress.startedAt
+          : progress.status === 'finished'
+            ? progress.finishedAt
+            : progress.abandonedAt;
+    const fallbackDate = progress.updatedAt || progress.createdAt;
+    const dateToUse = statusDate || fallbackDate;
+    if (!dateToUse) return null;
+    const formattedDate = formatDate(dateToUse, 'DD/MM/YYYY');
+    if (!formattedDate) return null;
+    return {
+      label: statusLabel,
+      date: formattedDate,
+    };
+  })();
 
   return (
     <div
@@ -51,6 +83,7 @@ export const BookCard = ({
             status={book?.progress?.status}
             bookId={book?._id}
             condensed
+            statusDateLabel={progressDateDisplay?.date || null}
             className='shrink-0'
           />
           <div

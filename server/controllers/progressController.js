@@ -11,6 +11,10 @@ export const getProgressForBook = asyncHandler(async (req, res) => {
       book: req.params.bookId,
       status: 'not_started',
       pagesRead: 0,
+      wantToReadAt: null,
+      startedAt: null,
+      finishedAt: null,
+      abandonedAt: null,
     };
 
   res.json({ success: true, data: progress });
@@ -33,15 +37,52 @@ export const upsertProgress = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, error: 'Book not found' });
   }
 
-  const update = {};
-  if (status !== undefined) update.status = status;
-
   if (status === 'not_started') {
     await Progress.deleteOne({ owner: req.user._id, book: book._id });
     return res.json({
       success: true,
-      data: { book: book._id, status: 'not_started', pagesRead: 0 },
+      data: {
+        book: book._id,
+        status: 'not_started',
+        pagesRead: 0,
+        wantToReadAt: null,
+        startedAt: null,
+        finishedAt: null,
+        abandonedAt: null,
+      },
     });
+  }
+
+  const existingProgress =
+    (await Progress.findOne({
+      owner: req.user._id,
+      book: book._id,
+    }).select('status wantToReadAt startedAt finishedAt abandonedAt')) || null;
+
+  const update = {};
+  const statusChanged =
+    status !== undefined && status !== existingProgress?.status;
+
+  if (status !== undefined) {
+    update.status = status;
+    const now = new Date();
+    const statusFieldMap = {
+      want_to_read: 'wantToReadAt',
+      reading: 'startedAt',
+      finished: 'finishedAt',
+      abandoned: 'abandonedAt',
+    };
+    const timestampField =
+      status && statusFieldMap[status]
+        ? statusFieldMap[status]
+        : undefined;
+
+    if (
+      timestampField &&
+      (statusChanged || !existingProgress?.[timestampField])
+    ) {
+      update[timestampField] = now;
+    }
   }
 
   if (pagesRead !== undefined) {
