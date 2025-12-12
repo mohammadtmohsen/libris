@@ -56,7 +56,7 @@ export const Books = ({
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
-    <div className='relative flex min-h-[calc(100vh-170px)] w-full flex-col gap-5'>
+    <div className='relative min-h-[calc(100vh-170px)] w-full'>
       <div className='grid min-h-full w-full grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 xs:gap-4'>
         {books.map((book: Book) => {
           return (
@@ -78,10 +78,13 @@ export const Books = ({
           );
         })}
       </div>
-
       <div ref={sentinelRef} className='h-4 w-full' />
 
-      <OverlayLoader show={isFetchingNextPage || isFetching} mini className='mt-auto' />
+      <OverlayLoader
+        show={!isFetchingNextPage || isFetching}
+        mini
+        className='mt-auto'
+      />
 
       <Modal {...pdfModal} />
     </div>

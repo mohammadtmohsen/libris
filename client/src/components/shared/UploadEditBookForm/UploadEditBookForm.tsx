@@ -221,6 +221,7 @@ export const UploadEditBookForm = ({
                     label='Series'
                     isMulti={false}
                     isClearable
+                    dir='rtl'
                     isLoading={isSeriesLoading}
                     value={field.value || null}
                     onChange={(value) => {
@@ -239,10 +240,10 @@ export const UploadEditBookForm = ({
             </div>
             {selectedSeriesId &&
               typeof selectedSeries?.totalParts === 'number' && (
-              <span className='shrink-0 rounded-full bg-blue-1/15 px-3 py-1 text-xs font-semibold text-blue-1 ring-1 ring-blue-1/25 mt-auto'>
-                {selectedSeries.totalParts} Parts
-              </span>
-            )}
+                <span className='shrink-0 rounded-full bg-blue-1/15 px-3 py-1 text-xs font-semibold text-blue-1 ring-1 ring-blue-1/25 mt-auto'>
+                  {selectedSeries.totalParts} Parts
+                </span>
+              )}
           </div>
           {selectedSeriesId &&
           typeof selectedSeries?.totalParts === 'number' ? (

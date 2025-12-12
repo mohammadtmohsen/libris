@@ -214,6 +214,7 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
             <Input
               label='Series name'
               placeholder='e.g., Chronicles Collection'
+              dir='rtl'
               {...field}
               error={errors.name?.message}
             />
