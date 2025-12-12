@@ -33,23 +33,21 @@ export const Dashboard = () => {
   const handleResetFilters = () => setFilters(cleanFilters());
 
   return (
-    <main className='flex gap-4 h-screen max-h-screen'>
-      <div className='relative flex flex-col gap-4 grow m-0 overflow-hidden'>
-        <Header
-          filters={filters}
-          onFilterChange={handleApplyFilters}
-          onResetFilters={handleResetFilters}
+    <main className='flex h-screen max-h-screen flex-col overflow-hidden'>
+      <Header
+        filters={filters}
+        onFilterChange={handleApplyFilters}
+        onResetFilters={handleResetFilters}
+      />
+      <div className={clsx('flex-1 overflow-auto', 'px-3 sm:px-4')}>
+        <Books
+          books={books}
+          isFetching={isFetching}
+          hasNextPage={hasNextPage}
+          fetchNextPage={fetchNextPage}
+          isFetchingNextPage={isFetchingNextPage}
         />
-        <div className={clsx('flex-1 overflow-auto', 'px-3 sm:px-4')}>
-          <Books
-            books={books}
-            isFetching={isFetching}
-            hasNextPage={hasNextPage}
-            fetchNextPage={fetchNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-          />
-          <CountBadge isFetching={isFetching} count={count} />
-        </div>
+        <CountBadge isFetching={isFetching} count={count} />
       </div>
     </main>
   );

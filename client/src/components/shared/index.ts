@@ -19,6 +19,7 @@ import { StatusToggle, StatusToggleOption } from './StatusToggle/StatusToggle';
 import { StatusBadge } from './StatusBadge/StatusBadge';
 import { CountBadge } from './CountBadge/CountBadge';
 import { OverlayLoader } from './OverlayLoader/OverlayLoader';
+import { NoData } from './NoData/NoData';
 export {
   CardSkeleton,
   Button,
@@ -41,6 +42,7 @@ export {
   StatusBadge,
   CountBadge,
   OverlayLoader,
+  NoData,
 };
 
 export type {

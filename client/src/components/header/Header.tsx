@@ -70,8 +70,8 @@ export const Header = ({
   };
 
   return (
-    <div className='mt-3 mx-3 sm:mt-4 sm:mx-4 shrink-0 rounded-2xl bg-black-1 shadow-[0_16px_46px_rgba(0,0,0,0.32)]'>
-      <div className='flex flex-col gap-3 rounded-secondary'>
+    <div className='sticky top-0 z-30 shrink-0 bg-black-1 p-3 backdrop-blur sm:px-4 sm:pt-4'>
+      <div className='flex flex-col'>
         <div className='flex items-center gap-2'>
           <img
             src={logos.librisLogo}
@@ -101,7 +101,7 @@ export const Header = ({
             className={clsx(
               'grid gap-3 md:grid-cols-[1fr_auto] transition-[opacity,transform,padding] duration-300 ease-in-out',
               isExpanded
-                ? 'opacity-100 translate-y-0 pt-3 pb-4'
+                ? 'opacity-100 translate-y-0 pt-3 pb-2'
                 : 'pointer-events-none opacity-0 -translate-y-3 pt-0 pb-0'
             )}
           >
