@@ -85,7 +85,7 @@ export const BookCard = ({
       }
     >
       <div className='absolute inset-0 bg-gradient-to-b from-white-6 via-blue-4/10 to-black-5 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100' />
-      <div className='relative z-10 flex h-full w-full flex-col justify-between p-1 pb-2'>
+      <div className='relative z-10 flex h-full w-full flex-col justify-between p-1 pb-3.5'>
         <div className='flex items-start justify-between gap-3'>
           <StatusBadge
             status={book?.progress?.status}
@@ -121,16 +121,8 @@ export const BookCard = ({
           )}
 
           {(tagsDisplay || book?.pageCount !== undefined) && (
-            <div className='flex items-center justify-between gap-2 text-[12px] font-medium text-white-1'>
-              <div className='min-w-0 flex-1 text-white-1'>
-                {tagsDisplay ? `التصنيفات: ${tagsDisplay}` : '\u00a0'}
-              </div>
-              <span
-                className='shrink-0 text-[10px] text-white-1 shadow-sm mt-auto'
-                dir='ltr'
-              >
-                {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
-              </span>
+            <div className='min-w-0 flex-1 text-white-1 text-[12px] font-medium'>
+              {tagsDisplay ? `التصنيفات: ${tagsDisplay}` : '\u00a0'}
             </div>
           )}
         </div>
@@ -139,7 +131,8 @@ export const BookCard = ({
         <ProgressBar
           pageCount={book?.pageCount || 0}
           pagesRead={book?.progress?.pagesRead || 0}
-          className='h-[6px] rounded-none border-0 shadow-none ring-0 bg-transparent'
+          withLabel
+          className='rounded-none border-0 shadow-none ring-0 bg-transparent'
         />
       </div>
     </div>
