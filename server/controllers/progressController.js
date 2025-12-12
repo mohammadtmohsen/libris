@@ -37,6 +37,11 @@ export const upsertProgress = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, error: 'Book not found' });
   }
 
+  const totalPages =
+    typeof book.pageCount === 'number' && book.pageCount >= 0
+      ? book.pageCount
+      : 0;
+
   if (status === 'not_started') {
     await Progress.deleteOne({ owner: req.user._id, book: book._id });
     return res.json({
@@ -85,7 +90,9 @@ export const upsertProgress = asyncHandler(async (req, res) => {
     }
   }
 
-  if (pagesRead !== undefined) {
+  if (status === 'finished') {
+    update.pagesRead = totalPages;
+  } else if (pagesRead !== undefined) {
     update.pagesRead = pagesRead;
   }
 
