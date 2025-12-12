@@ -20,12 +20,19 @@ export const BookCard = ({
   const tags = book?.tags ?? [];
   const publicationEra = getPublicationEraFromYear(book.publicationYear);
   const publicationYear = getAbsolutePublicationYear(book.publicationYear);
-  const partLabel = book?.part
-    ? `Part ${book.part}${
-        book?.series?.totalParts ? ` of ${book.series.totalParts}` : ''
-      }`
-    : null;
+  const publicationDisplay =
+    publicationYear !== undefined && publicationYear !== null
+      ? publicationEra === 'BC'
+        ? `${publicationYear} BC`
+        : `${publicationYear}`
+      : null;
   const seriesName = book?.series?.name || null;
+  const seriesDisplay = seriesName ? `المجموعة: ${seriesName}` : null;
+  const totalParts = book?.series?.totalParts;
+  const partDisplay = book?.part
+    ? `الجزء ${book.part}${totalParts ? ` من ${totalParts}` : ''}`
+    : null;
+  const seriesLine = [seriesDisplay, partDisplay].filter(Boolean).join(' • ');
   const progressStatusLabelMap = {
     want_to_read: 'Want to Read',
     reading: 'Started',
@@ -43,10 +50,10 @@ export const BookCard = ({
       progress.status === 'want_to_read'
         ? progress.wantToReadAt
         : progress.status === 'reading'
-          ? progress.startedAt
-          : progress.status === 'finished'
-            ? progress.finishedAt
-            : progress.abandonedAt;
+        ? progress.startedAt
+        : progress.status === 'finished'
+        ? progress.finishedAt
+        : progress.abandonedAt;
     const fallbackDate = progress.updatedAt || progress.createdAt;
     const dateToUse = statusDate || fallbackDate;
     if (!dateToUse) return null;
@@ -77,7 +84,7 @@ export const BookCard = ({
       }
     >
       <div className='absolute inset-0 bg-gradient-to-b from-white/10 via-blue-4/10 to-black/70 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100' />
-      <div className='relative z-10 flex h-full w-full flex-col justify-between p-4 sm:p-5'>
+      <div className='relative z-10 flex h-full w-full flex-col justify-between p-2'>
         <div className='flex items-start justify-between gap-3'>
           <StatusBadge
             status={book?.progress?.status}
@@ -86,90 +93,55 @@ export const BookCard = ({
             statusDateLabel={progressDateDisplay?.date || null}
             className='shrink-0'
           />
-          <div
-            className='flex flex-col items-start justify-end space-y-1 text-right'
-            dir='rtl'
-          >
+          {infoButton ? (
             <div
-              className='text-lg font-semibold leading-tight text-white text-right line-clamp-2 drop-shadow-sm'
-              dir='rtl'
+              onClick={(e) => e.stopPropagation()}
+              className='flex items-center justify-end'
             >
+              {infoButton}
+            </div>
+          ) : null}
+        </div>
+        <div className='mt-2 space-y-2' dir='rtl'>
+          <div className='flex flex-col items-start justify-end space-y-1 text-right'>
+            <div className='text-lg font-semibold leading-tight text-white text-right line-clamp-2 drop-shadow-sm'>
               {book?.title}
             </div>
-            <div
-              className='text-sm text-white/80 line-clamp-1 text-right'
-              dir='rtl'
-            >
+            <div className='text-sm text-white/80 line-clamp-1 text-right'>
               {book?.author}
             </div>
-          </div>
-        </div>
-
-        <div className='space-y-3'>
-          {(seriesName || partLabel) && (
-            <div className='flex flex-wrap items-center gap-2 text-[11px] text-white/85'>
-              {seriesName && (
-                <span className='rounded-full border border-white/15 bg-black/40 px-3 py-1 font-medium backdrop-blur-[2px]'>
-                  {seriesName}
+            {publicationDisplay ? (
+              <div className='flex flex-wrap items-center gap-2 text-xs text-white/70'>
+                <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
+                  {publicationDisplay}
                 </span>
-              )}
-              {partLabel && (
-                <span className='rounded-full border border-white/15 bg-black/40 px-3 py-1 font-medium backdrop-blur-[2px]'>
-                  {partLabel}
-                </span>
-              )}
-            </div>
-          )}
-          {publicationYear && publicationEra ? (
-            <div className='flex items-center justify-between text-xs text-white/70'>
-              <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
-                {publicationYear} {publicationEra}
-              </span>
-              <span className='text-[11px] uppercase tracking-[0.09em] text-white/60'>
-                Publication
-              </span>
-            </div>
-          ) : null}
-          <div className='flex items-center justify-between text-xs text-white/70'>
-            <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
-              {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
-            </span>
-            <span className='text-[11px] uppercase tracking-[0.09em] text-white/60'>
-              Progress
-            </span>
-          </div>
-          <ProgressBar
-            pageCount={book?.pageCount || 0}
-            pagesRead={book?.progress?.pagesRead || 0}
-          />
-          {infoButton ? (
-            <div className='flex items-center justify-end'>
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className='flex items-center gap-2 text-xs text-white/80'
-              >
-                <span className='hidden sm:inline text-[11px] uppercase tracking-[0.08em]'>
-                  Details
-                </span>
-                {infoButton}
               </div>
-            </div>
-          ) : null}
-          {tags?.length > 0 && (
-            <div
-              className='flex flex-wrap items-center gap-2 text-[11px] text-white/80'
-              dir='rtl'
-            >
-              {tags?.map((tag, index) => (
-                <span
-                  key={`${tag}-${index}`}
-                  className='rounded-full border border-white/15 bg-black/40 px-3 py-1 font-medium backdrop-blur-[2px]'
-                >
-                  {tag}
-                </span>
-              ))}
+            ) : null}
+          </div>
+
+          {seriesLine && (
+            <div className='text-[12px] font-medium text-white/85'>
+              {seriesLine}
             </div>
           )}
+
+          {tags?.length > 0 && (
+            <div className='text-[12px] font-medium text-white/80'>
+              {`التصنيفات: ${tags.join(' • ')}`}
+            </div>
+          )}
+
+          <div className='space-y-1' dir='ltr'>
+            <div className='flex items-center justify-start text-xs text-white/70'>
+              <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
+                {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
+              </span>
+            </div>
+            <ProgressBar
+              pageCount={book?.pageCount || 0}
+              pagesRead={book?.progress?.pagesRead || 0}
+            />
+          </div>
         </div>
       </div>
     </div>
