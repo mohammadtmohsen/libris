@@ -84,7 +84,7 @@ export const BookCard = ({
       }
     >
       <div className='absolute inset-0 bg-gradient-to-b from-white/10 via-blue-4/10 to-black/70 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100' />
-      <div className='relative z-10 flex h-full w-full flex-col justify-between p-2'>
+      <div className='relative z-10 flex h-full w-full flex-col justify-between p-1'>
         <div className='flex items-start justify-between gap-3'>
           <StatusBadge
             status={book?.progress?.status}
@@ -102,44 +102,40 @@ export const BookCard = ({
             </div>
           ) : null}
         </div>
-        <div className='mt-2 space-y-2' dir='rtl'>
+        <div className='' dir='rtl'>
           <div className='flex flex-col items-start justify-end space-y-1 text-right'>
             <div className='text-lg font-semibold leading-tight text-white text-right line-clamp-2 drop-shadow-sm'>
               {book?.title}
             </div>
             <div className='text-sm text-white/80 line-clamp-1 text-right'>
-              {book?.author}
+              {book?.author}{' '}
+              {publicationDisplay ? `• ${publicationDisplay}` : ''}
             </div>
-            {publicationDisplay ? (
-              <div className='flex flex-wrap items-center gap-2 text-xs text-white/70'>
-                <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
-                  {publicationDisplay}
-                </span>
-              </div>
-            ) : null}
           </div>
 
           {seriesLine && (
-            <div className='text-[12px] font-medium text-white/85'>
+            <span className='text-[11px] font-medium text-white/80'>
               {seriesLine}
-            </div>
+            </span>
           )}
 
           {tags?.length > 0 && (
-            <div className='text-[12px] font-medium text-white/80'>
+            <div className='text-[11px] font-medium text-white/80 line-clamp-1'>
               {`التصنيفات: ${tags.join(' • ')}`}
             </div>
           )}
 
-          <div className='space-y-1' dir='ltr'>
-            <div className='flex items-center justify-start text-xs text-white/70'>
-              <span className='rounded-full bg-white/15 px-2 py-[3px] font-medium backdrop-blur-[1px]'>
-                {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
-              </span>
-            </div>
+          <div
+            className='flex items-center gap-2 text-[11px] text-white/75'
+            dir='ltr'
+          >
+            <span className='rounded-full bg-white/15 px-2 py-[2px] font-medium backdrop-blur-[1px]'>
+              {book?.progress?.pagesRead || 0} / {book?.pageCount || 0} pages
+            </span>
             <ProgressBar
               pageCount={book?.pageCount || 0}
               pagesRead={book?.progress?.pagesRead || 0}
+              className='flex-1 min-w-0 h-[6px]'
             />
           </div>
         </div>
