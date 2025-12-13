@@ -1,4 +1,9 @@
-import { Button, OverlayLoader, StatusBadge, useActionToast } from '_components/shared';
+import {
+  Button,
+  OverlayLoader,
+  StatusBadge,
+  useActionToast,
+} from '_components/shared';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Document, Page } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
@@ -355,7 +360,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
                 <div
                   dir='rtl'
                   className={clsx(
-                    'text-sm font-bold truncate text-blue-1',
+                    'text-sm font-bold text-blue-1',
                     'text-right'
                   )}
                 >
