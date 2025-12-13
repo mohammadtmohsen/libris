@@ -124,9 +124,9 @@ export const BookCard = ({
             </span>
           )}
 
-          {(tagsDisplay || book?.pageCount !== undefined) && (
+          {tagsDisplay && (
             <div className='min-w-0 flex-1 text-white-1 text-[12px] font-medium'>
-              {tagsDisplay ? `التصنيفات: ${tagsDisplay}` : '\u00a0'}
+              {`التصنيفات: ${tagsDisplay}`}
             </div>
           )}
         </div>
