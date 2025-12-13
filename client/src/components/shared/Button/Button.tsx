@@ -54,14 +54,18 @@ export const Button = (props: ButtonPropsType) => {
   const currentVariant = (variant ?? 'primary') as ButtonVariant;
   const baseAccent = ACCENT_COLORS[currentVariant] || colors.blue[1];
   const iconAccent = iconProps?.htmlColor || baseAccent;
-  const buttonStyle: CSSProperties | undefined = iconButton
-    ? ({
-        ...(style || {}),
-        borderColor: iconAccent,
-        ['--tw-ring-color']: iconAccent,
-        ['--btn-accent']: iconAccent,
-      } as CSSProperties)
-    : style;
+  type ButtonStyle = CSSProperties & {
+    ['--tw-ring-color']?: string;
+    ['--btn-accent']?: string;
+  };
+
+  const buttonStyle: ButtonStyle = style ? { ...(style as CSSProperties) } : {};
+
+  if (iconButton) {
+    buttonStyle.borderColor = iconAccent;
+    buttonStyle['--tw-ring-color'] = iconAccent;
+  }
+  buttonStyle['--btn-accent'] = iconAccent;
 
   return (
     <button
@@ -79,16 +83,15 @@ export const Button = (props: ButtonPropsType) => {
       )}
       disabled={loading || restProps.disabled}
       style={buttonStyle}
+      aria-busy={loading}
       {...restProps}
     >
       {loading ? (
         <Loader
           loading={loading}
-          className={clsx(
-            'relative bg-transparent',
-            iconButton ? 'text-[var(--btn-accent)]' : 'text-blue-1'
-          )}
-          circularSize={25}
+          accentColor={iconAccent}
+          circularSize={iconButton ? 22 : 28}
+          circularThickness={iconButton ? 4 : 5}
         />
       ) : iconButton ? (
         <Icon {...{ ...iconProps, htmlColor: iconAccent }} type={iconButton} />

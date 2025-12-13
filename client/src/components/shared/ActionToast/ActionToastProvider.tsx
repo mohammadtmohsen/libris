@@ -12,7 +12,7 @@ import {
   ToastState,
 } from './ActionToastContext';
 
-const DEFAULT_AUTO_CLOSE = 2600;
+const DEFAULT_AUTO_CLOSE = 5000;
 
 export const ActionToastProvider = ({
   children,

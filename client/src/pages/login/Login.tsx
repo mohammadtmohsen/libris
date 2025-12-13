@@ -42,7 +42,7 @@ export const Login = () => {
         onSubmit={handleSubmit(onSubmit)}
         className='flex flex-col items-center gap-5 bg-black-1 border-2 border-blue-2 rounded p-5 rounded-secondary shadow-lg w-full max-w-md'
       >
-        <img src={logos.librisLogo} className='w-24 h-24' />
+        <img src={logos.librisLogo} className='w-[150px]' />
         <Controller
           name='username'
           control={control}
@@ -57,7 +57,12 @@ export const Login = () => {
           )}
           rules={{ required: true }}
         />
-        <Button type='submit' className='!w-full' loading={loading}>
+        <Button
+          variant='primary'
+          type='submit'
+          className='!w-full'
+          loading={loading}
+        >
           Login
         </Button>
       </form>

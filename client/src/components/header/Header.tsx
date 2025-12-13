@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { logos } from '_assets';
 import { useStore } from '_store/useStore';
-import { Button } from '_components/shared';
+import { Button, useActionToast } from '_components/shared';
 import authServices from '_services/authServices/authServices';
 import { getInitialsFromName } from '_utils/helper';
 import { UploadBook } from '_pages/dashboard/UploadBooks/UploadBooks';
@@ -22,6 +22,7 @@ export const Header = ({
   onResetFilters: () => void;
 }) => {
   const { loggingData, logoutUser } = useStore();
+  const toast = useActionToast();
   const displayName = loggingData?.displayName;
   const isAdmin = (loggingData?.role ?? 'user') === 'admin';
   const [isExpanded, setIsExpanded] = useState(false);
@@ -38,12 +39,27 @@ export const Header = ({
   }, [filters.search]);
 
   const handleLogout = async () => {
+    const farewellName = displayName || loggingData?.username || 'Reader';
+
     try {
+      toast.showToast({
+        title: 'Closing this chapter…',
+        description: 'Tucking your session between the pages while we log you out.',
+      });
       await authServices.logout();
+      logoutUser();
+      toast.showSuccess({
+        title: `Bookmark saved, ${farewellName}!`,
+        description: 'You are signed out, shelves are tidy, and your spot is saved for next time.',
+      });
     } catch (error) {
       console.error('Logout failed:', error);
-    } finally {
       logoutUser();
+      toast.showError({
+        title: 'Offline plot twist',
+        description:
+          'Server missed the ending, but we closed your local chapter anyway.',
+      });
     }
   };
 
