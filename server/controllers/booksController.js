@@ -143,10 +143,7 @@ export const completeUpload = asyncHandler(async (req, res) => {
       partValue !== undefined &&
       partValue > seriesRef.totalParts
     ) {
-      return failWithCleanup(
-        400,
-        'part cannot exceed series totalParts'
-      );
+      return failWithCleanup(400, 'part cannot exceed series totalParts');
     }
     if (partValue !== undefined) {
       const existingPart = await Book.findOne({
@@ -164,10 +161,7 @@ export const completeUpload = asyncHandler(async (req, res) => {
       }
     }
   } else if (partValue !== undefined) {
-    return failWithCleanup(
-      400,
-      'part cannot be set without a seriesId'
-    );
+    return failWithCleanup(400, 'part cannot be set without a seriesId');
   }
 
   let book;
@@ -243,7 +237,8 @@ export const getAllBooks = asyncHandler(async (req, res) => {
   const query = {};
   if (tagFilters.length > 0) query.tags = { $in: tagFilters };
   if (seriesObjectIds.length === 1) query.seriesId = seriesObjectIds[0];
-  else if (seriesObjectIds.length > 1) query.seriesId = { $in: seriesObjectIds };
+  else if (seriesObjectIds.length > 1)
+    query.seriesId = { $in: seriesObjectIds };
   if (Number.isFinite(partFilter) && partFilter > 0) query.part = partFilter;
 
   const matchStage = { $match: { ...query } };
@@ -346,6 +341,23 @@ export const getAllBooks = asyncHandler(async (req, res) => {
       ? [{ $match: { 'progress.status': { $in: statusFilter } } }]
       : [];
 
+  const publicationYearSortStage = {
+    $addFields: {
+      publicationYearPresent: {
+        $cond: [{ $ifNull: ['$publicationYear', false] }, 1, 0],
+      },
+      publicationEraOrder: {
+        $switch: {
+          branches: [
+            { case: { $lt: ['$publicationYear', 0] }, then: 0 }, // BC
+            { case: { $gt: ['$publicationYear', 0] }, then: 1 }, // AD
+          ],
+          default: 2, // missing or null
+        },
+      },
+    },
+  };
+
   const [countResult, books] = await Promise.all([
     Book.aggregate([
       ...withProgressPipeline,
@@ -355,9 +367,12 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     Book.aggregate([
       ...withProgressPipeline,
       ...statusPipeline,
+      publicationYearSortStage,
       {
         $sort: {
-          publicationYear: -1,
+          publicationYearPresent: -1,
+          publicationEraOrder: 1,
+          publicationYear: 1,
           seriesId: 1,
           part: 1,
           author: 1,
@@ -366,6 +381,7 @@ export const getAllBooks = asyncHandler(async (req, res) => {
       },
       { $skip: skip },
       { $limit: pageSize },
+      { $project: { publicationEraOrder: 0, publicationYearPresent: 0 } },
     ]),
   ]);
 
@@ -492,7 +508,9 @@ export const updateBook = asyncHandler(async (req, res) => {
           .status(400)
           .json({ success: false, error: 'Invalid seriesId' });
       }
-      const seriesRef = await Series.findById(seriesId).select('_id totalParts');
+      const seriesRef = await Series.findById(seriesId).select(
+        '_id totalParts'
+      );
       if (!seriesRef) {
         return res
           .status(400)
@@ -525,12 +543,10 @@ export const updateBook = asyncHandler(async (req, res) => {
       ? null
       : updates.seriesId ?? book.seriesId;
     if (!effectiveSeries && partValue !== undefined) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: 'part cannot be set without a seriesId',
-        });
+      return res.status(400).json({
+        success: false,
+        error: 'part cannot be set without a seriesId',
+      });
     }
 
     if (partValue !== undefined && effectiveSeries) {

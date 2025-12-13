@@ -26,7 +26,7 @@ export const BookCard = ({
     publicationYear !== undefined && publicationYear !== null
       ? publicationEra === 'BC'
         ? `${publicationYear} ق.م`
-        : `${publicationYear}`
+        : `${publicationYear} م`
       : null;
   const seriesName = book?.series?.name || null;
   const seriesDisplay = seriesName ? `المجموعة: ${seriesName}` : null;
