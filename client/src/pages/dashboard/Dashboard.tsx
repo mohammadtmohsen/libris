@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { Books } from './Books/Books';
 import { useMainHook } from './useMainHook';
@@ -25,6 +25,7 @@ const areFiltersEqual = (a: BookFilters, b: BookFilters) =>
 export const Dashboard = () => {
   const [filters, setFilters] = useState<BookFilters>(cleanFilters());
   useGetSeries();
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const {
     books,
     count,
@@ -41,14 +42,26 @@ export const Dashboard = () => {
 
   const handleResetFilters = useCallback(() => setFilters(cleanFilters()), []);
 
+  const handleLogoClick = useCallback(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <main className='flex h-screen max-h-screen flex-col overflow-hidden'>
       <Header
         filters={filters}
         onFilterChange={handleApplyFilters}
         onResetFilters={handleResetFilters}
+        onLogoClick={handleLogoClick}
       />
-      <div className={clsx('flex-1 overflow-auto', 'px-3 sm:px-4')}>
+      <div
+        ref={contentRef}
+        className={clsx('flex-1 overflow-auto', 'px-3 sm:px-4')}
+      >
         <Books
           books={books}
           isFetching={isFetching}

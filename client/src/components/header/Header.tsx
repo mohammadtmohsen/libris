@@ -16,10 +16,12 @@ export const Header = ({
   filters,
   onFilterChange,
   onResetFilters,
+  onLogoClick,
 }: {
   filters: BookFilters;
   onFilterChange: (filters: BookFilters) => void;
   onResetFilters: () => void;
+  onLogoClick?: () => void;
 }) => {
   const { loggingData, logoutUser } = useStore();
   const toast = useActionToast();
@@ -44,13 +46,15 @@ export const Header = ({
     try {
       toast.showToast({
         title: 'Closing this chapter…',
-        description: 'Tucking your session between the pages while we log you out.',
+        description:
+          'Tucking your session between the pages while we log you out.',
       });
       await authServices.logout();
       logoutUser();
       toast.showSuccess({
         title: `Bookmark saved, ${farewellName}!`,
-        description: 'You are signed out, shelves are tidy, and your spot is saved for next time.',
+        description:
+          'You are signed out, shelves are tidy, and your spot is saved for next time.',
       });
     } catch (error) {
       console.error('Logout failed:', error);
@@ -85,14 +89,26 @@ export const Header = ({
     onResetFilters();
   };
 
+  const handleLogoClick = () => {
+    onLogoClick?.();
+  };
+
   return (
     <div className='sticky top-0 z-30 shrink-0 bg-black-1 p-3 backdrop-blur sm:px-4 sm:pt-4'>
       <div className='flex flex-col'>
         <div className='flex items-center gap-2'>
-          <img
-            src={logos.librisLogo}
-            className='h-12 w-16 shrink-0 object-contain'
-          />
+          <button
+            type='button'
+            onClick={handleLogoClick}
+            className='h-12 shrink-0 rounded-md border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60 focus-visible:ring-offset-0'
+            aria-label='Scroll to top'
+          >
+            <img
+              src={logos.librisLogo}
+              alt='Libris'
+              className='h-full w-full object-contain'
+            />
+          </button>
           <div className='flex-1 min-w-[100px]'>
             <CustomHeaderInput
               value={searchValue}
