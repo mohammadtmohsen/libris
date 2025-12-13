@@ -137,7 +137,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     return () => resizeObserver.disconnect();
   }, []);
 
-  const handleClose = () => {
+  const handleClose = async () => {
     if (
       activeBook?._id &&
       activeBook.progress?.pagesRead !== pageNumber &&
@@ -150,7 +150,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
         title: 'Updating progress…',
         description: `Saving page ${pageNumber} for "${title}".`,
       });
-      updateProgressMutation.mutate(
+      await updateProgressMutation.mutateAsync(
         {
           bookId: activeBook._id,
           pagesRead: pageNumber || undefined,
@@ -173,7 +173,12 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
           },
         }
       );
+      toast.showSuccess({
+        title: 'Progress saved',
+        description: `"${title}" saved at page ${pageNumber}.`,
+      });
     }
+
     onClose();
   };
 
