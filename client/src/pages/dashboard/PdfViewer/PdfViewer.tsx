@@ -5,6 +5,10 @@ import { usePdfViewer } from './usePdfViewer';
 import { Book } from '_queries/booksQueries';
 import { useUpsertProgress } from '_queries/progressQueries';
 import clsx from 'clsx';
+import {
+  getAbsolutePublicationYear,
+  getPublicationEraFromYear,
+} from '_utils/publicationYear';
 
 type PdfViewerProps = {
   onClose: () => void;
@@ -45,6 +49,26 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   );
 
   const updateProgressMutation = useUpsertProgress();
+  const publicationEra = getPublicationEraFromYear(activeBook?.publicationYear);
+  const publicationYear = getAbsolutePublicationYear(
+    activeBook?.publicationYear
+  );
+  const publicationDisplay =
+    publicationYear !== undefined && publicationYear !== null
+      ? publicationEra === 'BC'
+        ? `${publicationYear} ق.م`
+        : `${publicationYear} م`
+      : null;
+  const seriesName = activeBook?.series?.name || null;
+  const seriesDisplay = seriesName ? `المجموعة: ${seriesName}` : null;
+  const totalParts = activeBook?.series?.totalParts;
+  const partDisplay = activeBook?.part
+    ? `الجزء ${activeBook.part}${totalParts ? ` من ${totalParts}` : ''}`
+    : null;
+  const seriesLine = [seriesDisplay, partDisplay].filter(Boolean).join(' • ');
+  const metaLine = [activeBook?.author, publicationDisplay]
+    .filter(Boolean)
+    .join(' • ');
 
   const clearHideTimer = () => {
     if (hideControlsTimeout.current) {
@@ -327,14 +351,32 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
                 enableDropdown={false}
                 bookTitle={activeBook?.title || undefined}
               />
-              <div
-                dir='rtl'
-                className={clsx(
-                  'text-sm font-bold truncate text-blue-1',
-                  'text-right'
-                )}
-              >
-                {activeBook?.title || 'Untitled'}
+              <div className='flex flex-col items-end text-right min-w-0'>
+                <div
+                  dir='rtl'
+                  className={clsx(
+                    'text-sm font-bold truncate text-blue-1',
+                    'text-right'
+                  )}
+                >
+                  {activeBook?.title || 'Untitled'}
+                </div>
+                {metaLine ? (
+                  <div
+                    dir='rtl'
+                    className='text-[11px] text-blue-2 truncate max-w-full'
+                  >
+                    {metaLine}
+                  </div>
+                ) : null}
+                {seriesLine ? (
+                  <div
+                    dir='rtl'
+                    className='text-[11px] text-blue-2 truncate max-w-full'
+                  >
+                    {seriesLine}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
