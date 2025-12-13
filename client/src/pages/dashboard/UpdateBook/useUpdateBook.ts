@@ -8,6 +8,7 @@ import {
 } from '_utils/publicationYear';
 import { useGetSeries } from '_queries/seriesQueries';
 import { useMemo } from 'react';
+import { useActionToast } from '_components/shared';
 
 export const useUpdateBook = (book: Book) => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -24,6 +25,7 @@ export const useUpdateBook = (book: Book) => {
     },
   });
 
+  const actionToast = useActionToast();
   const { mutateAsync: deleteBook, isPending: isDeleteBookPending } =
     useDeleteBook();
 
@@ -46,15 +48,36 @@ export const useUpdateBook = (book: Book) => {
   );
 
   const onDeleteBook = async (next: () => void) => {
+    const bookTitle = book.title || 'Selected book';
     if (!book._id) {
+      actionToast.showError({
+        title: 'Delete failed',
+        description: `Missing identifier for "${bookTitle}".`,
+      });
       return;
     }
     try {
+      actionToast.showToast({
+        title: 'Deleting book…',
+        description: `Removing "${bookTitle}" from your library.`,
+      });
       await deleteBook(book._id);
+      actionToast.showSuccess({
+        title: 'Book deleted',
+        description: `"${bookTitle}" has been removed.`,
+      });
       next();
       // Optionally, you can add a success message or refresh the book list here
     } catch (error) {
       console.error('Failed to delete book:', error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Could not delete the selected book.';
+      actionToast.showError({
+        title: 'Delete failed',
+        description: `"${bookTitle}": ${message}`,
+      });
       // Optionally, you can show an error message to the user here
     }
   };
@@ -63,10 +86,21 @@ export const useUpdateBook = (book: Book) => {
 
   const handleSubmit = (next: () => void) =>
     methods.handleSubmit(async (payload: UploadEditBookFormPayload) => {
+      const targetTitle =
+        payload.title?.trim() || book.title || 'Selected book';
+
       if (!book._id) {
+        actionToast.showError({
+          title: 'Update failed',
+          description: `Missing identifier for "${targetTitle}".`,
+        });
         return;
       }
       try {
+        actionToast.showToast({
+          title: 'Saving changes…',
+          description: `Updating "${targetTitle}" details and metadata.`,
+        });
         const selectedSeriesId = payload.seriesId || null;
         const partValue =
           payload.part === '' ||
@@ -98,11 +132,20 @@ export const useUpdateBook = (book: Book) => {
                   ),
           },
         });
+        actionToast.showSuccess({
+          title: 'Book updated',
+          description: `"${targetTitle}" has been updated.`,
+        });
         next();
         // onClose();
       } catch (err: unknown) {
-        const detailed = err instanceof Error ? err.message : String(err);
-        console.error('Failed to upload book:', detailed);
+        const detailed =
+          err instanceof Error ? err.message : 'Failed to update the book.';
+        console.error('Failed to update book:', detailed);
+        actionToast.showError({
+          title: 'Update failed',
+          description: `"${targetTitle}": ${detailed || 'Please try again.'}`,
+        });
       }
     });
   return {

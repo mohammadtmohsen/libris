@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useUpsertProgress } from '_queries/progressQueries';
 import type { ProgressStatus } from '_queries/progressQueries';
+import { useActionToast } from '..';
 
 const STATUS_ORDER: ProgressStatus[] = [
   'not_started',
@@ -50,6 +51,7 @@ type StatusBadgeProps = {
   enableDropdown?: boolean;
   onStatusChange?: (status: ProgressStatus) => void;
   statusDateLabel?: string | null;
+  bookTitle?: string;
 };
 
 export const StatusBadge = ({
@@ -60,6 +62,7 @@ export const StatusBadge = ({
   enableDropdown = true,
   statusDateLabel,
   onStatusChange,
+  bookTitle,
 }: StatusBadgeProps) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.not_started;
   const sizeClass = condensed
@@ -71,6 +74,7 @@ export const StatusBadge = ({
     useUpsertProgress();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const toast = useActionToast();
 
   const canChange = enableDropdown && (!!bookId || !!onStatusChange);
 
@@ -92,13 +96,29 @@ export const StatusBadge = ({
   const handleSelect = async (nextStatus: ProgressStatus) => {
     if (!canChange || nextStatus === status) return;
     setOpen(false);
+    const targetName = bookTitle || 'this book';
+    const nextLabel = STATUS_CONFIG[nextStatus]?.label || nextStatus;
+    toast.showToast({
+      title: 'Updating status…',
+      description: `Marking "${targetName}" as ${nextLabel.toLowerCase()}.`,
+    });
     try {
       if (bookId) {
         await upsertProgress({ bookId, status: nextStatus });
       }
       onStatusChange?.(nextStatus);
+      toast.showSuccess({
+        title: 'Status updated',
+        description: `"${targetName}" is now ${nextLabel.toLowerCase()}.`,
+      });
     } catch (error) {
       console.error('Failed to update status:', error);
+      const message =
+        error instanceof Error ? error.message : 'Could not update status.';
+      toast.showError({
+        title: 'Update failed',
+        description: `"${targetName}": ${message}`,
+      });
     }
   };
 

@@ -1,4 +1,4 @@
-import { Button, OverlayLoader, StatusBadge } from '_components/shared';
+import { Button, OverlayLoader, StatusBadge, useActionToast } from '_components/shared';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Document, Page } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
@@ -20,6 +20,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     bookUrlError: error,
     bookUrlLoading: loading,
   } = usePdfViewer({ activeBook });
+  const toast = useActionToast();
 
   const [numPages, setNumPages] = useState<number | null>(
     activeBook?.pageCount || null
@@ -115,11 +116,34 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
       activeBook.progress?.status === 'reading'
     ) {
       // Update pages read with the current page number
-      updateProgressMutation.mutate({
-        bookId: activeBook._id,
-        pagesRead: pageNumber || undefined,
-        status: activeBook.progress?.status,
+      const title = activeBook.title || 'This book';
+      toast.showToast({
+        title: 'Updating progress…',
+        description: `Saving page ${pageNumber} for "${title}".`,
       });
+      updateProgressMutation.mutate(
+        {
+          bookId: activeBook._id,
+          pagesRead: pageNumber || undefined,
+          status: activeBook.progress?.status,
+        },
+        {
+          onSuccess: () => {
+            toast.showSuccess({
+              title: 'Progress saved',
+              description: `"${title}" saved at page ${pageNumber}.`,
+            });
+          },
+          onError: (err) => {
+            const message =
+              err instanceof Error ? err.message : 'Could not save progress.';
+            toast.showError({
+              title: 'Save failed',
+              description: `"${title}": ${message}`,
+            });
+          },
+        }
+      );
     }
     onClose();
   };
@@ -301,6 +325,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
                 bookId={activeBook?._id}
                 condensed
                 enableDropdown={false}
+                bookTitle={activeBook?.title || undefined}
               />
               <div
                 dir='rtl'

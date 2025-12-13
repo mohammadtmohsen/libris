@@ -331,7 +331,6 @@ export const UploadEditBookForm = ({
             variant='dangerOutline'
             onClick={() => onDelete(onCancel)}
             disabled={isSubmitting}
-            loading={isSubmitting}
             className='w-full sm:w-auto'
           >
             Delete
@@ -349,7 +348,6 @@ export const UploadEditBookForm = ({
           <Button
             type='submit'
             disabled={isSubmitting}
-            loading={isSubmitting}
             className='min-w-[110px]'
           >
             {isEdit ? 'Save' : 'Upload'}

@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Icon, Input, Modal, useModal } from '_components/shared';
+import {
+  Button,
+  Icon,
+  Input,
+  Modal,
+  useModal,
+  useActionToast,
+} from '_components/shared';
 import {
   useCreateSeries,
   useDeleteSeries,
@@ -35,7 +42,6 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
     error: deleteError,
   } = useDeleteSeries();
   const [editingSeries, setEditingSeries] = useState<Series | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const {
     control,
@@ -45,6 +51,7 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
   } = useForm<SeriesForm>({
     defaultValues,
   });
+  const toast = useActionToast();
 
   useEffect(() => {
     if (!editingSeries) {
@@ -67,36 +74,59 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
 
   const onSubmit = handleSubmit(async (values) => {
     const payload = buildPayload(values);
+    const targetName = payload.name || editingSeries?.name || 'Series';
     try {
+      toast.showToast({
+        title: editingSeries ? 'Saving series…' : 'Creating series…',
+        description: editingSeries
+          ? `Updating "${targetName}".`
+          : `Adding "${targetName}".`,
+      });
       if (editingSeries) {
         await updateSeries({ id: editingSeries._id, payload });
       } else {
         await createSeries(payload);
       }
+      toast.showSuccess({
+        title: editingSeries ? 'Series updated' : 'Series created',
+        description: `"${targetName}" saved successfully.`,
+      });
       setEditingSeries(null);
       reset(defaultValues);
     } catch (err) {
       console.error('Failed to save series', err);
+      const message =
+        err instanceof Error ? err.message : 'Could not save the series.';
+      toast.showError({
+        title: 'Save failed',
+        description: `"${targetName}": ${message}`,
+      });
     }
   });
 
   const handleDelete = async (series: Series) => {
-    const confirmed = window.confirm(
-      `Delete "${series.name}" and detach it from any books?`
-    );
-    if (!confirmed) return;
-
     try {
-      setDeletingId(series._id);
+      toast.showToast({
+        title: 'Deleting series…',
+        description: `Removing "${series.name}" and detaching from books.`,
+      });
       await deleteSeries(series._id);
+      toast.showSuccess({
+        title: 'Series deleted',
+        description: `"${series.name}" has been removed.`,
+      });
       if (editingSeries?._id === series._id) {
         setEditingSeries(null);
         reset(defaultValues);
       }
     } catch (err) {
       console.error('Failed to delete series', err);
-    } finally {
-      setDeletingId(null);
+      const message =
+        err instanceof Error ? err.message : 'Could not delete this series.';
+      toast.showError({
+        title: 'Delete failed',
+        description: `"${series.name}": ${message}`,
+      });
     }
   };
 
@@ -171,14 +201,14 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
                     iconButton='edit'
                     onClick={() => setEditingSeries(series)}
                     aria-label={`Edit ${series.name}`}
+                    disabled={isSaving || isDeleting}
                   />
                   <Button
                     variant='dangerOutline'
                     iconButton='delete'
                     onClick={() => handleDelete(series)}
                     aria-label={`Delete ${series.name}`}
-                    loading={isDeleting && deletingId === series._id}
-                    disabled={isDeleting}
+                    disabled={isSaving || isDeleting}
                   />
                 </div>
               </div>
@@ -258,7 +288,7 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
                 setEditingSeries(null);
                 reset(defaultValues);
               }}
-              disabled={isSaving}
+              disabled={isSaving || isDeleting}
             >
               Cancel edit
             </Button>
@@ -267,11 +297,11 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
             type='button'
             variant='neutral'
             onClick={close}
-            disabled={isSaving}
+            disabled={isSaving || isDeleting}
           >
             Close
           </Button>
-          <Button type='submit' loading={isSaving} disabled={isSaving}>
+          <Button type='submit' disabled={isSaving || isDeleting}>
             {editingSeries ? 'Save changes' : 'Add series'}
           </Button>
         </div>

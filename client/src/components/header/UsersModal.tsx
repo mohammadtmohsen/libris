@@ -7,6 +7,7 @@ import {
   Modal,
   StatusToggle,
   useModal,
+  useActionToast,
 } from '_components/shared';
 import {
   useGetInvitedUsers,
@@ -34,8 +35,8 @@ const UsersModalContent = ({
   const { loggingData } = useStore();
   const {
     mutateAsync: inviteUser,
-    isPending: isInviting,
     error: inviteError,
+    isPending: isInviting,
   } = useInviteUser();
   const { mutateAsync: deleteUser, isPending: isDeleting } =
     useDeleteInvitedUser();
@@ -51,6 +52,7 @@ const UsersModalContent = ({
     username?: string;
     password?: string;
   } | null>(null);
+  const toast = useActionToast();
 
   const onSubmit = handleSubmit(async (payload) => {
     try {
@@ -59,14 +61,30 @@ const UsersModalContent = ({
         displayName: payload.displayName?.trim(),
         username: payload.username.trim(),
       };
+      toast.showToast({
+        title: 'Inviting user…',
+        description: `Creating access for "${trimmedPayload.username}".`,
+      });
       const res = await inviteUser(trimmedPayload);
       setLastInvite({
         username: res?.user?.username ?? trimmedPayload.username,
         password: res?.defaultPassword ?? 'password',
       });
+      toast.showSuccess({
+        title: 'User invited',
+        description: `Sent invite for "${
+          res?.user?.username ?? trimmedPayload.username
+        }".`,
+      });
       reset({ displayName: '', username: '' });
     } catch (e) {
       console.error('Failed to invite user', e);
+      const message =
+        e instanceof Error ? e.message : 'Could not send the invitation.';
+      toast.showError({
+        title: 'Invite failed',
+        description: `"${payload.username}": ${message}`,
+      });
     }
   });
 
@@ -121,17 +139,30 @@ const UsersModalContent = ({
                       type='button'
                       onClick={async () => {
                         try {
+                          toast.showToast({
+                            title: 'Removing admin…',
+                            description: `Revoking access for "${u.username}".`,
+                          });
                           await deleteUser({ id: u._id });
+                          toast.showSuccess({
+                            title: 'Admin removed',
+                            description: `"${u.username}" no longer has access.`,
+                          });
                         } catch (err) {
                           console.error('Failed to delete user', err);
+                          const message =
+                            err instanceof Error
+                              ? err.message
+                              : 'Could not delete this admin.';
+                          toast.showError({
+                            title: 'Remove failed',
+                            description: `"${u.username}": ${message}`,
+                          });
                         }
                       }}
                       aria-label={`Delete admin ${u.username}`}
-                      className={
-                        isDeleting
-                          ? 'hidden'
-                          : 'p-1 text-red-1 transition hover:text-red-2 focus-visible:outline-none'
-                      }
+                      disabled={isDeleting}
+                      className='p-1 text-red-1 transition hover:text-red-2 focus-visible:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
                     >
                       <Icon type='delete' fontSize='medium' />
                     </button>
@@ -173,17 +204,30 @@ const UsersModalContent = ({
                   type='button'
                   onClick={async () => {
                     try {
+                      toast.showToast({
+                        title: 'Removing user…',
+                        description: `Revoking access for "${u.username}".`,
+                      });
                       await deleteUser({ id: u._id });
+                      toast.showSuccess({
+                        title: 'User removed',
+                        description: `"${u.username}" no longer has access.`,
+                      });
                     } catch (err) {
                       console.error('Failed to delete user', err);
+                      const message =
+                        err instanceof Error
+                          ? err.message
+                          : 'Could not delete this user.';
+                      toast.showError({
+                        title: 'Remove failed',
+                        description: `"${u.username}": ${message}`,
+                      });
                     }
                   }}
                   aria-label={`Delete user ${u.username}`}
-                  className={
-                    isDeleting
-                      ? 'hidden'
-                      : 'p-1 text-red-1 transition hover:text-red-2 focus-visible:outline-none'
-                  }
+                  disabled={isDeleting}
+                  className='p-1 text-red-1 transition hover:text-red-2 focus-visible:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
                 >
                   <Icon type='delete' fontSize='medium' />
                 </button>
@@ -262,6 +306,7 @@ const UsersModalContent = ({
             type='button'
             variant='neutral'
             onClick={() => close()}
+            disabled={isInviting}
             className='px-4'
           >
             Close
@@ -269,7 +314,7 @@ const UsersModalContent = ({
           <Button
             type='submit'
             variant='primary'
-            loading={isInviting}
+            disabled={isInviting}
             className='px-4'
           >
             Invite user

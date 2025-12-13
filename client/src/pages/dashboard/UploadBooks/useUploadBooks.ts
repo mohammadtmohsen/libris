@@ -9,6 +9,7 @@ import { UploadEditBookFormPayload } from '_components/shared/UploadEditBookForm
 import { toSignedPublicationYear } from '_utils/publicationYear';
 import { useGetSeries } from '_queries/seriesQueries';
 import { useMemo } from 'react';
+import { useActionToast } from '_components/shared';
 
 export const useUploadBooks = () => {
   const methods = useForm<UploadEditBookFormPayload>({
@@ -25,6 +26,7 @@ export const useUploadBooks = () => {
     },
   });
 
+  const actionToast = useActionToast();
   const { mutateAsync: presignMutateAsync, isPending: isPresignPending } =
     usePresignUpload();
 
@@ -64,7 +66,16 @@ export const useUploadBooks = () => {
         return;
       }
 
+      const displayTitle =
+        payload.title?.trim() ||
+        payload.file.name.replace(/\.[^.]+$/, '') ||
+        'Your book';
+
       try {
+        actionToast.showToast({
+          title: 'Uploading book…',
+          description: `Preparing "${displayTitle}" with its PDF, cover, and metadata.`,
+        });
         // Auto-generate a cover from PDF first page; abort if extraction fails.
         let effectiveCover: File | null = null;
         let pageCount: number | undefined;
@@ -129,7 +140,7 @@ export const useUploadBooks = () => {
             : Number(payload.part);
 
         await completeUploadMutateAsync({
-          title: payload.title || payload.file.name.replace(/\.[^.]+$/, ''),
+          title: displayTitle,
           author: payload.author || undefined,
           description: payload.description || undefined,
           tags: payload.tags,
@@ -152,11 +163,22 @@ export const useUploadBooks = () => {
               }
             : undefined,
         });
+        actionToast.showSuccess({
+          title: 'Upload complete',
+          description: `"${displayTitle}" is synced and ready to view.`,
+        });
         next();
         onClose();
       } catch (err: unknown) {
-        const detailed = err instanceof Error ? err.message : String(err);
+        const detailed =
+          err instanceof Error
+            ? err.message
+            : 'Something went wrong while uploading the book.';
         console.error('Failed to upload book:', detailed);
+        actionToast.showError({
+          title: 'Upload failed',
+          description: `"${displayTitle}": ${detailed}`,
+        });
       }
     });
   return {

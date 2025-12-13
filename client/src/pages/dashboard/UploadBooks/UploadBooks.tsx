@@ -1,9 +1,4 @@
-import {
-  Button,
-  Modal,
-  UploadEditBookForm,
-  useModal,
-} from '_components/shared';
+import { Button, Modal, UploadEditBookForm, useModal } from '_components/shared';
 
 import { useUploadBooks } from './useUploadBooks';
 

@@ -92,6 +92,7 @@ export const BookCard = ({
             bookId={book?._id}
             condensed
             statusDateLabel={progressDateDisplay?.date || null}
+            bookTitle={book?.title}
             className='shrink-0'
           />
           {infoButton ? (
