@@ -15,7 +15,7 @@ export const BookCard = ({
   infoButton,
 }: {
   book: Book;
-  onClickBook: () => void;
+  onClickBook: (book: Book) => void;
   infoButton?: ReactNode;
 }) => {
   const tags = book?.tags ?? [];
@@ -71,7 +71,7 @@ export const BookCard = ({
 
   return (
     <div
-      onClick={onClickBook}
+      onClick={() => onClickBook(book)}
       className='group relative isolate flex aspect-[3/4] min-h-[320px] w-full cursor-pointer overflow-hidden rounded-xl border border-black-2/70 bg-black-3/70 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur-[1px] transition-all duration-300 hover:-translate-y-1 hover:border-blue-4/70 hover:shadow-[0_20px_50px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-4'
       style={
         book?.cover?.coverUrl

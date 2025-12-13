@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   Modal,
   useModal,
@@ -39,6 +39,12 @@ export const Books = ({
       />
     ),
   });
+  const handleOpenBook = useCallback(
+    (book: Book) => {
+      pdfModal.open({ book });
+    },
+    [pdfModal]
+  );
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -79,9 +85,7 @@ export const Books = ({
                 <BookCard
                   book={book}
                   key={book._id}
-                  onClickBook={() => {
-                    pdfModal.open({ book });
-                  }}
+                  onClickBook={handleOpenBook}
                   infoButton={
                     isAdmin ? (
                       <UpdateBook

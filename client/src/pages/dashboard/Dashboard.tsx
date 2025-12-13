@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import clsx from 'clsx';
 import { Books } from './Books/Books';
 import { useMainHook } from './useMainHook';
@@ -14,6 +14,14 @@ const cleanFilters = (next?: BookFilters): BookFilters => ({
   seriesIds: [...(next?.seriesIds ?? [])],
 });
 
+const normalizeArray = (arr?: string[]) => [...(arr ?? [])].sort().join('|');
+
+const areFiltersEqual = (a: BookFilters, b: BookFilters) =>
+  (a.search ?? '') === (b.search ?? '') &&
+  normalizeArray(a.status) === normalizeArray(b.status) &&
+  normalizeArray(a.tags) === normalizeArray(b.tags) &&
+  normalizeArray(a.seriesIds) === normalizeArray(b.seriesIds);
+
 export const Dashboard = () => {
   const [filters, setFilters] = useState<BookFilters>(cleanFilters());
   useGetSeries();
@@ -26,11 +34,12 @@ export const Dashboard = () => {
     isFetchingNextPage,
   } = useMainHook(filters);
 
-  const handleApplyFilters = (nextFilters: BookFilters) => {
-    setFilters(cleanFilters(nextFilters));
-  };
+  const handleApplyFilters = useCallback((nextFilters: BookFilters) => {
+    const cleaned = cleanFilters(nextFilters);
+    setFilters((prev) => (areFiltersEqual(prev, cleaned) ? prev : cleaned));
+  }, []);
 
-  const handleResetFilters = () => setFilters(cleanFilters());
+  const handleResetFilters = useCallback(() => setFilters(cleanFilters()), []);
 
   return (
     <main className='flex h-screen max-h-screen flex-col overflow-hidden'>
