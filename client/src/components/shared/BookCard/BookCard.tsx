@@ -5,6 +5,7 @@ import {
 } from '_utils/publicationYear';
 import { ReactNode } from 'react';
 import { formatDate } from '_utils/helper';
+import { getStatusAccent } from '_constants/statusStyles';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
 
@@ -65,6 +66,8 @@ export const BookCard = ({
       date: formattedDate,
     };
   })();
+
+  const statusAccent = getStatusAccent(book?.progress?.status);
 
   return (
     <div
@@ -134,6 +137,8 @@ export const BookCard = ({
           pagesRead={book?.progress?.pagesRead || 0}
           withLabel
           className='rounded-none border-0 shadow-none ring-0 bg-transparent'
+          accentGradient={statusAccent.barGradient}
+          accentLabelGradient={statusAccent.labelGradient}
         />
       </div>
     </div>

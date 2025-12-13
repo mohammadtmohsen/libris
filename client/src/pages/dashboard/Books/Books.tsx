@@ -7,6 +7,7 @@ import {
   NoData,
 } from '_components/shared';
 import { Book } from '_queries/booksQueries';
+import { getStatusAccent } from '_constants/statusStyles';
 import { useStore } from '_store/useStore';
 
 import { UpdateBook } from '../UpdateBook/UpdateBook';
@@ -73,6 +74,7 @@ export const Books = ({
         <>
           <div className='grid w-full grid-cols-1 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 xs:gap-4'>
             {books.map((book: Book) => {
+              const statusAccent = getStatusAccent(book?.progress?.status);
               return (
                 <BookCard
                   book={book}
@@ -84,6 +86,7 @@ export const Books = ({
                     isAdmin ? (
                       <UpdateBook
                         book={book}
+                        accentColor={statusAccent.solid}
                         buttonClassName='relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white shadow-lg backdrop-blur hover:bg-white/35 focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-white'
                       />
                     ) : null

@@ -10,7 +10,6 @@ import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import RemoveIcon from '@mui/icons-material/Remove';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { SvgIconProps } from '@mui/material/SvgIcon';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -23,6 +22,7 @@ import FilterListOffOutlinedIcon from '@mui/icons-material/FilterListOffOutlined
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
 import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
+import type { SvgIconProps } from '@mui/material/SvgIcon';
 
 export type IconType =
   | 'delete'
@@ -53,6 +53,7 @@ export type IconType =
 interface IconProps {
   type: IconType;
   color?: string;
+  htmlColor?: string;
   fontSize?: 'small' | 'medium' | 'large' | 'inherit';
   className?: string;
 }
@@ -60,12 +61,14 @@ interface IconProps {
 export const Icon = ({
   type,
   color,
+  htmlColor,
   fontSize = 'medium',
   className,
 }: IconProps) => {
   const iconProps: SvgIconProps = {
     fontSize,
     className,
+    htmlColor,
   };
 
   if (color) {

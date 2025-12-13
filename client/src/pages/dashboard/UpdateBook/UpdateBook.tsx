@@ -6,9 +6,11 @@ import { Book } from '_queries/booksQueries';
 export const UpdateBook = ({
   book,
   buttonClassName,
+  accentColor,
 }: {
   book: Book;
   buttonClassName?: string;
+  accentColor?: string;
 }) => {
   const {
     methods,
@@ -42,6 +44,7 @@ export const UpdateBook = ({
         iconButton='editNote'
         onClick={() => uploadModal.open({})}
         className={buttonClassName ?? 'absolute top-3 right-3 z-10'}
+        iconProps={accentColor ? { htmlColor: accentColor } : undefined}
       />
       <Modal {...uploadModal} />
     </>

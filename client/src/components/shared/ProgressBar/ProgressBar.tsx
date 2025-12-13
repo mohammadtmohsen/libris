@@ -1,11 +1,14 @@
 import clsx from 'clsx';
 import React from 'react';
+import { colors } from '_constants/colors';
 
 type ProgressBarProps = {
   pageCount?: number;
   pagesRead?: number;
   className?: string;
   withLabel?: boolean;
+  accentGradient?: string[];
+  accentLabelGradient?: string[];
 };
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -13,6 +16,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   pagesRead,
   className,
   withLabel = false,
+  accentGradient,
+  accentLabelGradient,
 }) => {
   const barRef = React.useRef<HTMLDivElement>(null);
   const labelRef = React.useRef<HTMLSpanElement>(null);
@@ -78,6 +83,23 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     };
   }, [updateLabelFill, withLabel, current, total]);
 
+  const fallbackBarGradient = accentGradient?.length
+    ? accentGradient
+    : [colors.blue[1], colors.blue[2], colors.blue[3]];
+
+  const fallbackLabelGradient = accentLabelGradient?.length
+    ? accentLabelGradient
+    : accentGradient?.length
+    ? accentGradient
+    : [colors.blue[1], colors.blue[2], colors.blue[1]];
+
+  const barGradientStyle = `linear-gradient(90deg, ${fallbackBarGradient.join(
+    ', '
+  )})`;
+  const labelGradientStyle = `linear-gradient(90deg, ${fallbackLabelGradient.join(
+    ', '
+  )})`;
+
   return (
     <div
       ref={barRef}
@@ -86,8 +108,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
       {withLabel && (
         <span
           ref={labelRef}
-          className='absolute bottom-0 left-2 shrink-0 whitespace-nowrap rounded-full bg-gradient-to-r from-blue-1 via-blue-2 to-blue-1 px-1 text-[10px] text-white-1 shadow-sm transition-all'
+          className='absolute bottom-0 left-2 shrink-0 whitespace-nowrap rounded-full px-1 text-[10px] text-white-1 shadow-sm transition-all'
           style={{
+            backgroundImage: labelGradientStyle,
             backgroundSize: `${labelFillPercent}% 100%`,
             backgroundRepeat: 'no-repeat',
           }}
@@ -97,8 +120,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         </span>
       )}
       <div
-        className='h-full rounded-full bg-gradient-to-r from-blue-1 via-blue-2 to-blue-3 transition-all'
-        style={{ width: `${percent}%` }}
+        className='h-full rounded-full transition-all'
+        style={{ width: `${percent}%`, backgroundImage: barGradientStyle }}
       />
     </div>
   );
