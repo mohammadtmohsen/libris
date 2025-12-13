@@ -18,7 +18,11 @@ const DEFAULT_PAGE_SIZE = 20;
 
 export const useGetBooks = (params?: BookFilters) => {
   const queryResult = useInfiniteQuery({
-    queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS, params, DEFAULT_PAGE_SIZE],
+    queryKey: [
+      BOOK_QUERIES_KEYS.GET_BOOKS,
+      JSON.stringify(params ?? {}),
+      DEFAULT_PAGE_SIZE,
+    ],
     initialPageParam: 1,
     queryFn: async ({ pageParam = 1 }) => {
       const page =
