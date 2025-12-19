@@ -33,6 +33,7 @@ export const Dashboard = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    deliveredCount,
   } = useMainHook(filters);
 
   const handleApplyFilters = useCallback((nextFilters: BookFilters) => {
@@ -70,7 +71,11 @@ export const Dashboard = () => {
           isFetchingNextPage={isFetchingNextPage}
           scrollRootRef={contentRef}
         />
-        <CountBadge isFetching={isFetching} count={count} />
+        <CountBadge
+          isFetching={isFetching || isFetchingNextPage}
+          count={count}
+          deliveredCount={deliveredCount}
+        />
       </div>
     </main>
   );

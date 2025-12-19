@@ -31,12 +31,21 @@ export const useMainHook = (filters?: BookFilters) => {
     [data]
   );
   const count = data?.pages?.[0]?.count ?? 0;
+  const deliveredCount = useMemo(
+    () =>
+      data?.pages?.reduce(
+        (acc, p) => acc + (p?.deliveredCount ?? p?.items?.length ?? 0),
+        0
+      ) ?? 0,
+    [data]
+  );
   const isInitialLoading =
     (isLoading || isFetching) && (data?.pages?.length ?? 0) === 0;
 
   return {
     books,
     count,
+    deliveredCount,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,

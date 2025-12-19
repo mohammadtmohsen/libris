@@ -51,6 +51,7 @@ export type Book = {
 export type BooksListResponse = {
   items: Book[];
   count: number;
+  deliveredCount?: number;
   page?: number;
   pageSize?: number;
   hasMore?: boolean;

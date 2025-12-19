@@ -415,6 +415,7 @@ export const getAllBooks = asyncHandler(async (req, res) => {
     data: {
       items: data,
       count: totalCount,
+      deliveredCount: Array.isArray(data) ? data.length : 0,
       page,
       pageSize,
       hasMore,

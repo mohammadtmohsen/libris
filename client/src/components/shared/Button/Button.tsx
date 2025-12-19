@@ -89,9 +89,9 @@ export const Button = (props: ButtonPropsType) => {
       {loading ? (
         <Loader
           loading={loading}
-          accentColor={iconAccent}
-          circularSize={iconButton ? 22 : 28}
-          circularThickness={iconButton ? 4 : 5}
+          color={iconAccent}
+          size={iconButton ? 22 : 28}
+          thickness={iconButton ? 4 : 5}
         />
       ) : iconButton ? (
         <Icon {...{ ...iconProps, htmlColor: iconAccent }} type={iconButton} />

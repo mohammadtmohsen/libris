@@ -36,6 +36,7 @@ export const useGetBooks = (params?: BookFilters) => {
       const items = res.data?.items ?? [];
       const count = res.data?.count ?? 0;
       const pageSize = res.data?.pageSize ?? DEFAULT_PAGE_SIZE;
+      const deliveredCount = res.data?.deliveredCount ?? items.length;
       const hasMore =
         res.data?.hasMore ??
         (pageSize > 0 && Number.isFinite(count) && page * pageSize < count);
@@ -43,6 +44,7 @@ export const useGetBooks = (params?: BookFilters) => {
       return {
         items,
         count,
+        deliveredCount,
         page: res.data?.page ?? page,
         pageSize,
         hasMore,
