@@ -168,7 +168,6 @@ export const useUploadBooks = () => {
           description: `"${displayTitle}" is synced and ready to view.`,
         });
         next();
-        onClose();
       } catch (err: unknown) {
         const detailed =
           err instanceof Error

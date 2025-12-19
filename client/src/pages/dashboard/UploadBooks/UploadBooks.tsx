@@ -21,6 +21,7 @@ export const UploadBook = ({ onOpen }: { onOpen?: () => void }) => {
           onClose();
           close();
         }}
+        onSuccess={onClose}
         onSubmit={handleSubmit}
         seriesOptions={seriesOptions}
         isSeriesLoading={isSeriesLoading}

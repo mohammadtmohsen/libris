@@ -81,6 +81,8 @@ export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
             onChange={(e) => {
               const f = e.target.files?.[0] || null;
               setFile(f);
+              // Allow selecting the same file again by clearing the native input value.
+              e.currentTarget.value = '';
             }}
           />
           <div className='relative flex items-center gap-3 text-left text-white'>
