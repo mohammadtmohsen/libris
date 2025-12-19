@@ -15,7 +15,7 @@ import PdfViewer from '../PdfViewer/PdfViewer';
 
 const BOOK_CARD_MIN_HEIGHT_PX = 360;
 const GRID_GAP_PX = 16;
-const PREFETCH_ROWS = 3;
+const PREFETCH_ROWS = 5;
 const PREFETCH_DISTANCE_PX =
   PREFETCH_ROWS * (BOOK_CARD_MIN_HEIGHT_PX + GRID_GAP_PX);
 
