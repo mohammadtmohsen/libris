@@ -8,7 +8,9 @@ export type DropZoneProps = {
   containerClass?: string;
   error?: string;
   file?: File | null;
+  selectedFiles?: File[];
   onFile?: (file: File | null) => void;
+  onFiles?: (files: File[]) => void;
 } & Partial<ControllerRenderProps> &
   InputHTMLAttributes<HTMLInputElement>;
 
@@ -23,6 +25,25 @@ const formatBytes = (bytes?: number) => {
   return `${value.toFixed(value >= 10 ? 0 : 1)} ${sizes[i]}`;
 };
 
+const normalizeFiles = (
+  value?: File[] | FileList | null
+): File[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return Array.from(value);
+};
+
+const formatFilesSummary = (files: File[]) => {
+  if (!files.length) return '';
+  if (files.length === 1) {
+    const file = files[0];
+    return `${file.name}${file.size ? ` · ${formatBytes(file.size)}` : ''}`;
+  }
+  const totalSize = files.reduce((sum, file) => sum + (file.size || 0), 0);
+  const sizeLabel = totalSize ? ` · ${formatBytes(totalSize)}` : '';
+  return `${files[0].name} + ${files.length - 1} more${sizeLabel}`;
+};
+
 export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
   (
     {
@@ -31,7 +52,10 @@ export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
       containerClass,
       error,
       file,
+      selectedFiles,
       onFile,
+      onFiles,
+      multiple,
       value,
       onChange,
       onBlur,
@@ -41,16 +65,35 @@ export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
     },
     ref
   ) => {
-    const currentFile: File | null = (value as File | null) ?? file ?? null;
+    const isMultiple = Boolean(multiple);
+    const currentFiles = isMultiple
+      ? normalizeFiles(
+          (value as File[] | FileList | null) ?? selectedFiles ?? null
+        )
+      : [];
+    const currentFile: File | null = !isMultiple
+      ? (value as File | null) ?? file ?? null
+      : null;
+
     const setFile = (f: File | null) => {
       if (onChange) (onChange as unknown as (value: File | null) => void)(f);
       else if (onFile) onFile(f);
     };
 
+    const setFiles = (nextFiles: File[]) => {
+      if (onChange) (onChange as unknown as (value: File[]) => void)(nextFiles);
+      else if (onFiles) onFiles(nextFiles);
+    };
+
     const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
       e.preventDefault();
-      const droppedFile = e.dataTransfer.files?.[0] || null;
-      setFile(droppedFile);
+      const droppedFiles = Array.from(e.dataTransfer.files || []);
+      if (isMultiple) {
+        setFiles(droppedFiles);
+      } else {
+        const droppedFile = droppedFiles[0] || null;
+        setFile(droppedFile);
+      }
     };
 
     return (
@@ -76,11 +119,17 @@ export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
             name={name}
             type='file'
             accept={accept}
+            multiple={multiple}
             className={clsx('hidden', className)}
             onBlur={onBlur}
             onChange={(e) => {
-              const f = e.target.files?.[0] || null;
-              setFile(f);
+              const selectedFiles = Array.from(e.target.files || []);
+              if (isMultiple) {
+                setFiles(selectedFiles);
+              } else {
+                const f = selectedFiles[0] || null;
+                setFile(f);
+              }
               // Allow selecting the same file again by clearing the native input value.
               e.currentTarget.value = '';
             }}
@@ -106,12 +155,24 @@ export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
             </div>
             <div className='flex flex-col gap-1 text-sm'>
               <div className='font-semibold leading-tight text-white'>
-                {currentFile
+                {isMultiple
+                  ? currentFiles.length
+                    ? `${currentFiles.length} file${
+                        currentFiles.length === 1 ? '' : 's'
+                      } selected`
+                    : 'Drop your PDFs or click to browse'
+                  : currentFile
                   ? 'Ready to upload'
                   : 'Drop your PDF or click to browse'}
               </div>
               <div className='text-xs text-white/70 leading-snug line-clamp-2'>
-                {currentFile
+                {isMultiple
+                  ? currentFiles.length
+                    ? formatFilesSummary(currentFiles)
+                    : `We accept ${
+                        accept || 'files'
+                      }. We’ll auto-name using the file titles.`
+                  : currentFile
                   ? `${currentFile.name}${
                       currentFile.size
                         ? ` · ${formatBytes(currentFile.size)}`
@@ -128,9 +189,15 @@ export const DropZone = forwardRef<HTMLInputElement, DropZoneProps>(
               Drag & drop
             </span>
             <span className='inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 backdrop-blur-[1px] ring-1 ring-white/10'>
-              {currentFile ? 'Replace file' : 'Click to browse'}
+              {isMultiple
+                ? currentFiles.length
+                  ? 'Add more files'
+                  : 'Click to browse'
+                : currentFile
+                ? 'Replace file'
+                : 'Click to browse'}
             </span>
-            {currentFile && (
+            {(isMultiple ? currentFiles.length > 0 : currentFile) && (
               <span className='inline-flex items-center gap-1 rounded-full bg-blue-1/15 px-3 py-1 text-blue-1 backdrop-blur-[1px] ring-1 ring-blue-1/30'>
                 Selected
               </span>

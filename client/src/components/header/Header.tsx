@@ -6,6 +6,7 @@ import { Button, useActionToast } from '_components/shared';
 import authServices from '_services/authServices/authServices';
 import { getInitialsFromName } from '_utils/helper';
 import { UploadBook } from '_pages/dashboard/UploadBooks/UploadBooks';
+import { UploadBulkBooks } from '_pages/dashboard/UploadBooks/UploadBulkBooks';
 import { CustomHeaderInput } from './CustomHeaderInput';
 import { FilterBooks } from './FilterBooks/FilterBooks';
 import type { BookFilters } from '_queries/booksQueries';
@@ -148,6 +149,7 @@ export const Header = ({
               {isAdmin && (
                 <>
                   <UploadBook onOpen={handleUploadOpen} />
+                  <UploadBulkBooks onOpen={handleUploadOpen} />
                   <SeriesModalTrigger onOpen={handleSeriesOpen} />
                   <UsersModalTrigger onOpen={handleUsersOpen} />
                 </>

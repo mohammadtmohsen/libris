@@ -1,4 +1,9 @@
-import { Button, Modal, UploadEditBookForm, useModal } from '_components/shared';
+import {
+  Button,
+  Modal,
+  UploadEditBookForm,
+  useModal,
+} from '_components/shared';
 
 import { useUpdateBook } from './useUpdateBook';
 import { Book } from '_queries/booksQueries';
@@ -35,6 +40,8 @@ export const UpdateBook = ({
         isSeriesLoading={isSeriesLoading}
       />
     ),
+    // TODO: this is temporary remove it when done uploading books
+    fullScreen: true,
   });
 
   return (
