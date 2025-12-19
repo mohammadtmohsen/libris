@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { RefObject, useCallback, useEffect, useRef } from 'react';
 import {
   Modal,
   useModal,
@@ -13,18 +13,26 @@ import { useStore } from '_store/useStore';
 import { UpdateBook } from '../UpdateBook/UpdateBook';
 import PdfViewer from '../PdfViewer/PdfViewer';
 
+const BOOK_CARD_MIN_HEIGHT_PX = 360;
+const GRID_GAP_PX = 16;
+const PREFETCH_ROWS = 3;
+const PREFETCH_DISTANCE_PX =
+  PREFETCH_ROWS * (BOOK_CARD_MIN_HEIGHT_PX + GRID_GAP_PX);
+
 export const Books = ({
   books,
   isFetching,
   hasNextPage,
   fetchNextPage,
   isFetchingNextPage,
+  scrollRootRef,
 }: {
   books: Book[];
   isFetching: boolean;
   hasNextPage?: boolean;
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
+  scrollRootRef?: RefObject<HTMLDivElement | null>;
 }) => {
   const { loggingData } = useStore();
   const isAdmin = (loggingData?.role ?? 'user') === 'admin';
@@ -58,7 +66,11 @@ export const Books = ({
           fetchNextPage();
         }
       },
-      { rootMargin: '100px', threshold: 0.1 }
+      {
+        root: scrollRootRef?.current ?? null,
+        rootMargin: `0px 0px ${PREFETCH_DISTANCE_PX}px 0px`,
+        threshold: 0.1,
+      }
     );
 
     observer.observe(sentinel);
@@ -66,7 +78,7 @@ export const Books = ({
     return () => {
       observer.disconnect();
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, scrollRootRef]);
 
   const showEmptyState = !isFetching && books.length === 0;
 

@@ -68,6 +68,7 @@ export const Dashboard = () => {
           hasNextPage={hasNextPage}
           fetchNextPage={fetchNextPage}
           isFetchingNextPage={isFetchingNextPage}
+          scrollRootRef={contentRef}
         />
         <CountBadge isFetching={isFetching} count={count} />
       </div>
