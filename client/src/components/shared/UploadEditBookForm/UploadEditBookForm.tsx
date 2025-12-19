@@ -8,6 +8,7 @@ import { Button } from '../Button/Button';
 import { Book } from '_queries/booksQueries';
 import { CustomSelect } from '../CustomSelect/CustomSelect';
 import { ARABIC_BOOK_TAGS } from '_constants/filtersOptions';
+import { parseBookMetadataFromFilename } from '_utils/bookMetadata';
 
 export type UploadEditBookFormPayload = {
   title: string;
@@ -99,7 +100,13 @@ export const UploadEditBookForm = ({
                   onChange={(f) => {
                     field.onChange(f);
                     if (f) {
-                      methods.setValue('title', f.name.replace(/\.[^.]+$/, ''));
+                      const parsed = parseBookMetadataFromFilename(f.name);
+                      methods.setValue('title', parsed.title);
+                      methods.setValue('author', parsed.author || '');
+                      methods.setValue(
+                        'publicationYear',
+                        parsed.publicationYear ?? ''
+                      );
                     }
                   }}
                   error={fieldState.error?.message}
