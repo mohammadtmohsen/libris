@@ -57,7 +57,6 @@ export const Dashboard = () => {
         filters={filters}
         onFilterChange={handleApplyFilters}
         onResetFilters={handleResetFilters}
-        onLogoClick={handleLogoClick}
       />
       <div
         ref={contentRef}
@@ -72,6 +71,7 @@ export const Dashboard = () => {
           scrollRootRef={contentRef}
         />
         <CountBadge
+          onClick={handleLogoClick}
           isFetching={isFetching || isFetchingNextPage}
           count={count}
           deliveredCount={deliveredCount}

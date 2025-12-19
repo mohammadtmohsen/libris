@@ -16,12 +16,10 @@ export const Header = ({
   filters,
   onFilterChange,
   onResetFilters,
-  onLogoClick,
 }: {
   filters: BookFilters;
   onFilterChange: (filters: BookFilters) => void;
   onResetFilters: () => void;
-  onLogoClick?: () => void;
 }) => {
   const { loggingData, logoutUser } = useStore();
   const toast = useActionToast();
@@ -90,7 +88,12 @@ export const Header = ({
   };
 
   const handleLogoClick = () => {
-    onLogoClick?.();
+    setIsExpanded(false);
+    setSearchValue('');
+    onResetFilters();
+    if (typeof window !== 'undefined') {
+      setTimeout(() => window.location.reload(), 0);
+    }
   };
 
   return (
