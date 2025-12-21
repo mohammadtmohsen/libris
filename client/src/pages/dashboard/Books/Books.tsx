@@ -90,7 +90,7 @@ export const Books = ({
         </div>
       ) : (
         <>
-          <div className='grid w-full grid-cols-1 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 xs:gap-4'>
+          <div className='grid w-full grid-cols-1 auto-rows-[minmax(360px,1fr)] grid-flow-row-dense gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 xs:gap-4'>
             {books.map((book: Book) => {
               const statusAccent = getStatusAccent(book?.progress?.status);
               return (
