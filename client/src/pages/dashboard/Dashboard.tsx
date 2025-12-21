@@ -85,6 +85,7 @@ export const Dashboard = () => {
               showEmptyState={false}
               fillHeight={false}
             />
+            <hr className='mt-4 border-white-2/30' />
           </section>
         )}
         <Books
