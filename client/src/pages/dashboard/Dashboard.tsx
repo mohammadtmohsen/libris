@@ -28,6 +28,7 @@ export const Dashboard = () => {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const {
     books,
+    readingBooks,
     count,
     isFetching,
     fetchNextPage,
@@ -35,6 +36,14 @@ export const Dashboard = () => {
     isFetchingNextPage,
     deliveredCount,
   } = useMainHook(filters);
+
+  const hasActiveFilters = Boolean(
+    (filters.search ?? '').trim() ||
+      (filters.status?.length ?? 0) ||
+      (filters.tags?.length ?? 0) ||
+      (filters.seriesIds?.length ?? 0)
+  );
+  const showReadingShelf = !hasActiveFilters && readingBooks.length > 0;
 
   const handleApplyFilters = useCallback((nextFilters: BookFilters) => {
     const cleaned = cleanFilters(nextFilters);
@@ -62,6 +71,22 @@ export const Dashboard = () => {
         ref={contentRef}
         className={clsx('flex-1 overflow-auto', 'px-3 sm:px-4')}
       >
+        {showReadingShelf && (
+          <section className='pb-4 pt-4'>
+            <Books
+              title='Currently Reading'
+              count={readingBooks.length}
+              books={readingBooks}
+              isFetching={false}
+              hasNextPage={false}
+              isFetchingNextPage={false}
+              enableInfiniteScroll={false}
+              showOverlayLoader={false}
+              showEmptyState={false}
+              fillHeight={false}
+            />
+          </section>
+        )}
         <Books
           books={books}
           isFetching={isFetching}

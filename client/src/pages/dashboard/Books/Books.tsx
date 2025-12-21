@@ -23,16 +23,28 @@ export const Books = ({
   books,
   isFetching,
   hasNextPage,
-  fetchNextPage,
-  isFetchingNextPage,
+  fetchNextPage = () => undefined,
+  isFetchingNextPage = false,
   scrollRootRef,
+  title,
+  count,
+  enableInfiniteScroll = true,
+  showOverlayLoader = true,
+  showEmptyState = true,
+  fillHeight = true,
 }: {
   books: Book[];
   isFetching: boolean;
   hasNextPage?: boolean;
-  fetchNextPage: () => void;
-  isFetchingNextPage: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
   scrollRootRef?: RefObject<HTMLDivElement | null>;
+  title?: string;
+  count?: number;
+  enableInfiniteScroll?: boolean;
+  showOverlayLoader?: boolean;
+  showEmptyState?: boolean;
+  fillHeight?: boolean;
 }) => {
   const { loggingData } = useStore();
   const isAdmin = (loggingData?.role ?? 'user') === 'admin';
@@ -55,6 +67,7 @@ export const Books = ({
   );
 
   useEffect(() => {
+    if (!enableInfiniteScroll) return;
     const sentinel = sentinelRef.current;
 
     if (!sentinel) return;
@@ -78,13 +91,35 @@ export const Books = ({
     return () => {
       observer.disconnect();
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage, scrollRootRef]);
+  }, [
+    enableInfiniteScroll,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    scrollRootRef,
+  ]);
 
-  const showEmptyState = !isFetching && books.length === 0;
+  const containerClassName = `relative flex w-full flex-col${
+    fillHeight ? ' h-full' : ''
+  }`;
+  const shouldShowEmptyState =
+    showEmptyState && !isFetching && books.length === 0;
 
   return (
-    <div className='relative h-full flex w-full flex-col'>
-      {showEmptyState ? (
+    <div className={containerClassName}>
+      {title ? (
+        <div className='flex items-center justify-between pb-3'>
+          <div className='flex items-center gap-1'>
+            <h2 className='text-sm font-semibold text-white/85'>{title}</h2>
+            {typeof count === 'number' ? (
+              <span className='rounded-full bg-white/10 xpx-2 py-0.5 text-xs font-semibold text-white/70'>
+                ({count})
+              </span>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+      {shouldShowEmptyState ? (
         <div className='flex flex-1 items-center justify-center'>
           <NoData />
         </div>
@@ -111,15 +146,19 @@ export const Books = ({
               );
             })}
           </div>
-          <div ref={sentinelRef} className='h-4 w-full pb-3' />
+          {enableInfiniteScroll ? (
+            <div ref={sentinelRef} className='h-4 w-full pb-3' />
+          ) : null}
         </>
       )}
 
-      <OverlayLoader
-        show={isFetchingNextPage || isFetching}
-        mini
-        className='mt-auto'
-      />
+      {showOverlayLoader && (
+        <OverlayLoader
+          show={isFetchingNextPage || isFetching}
+          mini
+          className='mt-auto'
+        />
+      )}
 
       <Modal {...pdfModal} />
     </div>

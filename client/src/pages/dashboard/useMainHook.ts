@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useGetBooks } from '_queries/booksQueries';
 import type { BookFilters } from '_queries/booksQueries';
+import { ProgressStatus } from '_queries/progressQueries';
 
 export const useMainHook = (filters?: BookFilters) => {
   const queryParams = useMemo(() => {
@@ -17,6 +18,15 @@ export const useMainHook = (filters?: BookFilters) => {
     return Object.keys(params).length ? params : undefined;
   }, [filters]);
 
+  const { data: readingData } = useGetBooks({
+    status: ['reading'] as ProgressStatus[],
+  });
+
+  const readingBooks = useMemo(
+    () => readingData?.pages?.flatMap((page) => page.items) ?? [],
+    [readingData]
+  );
+
   const {
     data,
     isFetching,
@@ -30,7 +40,9 @@ export const useMainHook = (filters?: BookFilters) => {
     () => data?.pages?.flatMap((page) => page.items) ?? [],
     [data]
   );
+
   const count = data?.pages?.[0]?.count ?? 0;
+
   const deliveredCount = useMemo(
     () =>
       data?.pages?.reduce(
@@ -44,6 +56,7 @@ export const useMainHook = (filters?: BookFilters) => {
 
   return {
     books,
+    readingBooks,
     count,
     deliveredCount,
     fetchNextPage,
