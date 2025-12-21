@@ -328,6 +328,7 @@ const UsersModalContent = ({
 export const UsersModalTrigger = ({ onOpen }: { onOpen?: () => void }) => {
   const modal = useModal({
     content: ({ close }) => <UsersModalContent close={close} />,
+    fullScreen: true,
   });
 
   return (

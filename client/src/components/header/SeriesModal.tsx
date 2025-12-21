@@ -313,6 +313,7 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
 export const SeriesModalTrigger = ({ onOpen }: { onOpen?: () => void }) => {
   const modal = useModal({
     content: ({ close }) => <SeriesModalContent close={close} />,
+    fullScreen: true,
   });
 
   return (

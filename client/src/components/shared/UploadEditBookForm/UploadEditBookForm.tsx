@@ -9,6 +9,7 @@ import { Book } from '_queries/booksQueries';
 import { CustomSelect } from '../CustomSelect/CustomSelect';
 import { ARABIC_BOOK_TAGS } from '_constants/filtersOptions';
 import { parseBookMetadataFromFilename } from '_utils/bookMetadata';
+import { formatMegabytes } from '_utils/fileSize';
 
 export type UploadEditBookFormPayload = {
   title: string;
@@ -118,16 +119,26 @@ export const UploadEditBookForm = ({
             />
           ) : (
             <div className='grid grid-cols-1 gap-3 rounded-primary bg-gradient-to-br from-blue-1/12 via-black/55 to-blue-1/20 p-4 sm:p-5 shadow-[0_10px_50px_rgba(0,0,0,0.35)] ring-1 ring-blue-1/15'>
-              <div className='flex items-center justify-between gap-3'>
+              <div className='flex items-start justify-between gap-3'>
                 <div className='flex flex-col'>
                   <span className='text-[11px] uppercase tracking-[0.12em] text-white/60'>
                     Current PDF
                   </span>
-                  <span className='text-base font-semibold text-white'>
+                  <span className='text-base inline font-semibold text-white'>
                     {book?.title}
+                    {' - '}
+                    <span className='text-xs inline text-white/70 line-clamp-1'>
+                      {book?.author}
+                    </span>
                   </span>
                   <span className='text-xs text-white/70 line-clamp-1'>
-                    {book?.author}
+                    <strong>File:</strong> {book?.file?.originalName}
+                  </span>
+                  <span className='text-xs text-white/70 line-clamp-1'>
+                    <strong>Size:</strong> {formatMegabytes(book?.file?.size)}
+                  </span>
+                  <span className='text-xs text-white/70 line-clamp-1'>
+                    <strong>Pages:</strong> {book?.pageCount}
                   </span>
                 </div>
                 <span className='rounded-full bg-blue-1/15 px-3 py-1 text-[11px] uppercase tracking-[0.08em] text-blue-1 backdrop-blur-[1px]'>
@@ -138,19 +149,10 @@ export const UploadEditBookForm = ({
                 <div className='absolute inset-0 bg-gradient-to-b from-black/25 via-black/50 to-black/80' />
                 <img
                   src={coverUrl}
-                  className='aspect-[3/4] w-full object-cover'
+                  className='aspect-[3/4] w-full object-contain'
                   alt={book?.title || 'Book cover'}
                 />
-                <div className='absolute inset-0 flex items-end justify-between p-4 text-white'>
-                  <div className='space-y-1 text-sm'>
-                    <div className='text-xs uppercase tracking-[0.08em] text-white/70'>
-                      Thumbnail
-                    </div>
-                    <div className='text-lg font-semibold leading-tight drop-shadow'>
-                      {book?.title}
-                    </div>
-                    <div className='text-xs text-white/75'>{book?.author}</div>
-                  </div>
+                <div className='absolute inset-0 flex items-end justify-end p-4 text-white'>
                   <div className='rounded-full bg-blue-1/20 px-3 py-1 text-xs text-blue-1 backdrop-blur-[2px]'>
                     View only
                   </div>

@@ -8,6 +8,7 @@ import { formatDate } from '_utils/helper';
 import { getStatusAccent } from '_constants/statusStyles';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
+import { formatMegabytes } from '_utils/fileSize';
 
 export const BookCard = ({
   book,
@@ -72,22 +73,24 @@ export const BookCard = ({
   return (
     <div
       onClick={() => onClickBook(book)}
-      className='group relative isolate flex aspect-[3/4] min-h-[320px] w-full cursor-pointer overflow-hidden rounded-xl border border-black-2/70 bg-black-3/70 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur-[1px] transition-all duration-300 hover:-translate-y-1 hover:border-blue-4/70 hover:shadow-[0_20px_50px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-4'
-      style={
-        book?.cover?.coverUrl
-          ? {
-              backgroundImage: `linear-gradient(180deg, rgba(10,14,18,0.35) 0%, rgba(10,14,18,0.65) 45%, rgba(6,10,14,0.9) 100%), url(${book.cover.coverUrl})`,
-              backgroundSize: 'cover',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-            }
-          : {
-              backgroundImage:
-                'linear-gradient(180deg, rgba(10,14,18,0.6) 0%, rgba(6,10,14,0.9) 100%)',
-            }
-      }
+      className='group relative isolate flex aspect-[3/4] min-h-[320px] w-full cursor-pointer overflow-hidden rounded-xl border border-black-2/70 bg-black-3/70 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur-[1px] transition-all duration-300 xhover:-translate-y-1 hover:border-blue-4/70 hover:shadow-[0_20px_50px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-4'
     >
-      <div className='absolute inset-0 bg-gradient-to-b from-white-6 via-blue-4/10 to-black-5 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100' />
+      <div
+        className='absolute inset-0 z-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.04] group-focus-visible:scale-[1.04]'
+        style={
+          book?.cover?.coverUrl
+            ? {
+                backgroundImage: `linear-gradient(180deg, rgba(10,14,18,0.25) 0%, rgba(10,14,18,0.35) 45%, rgba(6,10,14,0.9) 100%), url(${book.cover.coverUrl})`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+              }
+            : {
+                backgroundImage:
+                  'linear-gradient(180deg, rgba(10,14,18,0.6) 0%, rgba(6,10,14,0.9) 100%)',
+              }
+        }
+      />
+      <div className='absolute inset-0 z-[1] bg-gradient-to-b from-transparent via-black-1/20 to-black-5/45 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100' />
       <div className='relative z-10 flex h-full w-full flex-col justify-between p-1 pb-3.5'>
         <div className='flex items-start justify-between gap-3'>
           <StatusBadge
@@ -125,10 +128,17 @@ export const BookCard = ({
           )}
 
           {tagsDisplay && (
-            <div className='min-w-0 flex-1 text-white-1 text-[12px] font-medium'>
+            <div className='text-[12px] font-medium text-white-1'>
               {`التصنيفات: ${tagsDisplay}`}
             </div>
           )}
+
+          <span
+            className='text-[12px] font-medium text-white-1 flex justify-end'
+            dir='ltr'
+          >
+            {formatMegabytes(book?.file?.size)}
+          </span>
         </div>
       </div>
       <div className='absolute inset-x-0 bottom-0'>
