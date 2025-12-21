@@ -8,6 +8,7 @@ type OverlayLoaderProps = {
   className?: string;
   withBackdrop?: boolean;
   mini?: boolean;
+  fullWidth?: boolean;
 };
 
 export const OverlayLoader = ({
@@ -18,6 +19,7 @@ export const OverlayLoader = ({
   className,
   withBackdrop = false,
   mini = false,
+  fullWidth = false,
 }: OverlayLoaderProps) => {
   if (!show) return null;
 
@@ -39,19 +41,29 @@ export const OverlayLoader = ({
     ? 'hidden text-xs text-white/60 sm:block'
     : 'text-sm text-white/70 sm:text-base';
 
-  const badgeTextClass = mini
-    ? 'text-[10px] leading-[14px]'
-    : 'text-xs';
+  const badgeTextClass = mini ? 'text-[10px] leading-[14px]' : 'text-xs';
 
   const skeletonLineClass = mini ? 'h-2.5' : 'h-3';
   const skeletonCardClass = mini ? 'h-12' : 'h-16';
+
+  const outerPaddingClass = fullWidth
+    ? 'px-4 sm:px-6'
+    : mini
+    ? 'px-0 sm:px-0'
+    : 'px-4 sm:px-6';
+
+  const cardWidthClass = fullWidth
+    ? 'max-w-none'
+    : mini
+    ? 'max-w-none rounded-none border-x-0 shadow-none sm:rounded-secondary sm:border sm:shadow-[0_20px_80px_rgba(0,0,0,0.45)]'
+    : 'max-w-5xl';
 
   return (
     <div
       className={clsx(
         'relative isolate w-full',
         withBackdrop && 'flex items-center justify-center',
-        mini ? 'px-0 sm:px-0' : 'px-4 sm:px-6',
+        outerPaddingClass,
         className
       )}
       role='status'
@@ -66,16 +78,14 @@ export const OverlayLoader = ({
       <div
         className={clsx(
           'relative z-10 flex w-full justify-center',
-          mini ? 'px-0 sm:px-0' : 'px-4 sm:px-6',
+          outerPaddingClass,
           withBackdrop && 'items-center'
         )}
       >
         <div
           className={clsx(
             'relative mx-auto w-full overflow-hidden rounded-secondary border border-white/12 bg-gradient-to-b from-blue-5/90 via-black-4/90 to-black-5/95 shadow-[0_30px_120px_rgba(0,0,0,0.6)]',
-            mini
-              ? 'max-w-none rounded-none border-x-0 shadow-none sm:rounded-secondary sm:border sm:shadow-[0_20px_80px_rgba(0,0,0,0.45)]'
-              : 'max-w-5xl'
+            cardWidthClass
           )}
         >
           <div className='absolute inset-0 bg-gradient-to-br from-black-5/45 via-black-4/35 to-blue-5/40 backdrop-blur-lg' />
