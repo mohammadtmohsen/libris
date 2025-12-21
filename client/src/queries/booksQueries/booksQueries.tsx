@@ -1,4 +1,5 @@
 import {
+  InfiniteData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -13,6 +14,8 @@ import type {
   BookFilters,
 } from './booksQueries.types';
 import { BOOKS_QUERY_BASE, BOOK_QUERIES_KEYS } from './booksQueries.keys';
+import type { Series } from '../seriesQueries/seriesQueries.types';
+import { SERIES_QUERY_KEYS } from '../seriesQueries/seriesQueries.keys';
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -128,10 +131,97 @@ export const useUpdateBookById = () => {
       );
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS],
-      });
+    onSuccess: (updatedBook, variables) => {
+      const seriesList = queryClient.getQueryData<Series[]>([
+        SERIES_QUERY_KEYS.GET_SERIES,
+      ]);
+      const updateData = variables.updateData;
+      const hasSeriesIdUpdate = Object.prototype.hasOwnProperty.call(
+        updateData,
+        'seriesId'
+      );
+      const hasPartUpdate = Object.prototype.hasOwnProperty.call(
+        updateData,
+        'part'
+      );
+      const isSeriesCleared = hasSeriesIdUpdate && updateData.seriesId === null;
+      const isPartCleared =
+        isSeriesCleared || (hasPartUpdate && updateData.part === null);
+      const mergeBook = (current: Book): Book => {
+        const mergedCover: Book['cover'] = updatedBook.cover
+          ? {
+              ...(current.cover ?? updatedBook.cover),
+              ...updatedBook.cover,
+              ...(current.cover?.coverUrl && !updatedBook.cover.coverUrl
+                ? { coverUrl: current.cover.coverUrl }
+                : {}),
+            }
+          : current.cover;
+        const updatedSeriesId =
+          updatedBook.seriesId ??
+          updatedBook.series?._id ??
+          (hasSeriesIdUpdate && typeof updateData.seriesId === 'string'
+            ? updateData.seriesId
+            : undefined);
+        const resolvedSeries =
+          updatedBook.series ??
+          (updatedSeriesId
+            ? seriesList?.find((series) => series._id === updatedSeriesId) ??
+              (current.series?._id === updatedSeriesId
+                ? current.series
+                : undefined)
+            : undefined);
+        const shouldClearSeries =
+          isSeriesCleared ||
+          (updatedSeriesId &&
+            !resolvedSeries &&
+            current.series?._id !== updatedSeriesId);
+        const nextSeries = shouldClearSeries
+          ? undefined
+          : resolvedSeries ?? current.series;
+        const nextSeriesId = isSeriesCleared
+          ? null
+          : updatedBook.seriesId ??
+            (hasSeriesIdUpdate && typeof updateData.seriesId === 'string'
+              ? updateData.seriesId
+              : current.seriesId);
+        const nextPart = isPartCleared
+          ? undefined
+          : updatedBook.part ??
+            (hasPartUpdate && typeof updateData.part === 'number'
+              ? updateData.part
+              : current.part);
+        return {
+          ...updatedBook,
+          progress: updatedBook.progress ?? current.progress,
+          series: nextSeries,
+          seriesId: nextSeriesId,
+          part: nextPart,
+          cover: mergedCover,
+        };
+      };
+      queryClient.setQueriesData<InfiniteData<BooksListResponse>>(
+        { queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS] },
+        (old) => {
+          if (!old) return old;
+          let didUpdate = false;
+          const pages = old.pages.map((page) => {
+            let pageUpdated = false;
+            const items = page.items.map((item) => {
+              if (item._id !== updatedBook._id) return item;
+              pageUpdated = true;
+              didUpdate = true;
+              return mergeBook(item);
+            });
+            return pageUpdated ? { ...page, items } : page;
+          });
+          return didUpdate ? { ...old, pages } : old;
+        }
+      );
+      queryClient.setQueryData<Book>(
+        [BOOK_QUERIES_KEYS.GET_BOOK_BY_ID, updatedBook._id],
+        (old) => mergeBook(old ?? updatedBook)
+      );
     },
   });
 };

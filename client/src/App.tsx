@@ -13,7 +13,13 @@ import { pdfjs } from 'react-pdf';
 // Configure pdf.js worker (use CDN matching installed version to avoid bundler issues)
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function App() {
   const { isLogged, loadUser, loading } = useStore();
