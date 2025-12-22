@@ -15,7 +15,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
-import { Document, Page } from 'react-pdf';
+import { Document, Page, type DocumentProps } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
 import { Book } from '_queries/booksQueries';
 import { useUpsertProgress } from '_queries/progressQueries';
@@ -42,6 +42,8 @@ type MemoPageProps = {
   onRenderSuccess?: (page: { pageNumber?: number }) => void;
 };
 
+type DocumentLoadSuccess = NonNullable<DocumentProps['onLoadSuccess']>;
+
 const MemoPage = memo(
   ({ pageNumber, width, onRenderSuccess }: MemoPageProps) => (
     <Page
@@ -65,7 +67,7 @@ type ViewerCoreProps = {
   pageWidth?: number;
   pagesToRender: number[];
   visiblePageNumber: number;
-  onDocumentLoadSuccess: ({ numPages }: { numPages: number }) => void;
+  onDocumentLoadSuccess: DocumentLoadSuccess;
   onDocumentLoadError: (error: Error) => void;
   onPageRenderSuccess: (page: { pageNumber?: number }) => void;
 };
@@ -319,14 +321,20 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   const [controlsVisible, setControlsVisible] = useState(true);
   const [manualHidden, setManualHidden] = useState(false);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const [containerHeight, setContainerHeight] = useState<number | null>(null);
   const [frozenWidth, setFrozenWidth] = useState<number | null>(null);
   const [documentReady, setDocumentReady] = useState(false);
   const [isPageRendering, setIsPageRendering] = useState(true);
+  const [pageSize, setPageSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
   const latestPageRef = useRef(initialPageNumber);
   const lastRenderedPageRef = useRef(initialPageNumber);
   const renderedPagesRef = useRef<Set<number>>(new Set());
   const containerWidthRef = useRef<number | null>(null);
+  const containerHeightRef = useRef<number | null>(null);
 
   const touchMovedRef = useRef(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -411,19 +419,27 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
 
     let frameId: number | null = null;
 
-    const commitWidth = (nextWidth: number) => {
-      const floored = Math.max(0, Math.floor(nextWidth));
-      if (containerWidthRef.current === floored) return;
-      containerWidthRef.current = floored;
-      setContainerWidth(floored);
+    const commitSize = (nextWidth: number, nextHeight: number) => {
+      const flooredWidth = Math.max(0, Math.floor(nextWidth));
+      const flooredHeight = Math.max(0, Math.floor(nextHeight));
+      if (
+        containerWidthRef.current === flooredWidth &&
+        containerHeightRef.current === flooredHeight
+      )
+        return;
+      containerWidthRef.current = flooredWidth;
+      containerHeightRef.current = flooredHeight;
+      setContainerWidth(flooredWidth);
+      setContainerHeight(flooredHeight);
     };
 
-    commitWidth(element.clientWidth);
+    commitSize(element.clientWidth, element.clientHeight);
 
     const resizeObserver = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect?.width ?? element.clientWidth;
+      const height = entries[0]?.contentRect?.height ?? element.clientHeight;
       if (frameId) cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => commitWidth(width));
+      frameId = requestAnimationFrame(() => commitSize(width, height));
     });
 
     resizeObserver.observe(element);
@@ -436,13 +452,20 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
 
   useEffect(() => {
     setDocumentReady(false);
+    setPageSize(null);
   }, [fileUrl]);
 
   const pageWidth = useMemo(() => {
     const baseWidth = frozenWidth ?? containerWidth;
     if (!baseWidth || baseWidth <= 0) return undefined;
-    return Math.floor(baseWidth * scale);
-  }, [frozenWidth, containerWidth, scale]);
+    if (!pageSize || !containerHeight || containerHeight <= 0) {
+      return Math.floor(baseWidth * scale);
+    }
+    const widthScale = baseWidth / pageSize.width;
+    const heightScale = containerHeight / pageSize.height;
+    const fitScale = Math.min(widthScale, heightScale);
+    return Math.floor(pageSize.width * fitScale * scale);
+  }, [frozenWidth, containerWidth, containerHeight, pageSize, scale]);
 
   useEffect(() => {
     renderedPagesRef.current.clear();
@@ -462,6 +485,10 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     setPageNumber(nextPage);
     setNumPages(activeBook?.pageCount || null);
   }, [activeBook?._id, activeBook?.progress?.pagesRead, activeBook?.pageCount]);
+
+  useEffect(() => {
+    setScale(1);
+  }, [activeBook?._id]);
 
   useEffect(() => {
     latestPageRef.current = pageNumber;
@@ -518,12 +545,25 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     [numPages]
   );
 
-  const handleDocumentLoadSuccess = useCallback(
-    ({ numPages: loadedPages }: { numPages: number }) => {
-      setNumPages(loadedPages);
-      setDocumentReady(true);
+  const handleDocumentLoadSuccess = useCallback<DocumentLoadSuccess>(
+    async (pdf) => {
+      setNumPages(pdf.numPages);
 
-      const nextPage = Math.min(latestPageRef.current || 1, loadedPages);
+      const nextPage = Math.min(latestPageRef.current || 1, pdf.numPages);
+
+      try {
+        const page = await pdf.getPage(nextPage);
+        const viewport = page.getViewport({
+          scale: 1,
+          rotation: page.rotate ?? 0,
+        });
+        setPageSize({ width: viewport.width, height: viewport.height });
+      } catch (e) {
+        console.error('Failed to read PDF page size:', e);
+      } finally {
+        setDocumentReady(true);
+      }
+
       if (nextPage !== latestPageRef.current) {
         setIsPageRendering(true);
         setPageNumber(nextPage);
