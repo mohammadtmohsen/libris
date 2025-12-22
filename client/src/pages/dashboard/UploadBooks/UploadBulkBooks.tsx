@@ -1,9 +1,15 @@
+import { ReactNode } from 'react';
 import { Button, Modal, useModal } from '_components/shared';
 
 import { UploadBulkBooksForm } from './UploadBulkBooksForm';
 import { useUploadBulkBooks } from './useUploadBulkBooks';
 
-export const UploadBulkBooks = ({ onOpen }: { onOpen?: () => void }) => {
+type UploadBulkBooksProps = {
+  onOpen?: () => void;
+  trigger?: (props: { onClick: () => void }) => ReactNode;
+};
+
+export const UploadBulkBooks = ({ onOpen, trigger }: UploadBulkBooksProps) => {
   const { files, addFiles, clearFiles, uploadAll, isSubmitting } =
     useUploadBulkBooks();
 
@@ -35,13 +41,17 @@ export const UploadBulkBooks = ({ onOpen }: { onOpen?: () => void }) => {
 
   return (
     <>
-      <Button
-        variant='outline'
-        iconButton='book'
-        onClick={handleOpen}
-        aria-label='Bulk upload books'
-        title='Bulk upload books'
-      />
+      {trigger ? (
+        trigger({ onClick: handleOpen })
+      ) : (
+        <Button
+          variant='outline'
+          iconButton='book'
+          onClick={handleOpen}
+          aria-label='Bulk upload books'
+          title='Bulk upload books'
+        />
+      )}
       <Modal {...uploadModal} />
     </>
   );

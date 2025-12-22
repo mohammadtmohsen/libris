@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { logos } from '_assets';
 import { useStore } from '_store/useStore';
-import { Button, useActionToast } from '_components/shared';
+import { FlyoutMenu, Icon, IconType, useActionToast } from '_components/shared';
 import authServices from '_services/authServices/authServices';
 import { getInitialsFromName } from '_utils/helper';
 import { UploadBook } from '_pages/dashboard/UploadBooks/UploadBooks';
@@ -28,6 +28,8 @@ export const Header = ({
   const isAdmin = (loggingData?.role ?? 'user') === 'admin';
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState(filters.search ?? '');
+  const userLabel = displayName || loggingData?.username || 'User';
+  const userInitials = getInitialsFromName(userLabel) || 'U';
   const hasFiltersApplied = Boolean(
     (filters.search ?? '').trim() ||
       (filters.status?.length ?? 0) ||
@@ -78,9 +80,10 @@ export const Header = ({
   };
 
   const toggleExpanded = () => setIsExpanded((prev) => !prev);
-  const handleUploadOpen = () => setIsExpanded(false);
-  const handleUsersOpen = () => setIsExpanded(false);
-  const handleSeriesOpen = () => setIsExpanded(false);
+  const handleMenuAction = (closeMenu: () => void) => {
+    setIsExpanded(false);
+    closeMenu();
+  };
 
   const handleResetAll = () => {
     setIsExpanded(false);
@@ -95,6 +98,42 @@ export const Header = ({
     if (typeof window !== 'undefined') {
       setTimeout(() => window.location.reload(), 0);
     }
+  };
+
+  const handleLogoutClick = async (closeMenu: () => void) => {
+    handleMenuAction(closeMenu);
+    await handleLogout();
+  };
+
+  const menuItemBaseClass =
+    'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2';
+  const renderMenuItem = (
+    label: string,
+    icon: IconType,
+    onClick: () => void,
+    tone: 'default' | 'danger' = 'default'
+  ) => {
+    const isDanger = tone === 'danger';
+    return (
+      <button
+        type='button'
+        role='menuitem'
+        onClick={onClick}
+        className={clsx(
+          menuItemBaseClass,
+          isDanger
+            ? 'text-red-1 hover:bg-red-1/15 focus-visible:ring-red-1/40'
+            : 'text-white/85 hover:bg-blue-1/15 hover:text-white focus-visible:ring-blue-1/45'
+        )}
+      >
+        <Icon
+          type={icon}
+          fontSize='small'
+          className={clsx(isDanger ? 'text-red-1' : 'text-blue-1')}
+        />
+        <span>{label}</span>
+      </button>
+    );
   };
 
   return (
@@ -125,6 +164,73 @@ export const Header = ({
               showClear={hasFiltersApplied}
             />
           </div>
+          <FlyoutMenu
+            containerClassName='shrink-0'
+            trigger={({ toggle, triggerProps }) => (
+              <button
+                {...triggerProps}
+                type='button'
+                onClick={toggle}
+                className={clsx(
+                  'h-9 w-9 rounded-full bg-blue-1/20 text-center text-white text-sm font-semibold ring-1 ring-blue-1',
+                  'transition hover:bg-blue-1/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60'
+                )}
+              >
+                {userInitials}
+              </button>
+            )}
+            menu={({ isOpen, close, menuProps }) => (
+              <div
+                {...menuProps}
+                aria-hidden={!isOpen}
+                className={clsx(
+                  'absolute right-0 z-40 mt-2 w-56 origin-top-right rounded-xl bg-black-2/95 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.45)]',
+                  'ring-1 ring-blue-1/20 backdrop-blur transition-[opacity,transform] duration-150 ease-out',
+                  isOpen
+                    ? 'scale-100 opacity-100'
+                    : 'pointer-events-none scale-95 opacity-0'
+                )}
+              >
+                <div className='flex flex-col gap-1'>
+                  {isAdmin && (
+                    <>
+                      <UploadBook
+                        onOpen={() => handleMenuAction(close)}
+                        trigger={({ onClick }) =>
+                          renderMenuItem('Add book', 'add', onClick)
+                        }
+                      />
+                      <UploadBulkBooks
+                        onOpen={() => handleMenuAction(close)}
+                        trigger={({ onClick }) =>
+                          renderMenuItem('Add bulk book', 'book', onClick)
+                        }
+                      />
+                      <SeriesModalTrigger
+                        onOpen={() => handleMenuAction(close)}
+                        trigger={({ onClick }) =>
+                          renderMenuItem('Manage series', 'series', onClick)
+                        }
+                      />
+                      <UsersModalTrigger
+                        onOpen={() => handleMenuAction(close)}
+                        trigger={({ onClick }) =>
+                          renderMenuItem('Manage users', 'users', onClick)
+                        }
+                      />
+                      <div className='my-1 h-px w-full bg-white/5' />
+                    </>
+                  )}
+                  {renderMenuItem(
+                    'Logout',
+                    'logout',
+                    () => handleLogoutClick(close),
+                    'danger'
+                  )}
+                </div>
+              </div>
+            )}
+          />
         </div>
 
         <div
@@ -135,7 +241,7 @@ export const Header = ({
         >
           <div
             className={clsx(
-              'grid gap-3 md:grid-cols-[1fr_auto] transition-[opacity,transform,padding] duration-300 ease-in-out',
+              'grid gap-3 transition-[opacity,transform,padding] duration-300 ease-in-out',
               isExpanded
                 ? 'opacity-100 translate-y-0 pt-3 pb-2'
                 : 'pointer-events-none opacity-0 -translate-y-3 pt-0 pb-0'
@@ -143,28 +249,6 @@ export const Header = ({
           >
             <div className={clsx('flex flex-wrap items-center gap-3')}>
               <FilterBooks filters={filters} onApplyFilters={onFilterChange} />
-            </div>
-
-            <div className={clsx('flex flex-wrap items-end justify-end gap-3')}>
-              {isAdmin && (
-                <>
-                  <UploadBook onOpen={handleUploadOpen} />
-                  <UploadBulkBooks onOpen={handleUploadOpen} />
-                  <SeriesModalTrigger onOpen={handleSeriesOpen} />
-                  <UsersModalTrigger onOpen={handleUsersOpen} />
-                </>
-              )}
-              <div className='flex items-center gap-2 rounded-full bg-white/5 xpx-3 xpy-1.5 text-sm font-semibold text-white/85'>
-                <span className='grid h-[42px] w-[42px] place-items-center rounded-full bg-blue-1/20 text-white'>
-                  {getInitialsFromName(displayName)}
-                </span>
-              </div>
-              <Button
-                iconButton='logout'
-                onClick={handleLogout}
-                variant='primaryOutline'
-                aria-label='Logout'
-              />
             </div>
           </div>
         </div>

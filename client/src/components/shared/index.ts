@@ -23,6 +23,12 @@ import { NoData } from './NoData/NoData';
 import { ActionToast } from './ActionToast/ActionToast';
 import { ActionToastProvider } from './ActionToast/ActionToastProvider';
 import { useActionToast } from './ActionToast/useActionToast';
+import { FlyoutMenu } from './FlyoutMenu/FlyoutMenu';
+import type {
+  FlyoutMenuProps,
+  FlyoutMenuRenderProps,
+  FlyoutTriggerRenderProps,
+} from './FlyoutMenu/FlyoutMenu';
 import type { ActionToastStatus } from './ActionToast/ActionToast';
 export {
   CardSkeleton,
@@ -50,6 +56,7 @@ export {
   ActionToast,
   ActionToastProvider,
   useActionToast,
+  FlyoutMenu,
 };
 
 export type {
@@ -59,4 +66,7 @@ export type {
   StatusToggleOption,
   IconType,
   ActionToastStatus,
+  FlyoutMenuProps,
+  FlyoutMenuRenderProps,
+  FlyoutTriggerRenderProps,
 };

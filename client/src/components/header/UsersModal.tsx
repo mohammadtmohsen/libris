@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Button,
@@ -325,23 +325,37 @@ const UsersModalContent = ({
   );
 };
 
-export const UsersModalTrigger = ({ onOpen }: { onOpen?: () => void }) => {
+type UsersModalTriggerProps = {
+  onOpen?: () => void;
+  trigger?: (props: { onClick: () => void }) => ReactNode;
+};
+
+export const UsersModalTrigger = ({
+  onOpen,
+  trigger,
+}: UsersModalTriggerProps) => {
   const modal = useModal({
     content: ({ close }) => <UsersModalContent close={close} />,
     fullScreen: true,
   });
 
+  const handleOpen = () => {
+    onOpen?.();
+    modal.open({});
+  };
+
   return (
     <>
-      <Button
-        variant='outline'
-        iconButton='users'
-        onClick={() => {
-          onOpen?.();
-          modal.open({});
-        }}
-        aria-label='Manage users'
-      />
+      {trigger ? (
+        trigger({ onClick: handleOpen })
+      ) : (
+        <Button
+          variant='outline'
+          iconButton='users'
+          onClick={handleOpen}
+          aria-label='Manage users'
+        />
+      )}
       <Modal {...modal} />
     </>
   );

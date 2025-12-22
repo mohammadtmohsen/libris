@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import {
   Button,
   Modal,
@@ -7,7 +8,12 @@ import {
 
 import { useUploadBooks } from './useUploadBooks';
 
-export const UploadBook = ({ onOpen }: { onOpen?: () => void }) => {
+type UploadBookProps = {
+  onOpen?: () => void;
+  trigger?: (props: { onClick: () => void }) => ReactNode;
+};
+
+export const UploadBook = ({ onOpen, trigger }: UploadBookProps) => {
   const {
     methods,
     handleSubmit,
@@ -44,7 +50,11 @@ export const UploadBook = ({ onOpen }: { onOpen?: () => void }) => {
 
   return (
     <>
-      <Button variant='outline' iconButton='add' onClick={handleOpen} />
+      {trigger ? (
+        trigger({ onClick: handleOpen })
+      ) : (
+        <Button variant='outline' iconButton='add' onClick={handleOpen} />
+      )}
       <Modal {...uploadModal} />
     </>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Button,
@@ -310,23 +310,37 @@ const SeriesModalContent = ({ close }: { close: () => void }) => {
   );
 };
 
-export const SeriesModalTrigger = ({ onOpen }: { onOpen?: () => void }) => {
+type SeriesModalTriggerProps = {
+  onOpen?: () => void;
+  trigger?: (props: { onClick: () => void }) => ReactNode;
+};
+
+export const SeriesModalTrigger = ({
+  onOpen,
+  trigger,
+}: SeriesModalTriggerProps) => {
   const modal = useModal({
     content: ({ close }) => <SeriesModalContent close={close} />,
     fullScreen: true,
   });
 
+  const handleOpen = () => {
+    onOpen?.();
+    modal.open({});
+  };
+
   return (
     <>
-      <Button
-        variant='outline'
-        iconButton='series'
-        onClick={() => {
-          onOpen?.();
-          modal.open({});
-        }}
-        aria-label='Manage series'
-      />
+      {trigger ? (
+        trigger({ onClick: handleOpen })
+      ) : (
+        <Button
+          variant='outline'
+          iconButton='series'
+          onClick={handleOpen}
+          aria-label='Manage series'
+        />
+      )}
       <Modal {...modal} />
     </>
   );
