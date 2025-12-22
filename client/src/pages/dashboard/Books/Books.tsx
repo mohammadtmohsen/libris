@@ -154,7 +154,8 @@ export const Books = ({
 
       {showOverlayLoader && (
         <OverlayLoader
-          show={isFetchingNextPage || isFetching}
+          show={isFetching}
+          // show={isFetchingNextPage || isFetching}
           mini
           className='mt-auto'
         />
