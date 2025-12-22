@@ -77,20 +77,34 @@ export const CustomHeaderInput = ({
         'focus-within:border-blue-1'
       )}
     >
-      <button
-        type='button'
-        onClick={onToggleExpand}
-        className={clsx(
-          'p-0 text-blue-1 transition-transform duration-300 ease-in-out hover:text-blue-1 outline-none focus-visible:outline-none',
-          isExpanded && 'rotate-180 scale-110',
-          toggleClassName
+      <div className={clsx('flex items-center gap-2', toggleClassName)}>
+        {showClear && (
+          <button
+            type='button'
+            onClick={handleClear}
+            className={clsx(
+              'rounded-full bg-blue-1/10 px-2.5 py-1 text-[11px] font-semibold text-blue-1 ring-1 ring-blue-1/40',
+              'transition hover:bg-blue-1/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60'
+            )}
+            aria-label='Clear search and filters'
+          >
+            Clear
+          </button>
         )}
-        aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
-        aria-expanded={isExpanded}
-        style={{ outline: 'none', border: 'none' }}
-      >
-        <Icon type='filterOn' fontSize='medium' className='text-blue-1' />
-      </button>
+        <button
+          type='button'
+          onClick={onToggleExpand}
+          className={clsx(
+            'p-0 text-blue-1 transition-transform duration-300 ease-in-out hover:text-blue-1 outline-none focus-visible:outline-none',
+            isExpanded && 'rotate-180 scale-110'
+          )}
+          aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
+          aria-expanded={isExpanded}
+          style={{ outline: 'none', border: 'none' }}
+        >
+          <Icon type='filterOn' fontSize='medium' className='text-blue-1' />
+        </button>
+      </div>
 
       <input
         dir='rtl'
@@ -99,17 +113,6 @@ export const CustomHeaderInput = ({
         value={value}
         onChange={(e) => handleInputChange(e.target.value)}
       />
-
-      {showClear && (
-        <button
-          type='button'
-          onClick={handleClear}
-          className='p-0 text-blue-1 transition hover:text-blue-1 focus:outline-none'
-          aria-label='Clear search and filters'
-        >
-          <Icon type='filterOff' fontSize='medium' className='text-blue-1' />
-        </button>
-      )}
     </div>
   );
 };

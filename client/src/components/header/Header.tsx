@@ -168,31 +168,48 @@ export const Header = ({
           <FlyoutMenu
             containerClassName='hidden md:block shrink-0'
             ignoreOutsideClickSelector='.react-select__menu, .react-select__menu-list, .react-select__option, .react-select__menu-portal'
-            trigger={({ isOpen, toggle, triggerProps }) => (
-              <button
-                {...triggerProps}
-                type='button'
-                onClick={toggle}
-                className={clsx(
-                  'flex items-center gap-2 rounded-full bg-blue-1/5 px-3 py-2 text-sm font-semibold text-white/85 ring-1 ring-blue-1/90',
-                  'transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60'
-                )}
-              >
-                <Icon
-                  type='filterOn'
-                  fontSize='small'
-                  className='text-blue-1'
-                />
-                <span>Filters</span>
+            trigger={({ isOpen, toggle, close, triggerProps }) => (
+              <div className='relative inline-flex items-center'>
+                <button
+                  {...triggerProps}
+                  type='button'
+                  onClick={toggle}
+                  className={clsx(
+                    'flex items-center gap-2 rounded-full bg-blue-1/5 px-3 py-2 text-sm font-semibold text-white/85 ring-1 ring-blue-1/90',
+                    'transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60'
+                  )}
+                >
+                  <Icon
+                    type='filterOn'
+                    fontSize='small'
+                    className='text-blue-1'
+                  />
+                  <span>Filters</span>
+                  <Icon
+                    type={isOpen ? 'chevronUp' : 'chevronDown'}
+                    fontSize='small'
+                    className='text-blue-1'
+                  />
+                </button>
                 {hasFiltersApplied && (
-                  <span className='h-2 w-2 rounded-full bg-blue-1' />
+                  <button
+                    type='button'
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      handleResetAll();
+                      close();
+                    }}
+                    className={clsx(
+                      'absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-1 text-[10px] font-bold text-black-1 shadow-sm',
+                      'transition hover:bg-blue-1/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60'
+                    )}
+                    aria-label='Clear search and filters'
+                  >
+                    x
+                  </button>
                 )}
-                <Icon
-                  type={isOpen ? 'chevronUp' : 'chevronDown'}
-                  fontSize='small'
-                  className='text-blue-1'
-                />
-              </button>
+              </div>
             )}
             menu={({ isOpen, menuProps }) => (
               <div
