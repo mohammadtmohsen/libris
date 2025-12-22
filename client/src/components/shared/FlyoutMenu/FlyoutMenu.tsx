@@ -35,12 +35,14 @@ type FlyoutMenuProps = {
   trigger: (props: FlyoutTriggerRenderProps) => ReactNode;
   menu: (props: FlyoutMenuRenderProps) => ReactNode;
   containerClassName?: string;
+  ignoreOutsideClickSelector?: string;
 };
 
 export const FlyoutMenu = ({
   trigger,
   menu,
   containerClassName = '',
+  ignoreOutsideClickSelector,
 }: FlyoutMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -61,7 +63,15 @@ export const FlyoutMenu = ({
     if (!isOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (!containerRef.current) return;
-      if (containerRef.current.contains(event.target as Node)) return;
+      const target = event.target as Node | null;
+      if (containerRef.current.contains(target as Node)) return;
+      if (
+        ignoreOutsideClickSelector &&
+        target instanceof Element &&
+        target.closest(ignoreOutsideClickSelector)
+      ) {
+        return;
+      }
       close();
     };
     const handleEscape = (event: KeyboardEvent) => {

@@ -66,10 +66,10 @@ export const FilterBooks = ({
   }, [formFilters, normalizedFilters.search, onApplyFilters]);
 
   return (
-    <div className='w-full rounded-xl bg-black-1/90'>
+    <div className='w-full rounded-xl bg-transparent'>
       <div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
         <CustomSelect
-          label='Reading status'
+          // label='Reading status'
           options={READING_STATUSES}
           placeholder='Select status'
           isMulti
@@ -82,9 +82,10 @@ export const FilterBooks = ({
           }
         />
         <CustomSelect
-          label='Series'
+          // label='Series'
           options={seriesOptions}
           placeholder='Filter by series'
+          dir='rtl'
           isMulti
           isLoading={isSeriesLoading}
           value={formFilters.seriesIds}
@@ -96,7 +97,7 @@ export const FilterBooks = ({
           }
         />
         <CustomSelect
-          label='Category tags'
+          // label='Category tags'
           options={ARABIC_BOOK_TAGS}
           placeholder='Select by category'
           dir='rtl'

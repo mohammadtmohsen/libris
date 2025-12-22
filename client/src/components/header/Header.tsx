@@ -162,8 +162,57 @@ export const Header = ({
               onClear={handleResetAll}
               onToggleExpand={toggleExpanded}
               showClear={hasFiltersApplied}
+              toggleClassName='md:hidden'
             />
           </div>
+          <FlyoutMenu
+            containerClassName='hidden md:block shrink-0'
+            ignoreOutsideClickSelector='.react-select__menu, .react-select__menu-list, .react-select__option, .react-select__menu-portal'
+            trigger={({ isOpen, toggle, triggerProps }) => (
+              <button
+                {...triggerProps}
+                type='button'
+                onClick={toggle}
+                className={clsx(
+                  'flex items-center gap-2 rounded-full bg-blue-1/5 px-3 py-2 text-sm font-semibold text-white/85 ring-1 ring-blue-1/90',
+                  'transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-1/60'
+                )}
+              >
+                <Icon
+                  type='filterOn'
+                  fontSize='small'
+                  className='text-blue-1'
+                />
+                <span>Filters</span>
+                {hasFiltersApplied && (
+                  <span className='h-2 w-2 rounded-full bg-blue-1' />
+                )}
+                <Icon
+                  type={isOpen ? 'chevronUp' : 'chevronDown'}
+                  fontSize='small'
+                  className='text-blue-1'
+                />
+              </button>
+            )}
+            menu={({ isOpen, menuProps }) => (
+              <div
+                {...menuProps}
+                aria-hidden={!isOpen}
+                className={clsx(
+                  'absolute right-0 z-40 mt-2 w-[90vw] max-w-[860px] origin-top-right rounded-2xl bg-black-2/95 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.45)]',
+                  'ring-1 ring-blue-1/20 backdrop-blur transition-[opacity,transform] duration-150 ease-out',
+                  isOpen
+                    ? 'scale-100 opacity-100'
+                    : 'pointer-events-none scale-95 opacity-0'
+                )}
+              >
+                <FilterBooks
+                  filters={filters}
+                  onApplyFilters={onFilterChange}
+                />
+              </div>
+            )}
+          />
           <FlyoutMenu
             containerClassName='shrink-0'
             trigger={({ toggle, triggerProps }) => (
@@ -235,7 +284,7 @@ export const Header = ({
 
         <div
           className={clsx(
-            'overflow-hidden transition-[max-height] duration-300 ease-in-out',
+            'md:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out',
             isExpanded ? 'max-h-[1200px]' : 'max-h-0'
           )}
         >

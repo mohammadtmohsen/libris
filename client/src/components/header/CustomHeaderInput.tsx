@@ -12,6 +12,7 @@ type CustomHeaderInputProps = {
   onClear: () => void;
   onToggleExpand: () => void;
   showClear?: boolean;
+  toggleClassName?: string;
 };
 
 export const CustomHeaderInput = ({
@@ -24,6 +25,7 @@ export const CustomHeaderInput = ({
   onClear,
   onToggleExpand,
   showClear = true,
+  toggleClassName = '',
 }: CustomHeaderInputProps) => {
   const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onDebouncedChangeRef = useRef(onDebouncedChange);
@@ -80,7 +82,8 @@ export const CustomHeaderInput = ({
         onClick={onToggleExpand}
         className={clsx(
           'p-0 text-blue-1 transition-transform duration-300 ease-in-out hover:text-blue-1 outline-none focus-visible:outline-none',
-          isExpanded && 'rotate-180 scale-110'
+          isExpanded && 'rotate-180 scale-110',
+          toggleClassName
         )}
         aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
         aria-expanded={isExpanded}
