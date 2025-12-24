@@ -17,9 +17,14 @@ import { BOOKS_QUERY_BASE, BOOK_QUERIES_KEYS } from './booksQueries.keys';
 import type { Series } from '../seriesQueries/seriesQueries.types';
 import { SERIES_QUERY_KEYS } from '../seriesQueries/seriesQueries.keys';
 
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 100;
+const BOOKS_STALE_TIME_MS = Infinity;
+const BOOKS_GC_TIME_MS = 60 * 60 * 1000;
 
-export const useGetBooks = (params?: BookFilters) => {
+export const useGetBooks = (
+  params?: BookFilters,
+  options?: { enabled?: boolean }
+) => {
   const queryResult = useInfiniteQuery({
     queryKey: [
       BOOK_QUERIES_KEYS.GET_BOOKS,
@@ -27,6 +32,11 @@ export const useGetBooks = (params?: BookFilters) => {
       DEFAULT_PAGE_SIZE,
     ],
     initialPageParam: 1,
+    enabled: options?.enabled ?? true,
+    staleTime: BOOKS_STALE_TIME_MS,
+    gcTime: BOOKS_GC_TIME_MS,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     queryFn: async ({ pageParam = 1 }) => {
       const page =
         typeof pageParam === 'number' && Number.isFinite(pageParam)

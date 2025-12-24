@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { Books } from './Books/Books';
 import { useMainHook } from './useMainHook';
 import { Header } from '_components/header';
-import { CountBadge } from '_components/shared';
+import { Button, CountBadge } from '_components/shared';
 import type { BookFilters } from '_queries/booksQueries';
 import { useGetSeries } from '_queries/seriesQueries';
 
@@ -22,35 +22,49 @@ const areFiltersEqual = (a: BookFilters, b: BookFilters) =>
   normalizeArray(a.tags) === normalizeArray(b.tags) &&
   normalizeArray(a.seriesIds) === normalizeArray(b.seriesIds);
 
+const hasAnyFilters = (filters: BookFilters) =>
+  Boolean(
+    (filters.search ?? '').trim() ||
+      (filters.status?.length ?? 0) ||
+      (filters.tags?.length ?? 0) ||
+      (filters.seriesIds?.length ?? 0)
+  );
+
 export const Dashboard = () => {
   const [filters, setFilters] = useState<BookFilters>(cleanFilters());
+  const [isBooksEnabled, setIsBooksEnabled] = useState(false);
   useGetSeries();
   const contentRef = useRef<HTMLDivElement | null>(null);
   const {
     books,
     readingBooks,
+    isReadingFetching,
     count,
     isFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     deliveredCount,
-  } = useMainHook(filters);
+  } = useMainHook(filters, { booksEnabled: isBooksEnabled });
 
-  const hasActiveFilters = Boolean(
-    (filters.search ?? '').trim() ||
-      (filters.status?.length ?? 0) ||
-      (filters.tags?.length ?? 0) ||
-      (filters.seriesIds?.length ?? 0)
-  );
-  const showReadingShelf = !hasActiveFilters && readingBooks.length > 0;
+  const hasActiveFilters = hasAnyFilters(filters);
+  const showReadingShelf =
+    !hasActiveFilters && (readingBooks.length > 0 || isReadingFetching);
 
   const handleApplyFilters = useCallback((nextFilters: BookFilters) => {
     const cleaned = cleanFilters(nextFilters);
+    if (hasAnyFilters(cleaned)) {
+      setIsBooksEnabled(true);
+    }
     setFilters((prev) => (areFiltersEqual(prev, cleaned) ? prev : cleaned));
   }, []);
 
   const handleResetFilters = useCallback(() => setFilters(cleanFilters()), []);
+
+  const handleBrowseAllBooks = useCallback(
+    () => setIsBooksEnabled(true),
+    []
+  );
 
   const handleLogoClick = useCallback(() => {
     if (contentRef.current) {
@@ -77,10 +91,12 @@ export const Dashboard = () => {
               title='Currently Reading'
               count={readingBooks.length}
               books={readingBooks}
-              isFetching={false}
+              isFetching={isReadingFetching}
               hasNextPage={false}
               isFetchingNextPage={false}
               enableInfiniteScroll={false}
+              scrollRootRef={contentRef}
+              showSkeletons
               showOverlayLoader={false}
               showEmptyState={false}
               fillHeight={false}
@@ -88,14 +104,33 @@ export const Dashboard = () => {
             <hr className='mt-4 border-white-2/30' />
           </section>
         )}
-        <Books
-          books={books}
-          isFetching={isFetching}
-          hasNextPage={hasNextPage}
-          fetchNextPage={fetchNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          scrollRootRef={contentRef}
-        />
+        <section className='pb-4 pt-4'>
+          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='space-y-1'>
+              <h2 className='text-sm font-semibold text-white/85'>Library</h2>
+              {!isBooksEnabled && (
+                <p className='text-xs text-white/60'>
+                  Load the full catalog to browse and search.
+                </p>
+              )}
+            </div>
+            {!isBooksEnabled && (
+              <Button variant='primaryOutline' onClick={handleBrowseAllBooks}>
+                Browse all books
+              </Button>
+            )}
+          </div>
+        </section>
+        {isBooksEnabled && (
+          <Books
+            books={books}
+            isFetching={isFetching}
+            hasNextPage={hasNextPage}
+            fetchNextPage={fetchNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            scrollRootRef={contentRef}
+          />
+        )}
         <CountBadge
           onClick={handleLogoClick}
           isFetching={isFetching || isFetchingNextPage}

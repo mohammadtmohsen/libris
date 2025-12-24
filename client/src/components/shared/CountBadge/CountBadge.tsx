@@ -20,17 +20,16 @@ export const CountBadge = ({
         aria-label='Scroll to top'
       >
         <div className='flex gap-0.5 items-center'>
-          {isFetching ? (
+          {isFetching && (
             <Loader
               className='!static bg-transparent'
               size={18}
               thickness={4}
             />
-          ) : (
-            <span className='text-sm text-white-2 font-bold'>
-              {deliveredCount}
-            </span>
           )}
+          <span className='text-sm text-white-2 font-bold'>
+            {deliveredCount}
+          </span>
           /<span className='text-sm text-white-2 font-bold'>{count}</span>
         </div>
         <Icon

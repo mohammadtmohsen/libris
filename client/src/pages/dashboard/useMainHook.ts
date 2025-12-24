@@ -1,9 +1,18 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useGetBooks } from '_queries/booksQueries';
 import type { BookFilters } from '_queries/booksQueries';
 import { ProgressStatus } from '_queries/progressQueries';
 
-export const useMainHook = (filters?: BookFilters) => {
+const PREFETCH_DELAY_MS = 150;
+type UseMainHookOptions = {
+  booksEnabled?: boolean;
+};
+
+export const useMainHook = (
+  filters?: BookFilters,
+  options?: UseMainHookOptions
+) => {
+  const booksEnabled = options?.booksEnabled ?? true;
   const queryParams = useMemo(() => {
     if (!filters) return undefined;
 
@@ -18,7 +27,11 @@ export const useMainHook = (filters?: BookFilters) => {
     return Object.keys(params).length ? params : undefined;
   }, [filters]);
 
-  const { data: readingData } = useGetBooks({
+  const {
+    data: readingData,
+    isFetching: isReadingFetching,
+    isLoading: isReadingLoading,
+  } = useGetBooks({
     status: ['reading'] as ProgressStatus[],
   });
 
@@ -26,6 +39,9 @@ export const useMainHook = (filters?: BookFilters) => {
     () => readingData?.pages?.flatMap((page) => page.items) ?? [],
     [readingData]
   );
+  const isReadingInitialLoading =
+    (isReadingLoading || isReadingFetching) &&
+    (readingData?.pages?.length ?? 0) === 0;
 
   const {
     data,
@@ -34,7 +50,32 @@ export const useMainHook = (filters?: BookFilters) => {
     isLoading,
     fetchNextPage,
     hasNextPage,
-  } = useGetBooks(queryParams);
+  } = useGetBooks(queryParams, { enabled: booksEnabled });
+  const pagesLoaded = data?.pages?.length ?? 0;
+
+  useEffect(() => {
+    if (
+      !booksEnabled ||
+      !hasNextPage ||
+      isFetchingNextPage ||
+      isLoading ||
+      pagesLoaded === 0
+    ) {
+      return;
+    }
+    const timeoutId = setTimeout(() => {
+      void fetchNextPage();
+    }, PREFETCH_DELAY_MS);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    booksEnabled,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    pagesLoaded,
+  ]);
 
   const books = useMemo(
     () => data?.pages?.flatMap((page) => page.items) ?? [],
@@ -57,6 +98,7 @@ export const useMainHook = (filters?: BookFilters) => {
   return {
     books,
     readingBooks,
+    isReadingFetching: isReadingInitialLoading,
     count,
     deliveredCount,
     fetchNextPage,
