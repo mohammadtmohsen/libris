@@ -14,10 +14,12 @@ export const BookCard = ({
   book,
   onClickBook,
   infoButton,
+  index,
 }: {
   book: Book;
   onClickBook: (book: Book) => void;
   infoButton?: ReactNode;
+  index: number;
 }) => {
   const tags = book?.tags ?? [];
   const tagsDisplay = tags.length > 0 ? tags.join(' • ') : null;
@@ -101,14 +103,19 @@ export const BookCard = ({
             bookTitle={book?.title}
             className='shrink-0'
           />
-          {infoButton ? (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className='flex items-center justify-end'
-            >
-              {infoButton}
+          <div className='flex items-start gap-1.5'>
+            <div className='pointer-events-none flex h-4 min-w-[18px] items-center justify-center rounded-full bg-black-5/80 px-1 text-[10px] font-semibold leading-none text-white-1 shadow-[0_4px_10px_rgba(0,0,0,0.35)]'>
+              {index + 1}
             </div>
-          ) : null}
+            {infoButton ? (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className='flex items-center justify-end'
+              >
+                {infoButton}
+              </div>
+            ) : null}
+          </div>
         </div>
         <div className='' dir='rtl'>
           <div className='flex flex-col items-start justify-end space-y-1 text-right'>
