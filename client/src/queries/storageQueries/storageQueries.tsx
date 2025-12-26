@@ -10,6 +10,9 @@ import type {
 } from './storageQueries.types';
 import { STORAGE_QUERY_BASE, STORAGE_QUERY_KEYS } from './storageQueries.keys';
 
+const BOOK_URL_STALE_TIME_MS = 10 * 60 * 1000;
+const BOOK_URL_GC_TIME_MS = 30 * 60 * 1000;
+
 export const useGetBookSignedUrl = ({
   bookId,
   includeCover = false,
@@ -22,6 +25,8 @@ export const useGetBookSignedUrl = ({
   const queryResult = useQuery({
     queryKey: [STORAGE_QUERY_KEYS.GET_BOOK_URL, bookId, includeCover],
     enabled: Boolean(bookId) && enabled,
+    staleTime: BOOK_URL_STALE_TIME_MS,
+    gcTime: BOOK_URL_GC_TIME_MS,
     queryFn: async () => {
       if (!bookId) return null;
       const res = await axiosInstance.get<SignedUrlResponse>(

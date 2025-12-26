@@ -20,16 +20,22 @@ import { SERIES_QUERY_KEYS } from '../seriesQueries/seriesQueries.keys';
 const DEFAULT_PAGE_SIZE = 100;
 const BOOKS_STALE_TIME_MS = Infinity;
 const BOOKS_GC_TIME_MS = 60 * 60 * 1000;
+const BOOK_DETAIL_STALE_TIME_MS = 10 * 60 * 1000;
+const BOOK_DETAIL_GC_TIME_MS = 30 * 60 * 1000;
 
 export const useGetBooks = (
   params?: BookFilters,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean; pageSize?: number }
 ) => {
+  const resolvedPageSize =
+    Number.isFinite(options?.pageSize) && (options?.pageSize ?? 0) > 0
+      ? (options?.pageSize as number)
+      : DEFAULT_PAGE_SIZE;
   const queryResult = useInfiniteQuery({
     queryKey: [
       BOOK_QUERIES_KEYS.GET_BOOKS,
       JSON.stringify(params ?? {}),
-      DEFAULT_PAGE_SIZE,
+      resolvedPageSize,
     ],
     initialPageParam: 1,
     enabled: options?.enabled ?? true,
@@ -43,12 +49,12 @@ export const useGetBooks = (
           ? pageParam
           : 1;
       const res = await axiosInstance.get<BooksListResponse>(BOOKS_QUERY_BASE, {
-        params: { ...params, page, limit: DEFAULT_PAGE_SIZE },
+        params: { ...params, page, limit: resolvedPageSize },
       });
 
       const items = res.data?.items ?? [];
       const count = res.data?.count ?? 0;
-      const pageSize = res.data?.pageSize ?? DEFAULT_PAGE_SIZE;
+      const pageSize = res.data?.pageSize ?? resolvedPageSize;
       const deliveredCount = res.data?.deliveredCount ?? items.length;
       const hasMore =
         res.data?.hasMore ??
@@ -78,6 +84,8 @@ export const useGetBookById = (id?: string, enabled = true) => {
   const queryResult = useQuery({
     queryKey: [BOOK_QUERIES_KEYS.GET_BOOK_BY_ID, id],
     enabled: Boolean(id) && enabled,
+    staleTime: BOOK_DETAIL_STALE_TIME_MS,
+    gcTime: BOOK_DETAIL_GC_TIME_MS,
     queryFn: async () => {
       if (!id) return null;
       const res = await axiosInstance.get<Book>(`${BOOKS_QUERY_BASE}/${id}`);
@@ -210,8 +218,12 @@ export const useUpdateBookById = () => {
           cover: mergedCover,
         };
       };
+      let didUpdateAny = false;
       queryClient.setQueriesData<InfiniteData<BooksListResponse>>(
-        { queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS] },
+        {
+          queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS],
+          exact: false,
+        },
         (old) => {
           if (!old) return old;
           let didUpdate = false;
@@ -225,6 +237,9 @@ export const useUpdateBookById = () => {
             });
             return pageUpdated ? { ...page, items } : page;
           });
+          if (didUpdate) {
+            didUpdateAny = true;
+          }
           return didUpdate ? { ...old, pages } : old;
         }
       );
@@ -232,6 +247,13 @@ export const useUpdateBookById = () => {
         [BOOK_QUERIES_KEYS.GET_BOOK_BY_ID, updatedBook._id],
         (old) => mergeBook(old ?? updatedBook)
       );
+      if (!didUpdateAny) {
+        queryClient.invalidateQueries({
+          queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS],
+          exact: false,
+          refetchType: 'active',
+        });
+      }
     },
   });
 };

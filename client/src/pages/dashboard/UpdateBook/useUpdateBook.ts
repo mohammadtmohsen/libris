@@ -7,23 +7,30 @@ import {
   toSignedPublicationYear,
 } from '_utils/publicationYear';
 import { useGetSeries } from '_queries/seriesQueries';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useActionToast } from '_components/shared';
+
+const getDefaultValues = (book: Book): UploadEditBookFormPayload => ({
+  title: book.title || '',
+  author: book.author || '',
+  description: book.description || '',
+  file: null as File | null,
+  tags: book.tags || [],
+  publicationYear: getAbsolutePublicationYear(book.publicationYear) ?? '',
+  publicationEra: getPublicationEraFromYear(book.publicationYear) ?? 'AD',
+  seriesId: book.seriesId ?? (book.series?._id || null) ?? null,
+  part: book.part ?? null,
+});
 
 export const useUpdateBook = (book: Book) => {
   const methods = useForm<UploadEditBookFormPayload>({
-    defaultValues: {
-      title: book.title || '',
-      author: book.author || '',
-      description: book.description || '',
-      file: null as File | null,
-      tags: book.tags || [],
-      publicationYear: getAbsolutePublicationYear(book.publicationYear) ?? '',
-      publicationEra: getPublicationEraFromYear(book.publicationYear) ?? 'AD',
-      seriesId: book.seriesId ?? (book.series?._id || null) ?? null,
-      part: book.part ?? null,
-    },
+    defaultValues: getDefaultValues(book),
   });
+
+  useEffect(() => {
+    if (methods.formState.isDirty) return;
+    methods.reset(getDefaultValues(book));
+  }, [book, methods, methods.formState.isDirty]);
 
   const actionToast = useActionToast();
   const { mutateAsync: deleteBook, isPending: isDeleteBookPending } =
@@ -109,7 +116,7 @@ export const useUpdateBook = (book: Book) => {
             ? null
             : Number(payload.part);
 
-        await updateBookMutateAsync({
+        const updatedBook = await updateBookMutateAsync({
           bookId: book._id,
           updateData: {
             title: payload?.title || '',
@@ -132,6 +139,9 @@ export const useUpdateBook = (book: Book) => {
                   ),
           },
         });
+        if (updatedBook) {
+          methods.reset(getDefaultValues(updatedBook));
+        }
         actionToast.showSuccess({
           title: 'Book updated',
           description: `"${targetTitle}" has been updated.`,

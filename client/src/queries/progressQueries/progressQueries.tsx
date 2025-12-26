@@ -52,6 +52,86 @@ export const useUpsertProgress = () => {
         [BOOK_QUERIES_KEYS.GET_BOOK_BY_ID, bookId],
         (old) => (old ? { ...old, progress: updatedProgress } : old)
       );
+
+      const isReadingStatus = updatedProgress.status === 'reading';
+      const isReadingQueryKey = (queryKey: readonly unknown[]) => {
+        if (queryKey[0] !== BOOK_QUERIES_KEYS.GET_BOOKS) return false;
+        const paramsString = queryKey[1];
+        if (typeof paramsString !== 'string') return false;
+        try {
+          const params = JSON.parse(paramsString) as { status?: string[] };
+          const statuses = Array.isArray(params?.status) ? params.status : [];
+          return statuses.length === 1 && statuses[0] === 'reading';
+        } catch {
+          return false;
+        }
+      };
+
+      const cachedBook =
+        queryClient.getQueryData<Book>([
+          BOOK_QUERIES_KEYS.GET_BOOK_BY_ID,
+          bookId,
+        ]) ??
+        queryClient
+          .getQueriesData<InfiniteData<BooksListResponse>>({
+            queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS],
+          })
+          .flatMap(([, data]) => data?.pages ?? [])
+          .flatMap((page) => page.items)
+          .find((item) => item._id === bookId);
+
+      queryClient
+        .getQueryCache()
+        .findAll({ queryKey: [BOOK_QUERIES_KEYS.GET_BOOKS] })
+        .map((query) => query.queryKey)
+        .filter(isReadingQueryKey)
+        .forEach((queryKey) => {
+          queryClient.setQueryData<InfiniteData<BooksListResponse>>(
+            queryKey,
+            (old) => {
+              if (!old) return old;
+              let found = false;
+              const pages = old.pages.map((page) => {
+                let pageUpdated = false;
+                const items = page.items.reduce<Book[]>((acc, item) => {
+                  if (item._id !== bookId) {
+                    acc.push(item);
+                    return acc;
+                  }
+                  found = true;
+                  pageUpdated = true;
+                  if (isReadingStatus) {
+                    acc.push({ ...item, progress: updatedProgress });
+                  }
+                  return acc;
+                }, []);
+                return pageUpdated ? { ...page, items } : page;
+              });
+
+              if (isReadingStatus && !found && cachedBook) {
+                const nextBook = { ...cachedBook, progress: updatedProgress };
+                if (pages[0]) {
+                  pages[0] = {
+                    ...pages[0],
+                    items: [nextBook, ...pages[0].items],
+                  };
+                } else {
+                  pages.push({
+                    items: [nextBook],
+                    count: 1,
+                    deliveredCount: 1,
+                    page: 1,
+                    pageSize: 1,
+                    hasMore: false,
+                  });
+                }
+                return { ...old, pages };
+              }
+
+              return found ? { ...old, pages } : old;
+            }
+          );
+        });
     },
   });
 

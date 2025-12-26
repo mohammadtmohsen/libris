@@ -31,6 +31,23 @@ const MIN_SCALE = 0.5;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.1;
 
+const clampPageNumber = (page: number, totalPages?: number | null) => {
+  if (!Number.isFinite(page) || page < 1) return 1;
+  if (typeof totalPages === 'number' && totalPages > 0) {
+    return Math.min(totalPages, page);
+  }
+  return page;
+};
+
+const resolveResumePage = (
+  pagesRead?: number,
+  totalPages?: number | null
+) => {
+  const basePage =
+    typeof pagesRead === 'number' && pagesRead > 0 ? pagesRead : 1;
+  return clampPageNumber(basePage, totalPages);
+};
+
 type PdfViewerProps = {
   onClose: () => void;
   contentProps: { book: Book | null };
@@ -308,10 +325,10 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   } = usePdfViewer({ activeBook });
   const toast = useActionToast();
 
-  const initialPageNumber =
-    activeBook?.progress?.pagesRead && activeBook.progress.pagesRead > 0
-      ? activeBook.progress.pagesRead
-      : 1;
+  const initialPageNumber = resolveResumePage(
+    activeBook?.progress?.pagesRead,
+    activeBook?.pageCount
+  );
 
   const [numPages, setNumPages] = useState<number | null>(
     activeBook?.pageCount || null
@@ -472,10 +489,10 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
   }, [fileUrl, pageWidth]);
 
   useEffect(() => {
-    const nextPage =
-      activeBook?.progress?.pagesRead && activeBook.progress.pagesRead > 0
-        ? activeBook.progress.pagesRead
-        : 1;
+    const nextPage = resolveResumePage(
+      activeBook?.progress?.pagesRead,
+      activeBook?.pageCount
+    );
 
     latestPageRef.current = nextPage;
     lastRenderedPageRef.current = nextPage;
@@ -549,7 +566,10 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
     async (pdf) => {
       setNumPages(pdf.numPages);
 
-      const nextPage = Math.min(latestPageRef.current || 1, pdf.numPages);
+      const nextPage = clampPageNumber(
+        latestPageRef.current || 1,
+        pdf.numPages
+      );
 
       try {
         const page = await pdf.getPage(nextPage);

@@ -18,7 +18,7 @@ export const READING_STATUS_VALUES = [
   'abandoned',
 ];
 const DEFAULT_PAGE_SIZE = 20;
-const MAX_PAGE_SIZE = 100;
+const MAX_PAGE_SIZE = 10000;
 
 const parseArrayQuery = (value) => {
   if (!value) return [];
