@@ -1,5 +1,21 @@
 import { pdfjs } from 'react-pdf';
 
+const PDFJS_CDN_BASE_URL = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/`;
+const PDFJS_DOCUMENT_OPTIONS = {
+  wasmUrl: `${PDFJS_CDN_BASE_URL}wasm/`,
+};
+
+const paintCanvasWhite = (
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D
+) => {
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+};
+
 export type PdfCoverOptions = {
   maxWidth?: number;
   mimeType?: 'image/jpeg' | 'image/png';
@@ -18,7 +34,10 @@ export async function extractFirstPageAsImage(
 ): Promise<{ file: File; pageCount: number }> {
   const ab = await file.arrayBuffer();
 
-  const loadingTask = pdfjs.getDocument({ data: ab });
+  const loadingTask = pdfjs.getDocument({
+    data: ab,
+    ...PDFJS_DOCUMENT_OPTIONS,
+  });
   const pdf = await loadingTask.promise;
   const page = await pdf.getPage(1);
 
@@ -37,6 +56,7 @@ export async function extractFirstPageAsImage(
   canvas.height = Math.floor(viewport.height);
 
   await page.render({ canvasContext: ctx, viewport }).promise;
+  paintCanvasWhite(canvas, ctx);
 
   const blob: Blob = await new Promise((resolve, reject) => {
     if (mimeType === 'image/jpeg') {
