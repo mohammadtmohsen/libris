@@ -15,7 +15,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
-import { Document, Page, type DocumentProps } from 'react-pdf';
+import { Document, Page, pdfjs, type DocumentProps } from 'react-pdf';
 import { usePdfViewer } from './usePdfViewer';
 import { Book } from '_queries/booksQueries';
 import { useUpsertProgress } from '_queries/progressQueries';
@@ -30,6 +30,10 @@ const MOVE_TOLERANCE_PX = 25;
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.1;
+const PDFJS_CDN_BASE_URL = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/`;
+const PDFJS_DOCUMENT_OPTIONS = {
+  wasmUrl: `${PDFJS_CDN_BASE_URL}wasm/`,
+};
 
 const clampPageNumber = (page: number, totalPages?: number | null) => {
   if (!Number.isFinite(page) || page < 1) return 1;
@@ -39,10 +43,7 @@ const clampPageNumber = (page: number, totalPages?: number | null) => {
   return page;
 };
 
-const resolveResumePage = (
-  pagesRead?: number,
-  totalPages?: number | null
-) => {
+const resolveResumePage = (pagesRead?: number, totalPages?: number | null) => {
   const basePage =
     typeof pagesRead === 'number' && pagesRead > 0 ? pagesRead : 1;
   return clampPageNumber(basePage, totalPages);
@@ -60,6 +61,24 @@ type MemoPageProps = {
 };
 
 type DocumentLoadSuccess = NonNullable<DocumentProps['onLoadSuccess']>;
+
+const paintCanvasWhite = (pageNumber?: number) => {
+  if (typeof document === 'undefined') return;
+  const selector = pageNumber
+    ? `.react-pdf__Page[data-page-number="${pageNumber}"] .react-pdf__Page__canvas`
+    : '.react-pdf__Page__canvas';
+  const canvas = document.querySelector<HTMLCanvasElement>(selector);
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+};
 
 const MemoPage = memo(
   ({ pageNumber, width, onRenderSuccess }: MemoPageProps) => (
@@ -124,6 +143,7 @@ const ViewerCore = memo(
             file={url}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
+            options={PDFJS_DOCUMENT_OPTIONS}
             className='relative w-full flex justify-center'
             loading={null}
           >
@@ -140,11 +160,13 @@ const ViewerCore = memo(
                   )}
                   aria-hidden={!isVisible}
                 >
-                  <MemoPage
-                    pageNumber={page}
-                    width={pageWidth}
-                    onRenderSuccess={onPageRenderSuccess}
-                  />
+                  <div className='pdf-page-wrapper'>
+                    <MemoPage
+                      pageNumber={page}
+                      width={pageWidth}
+                      onRenderSuccess={onPageRenderSuccess}
+                    />
+                  </div>
                 </div>
               );
             })}
@@ -602,6 +624,7 @@ const PdfViewer = ({ onClose, contentProps }: PdfViewerProps) => {
       const renderedPage = page?.pageNumber ?? 0;
       if (!renderedPage) return;
 
+      paintCanvasWhite(renderedPage);
       renderedPagesRef.current.add(renderedPage);
 
       if (renderedPage !== latestPageRef.current) return;

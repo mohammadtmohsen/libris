@@ -27,3 +27,7 @@ body {
 .react-pdf__message {
   width: 100% !important;
 }
+
+.pdf-page-wrapper {
+  background: white;
+}
