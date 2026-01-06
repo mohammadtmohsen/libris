@@ -49,10 +49,16 @@ export const useMainHook = (
     (isReadingLoading || isReadingFetching) &&
     (readingData?.pages?.length ?? 0) === 0;
 
-  const { data, isFetching, isLoading } = useGetBooks(undefined, {
+  const {
+    data,
+    isFetching: isBooksFetching,
+    isLoading: isBooksLoading,
+    isPending: isBooksPending,
+  } = useGetBooks(undefined, {
     enabled: booksEnabled,
     pageSize: FULL_LIBRARY_PAGE_SIZE,
   });
+  console.log('🚀 > isBooksPending:', isBooksPending);
 
   const allBooks = useMemo(
     () => data?.pages?.flatMap((page) => page.items) ?? [],
@@ -129,7 +135,8 @@ export const useMainHook = (
   const count = books.length;
   const deliveredCount = books.length;
   const isInitialLoading =
-    (isLoading || isFetching) && (data?.pages?.length ?? 0) === 0;
+    (isBooksLoading || isBooksFetching) && (data?.pages?.length ?? 0) === 0;
+  const isBooksApiFetching = Boolean(isBooksLoading || isBooksFetching);
 
   return {
     books,
@@ -141,5 +148,6 @@ export const useMainHook = (
     hasNextPage: false,
     isFetchingNextPage: false,
     isFetching: isInitialLoading,
+    isBooksApiFetching,
   };
 };

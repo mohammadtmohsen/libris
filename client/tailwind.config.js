@@ -3,7 +3,17 @@ import { colors } from './src/constants/colors';
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 1.6s linear infinite',
+      },
+    },
     colors: colors,
     borderRadius: {
       primary: '10px',

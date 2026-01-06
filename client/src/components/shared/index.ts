@@ -19,6 +19,7 @@ import { StatusToggle, StatusToggleOption } from './StatusToggle/StatusToggle';
 import { StatusBadge } from './StatusBadge/StatusBadge';
 import { CountBadge } from './CountBadge/CountBadge';
 import { OverlayLoader } from './OverlayLoader/OverlayLoader';
+import { ShimmerOverlay } from './ShimmerOverlay/ShimmerOverlay';
 import { NoData } from './NoData/NoData';
 import { ActionToast } from './ActionToast/ActionToast';
 import { ActionToastProvider } from './ActionToast/ActionToastProvider';
@@ -52,6 +53,7 @@ export {
   StatusBadge,
   CountBadge,
   OverlayLoader,
+  ShimmerOverlay,
   NoData,
   ActionToast,
   ActionToastProvider,

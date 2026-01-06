@@ -41,10 +41,10 @@ export const Dashboard = () => {
     isReadingFetching,
     count,
     isFetching,
+    isBooksApiFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    deliveredCount,
   } = useMainHook(filters, { booksEnabled: isBooksEnabled });
 
   const hasActiveFilters = hasAnyFilters(filters);
@@ -61,10 +61,7 @@ export const Dashboard = () => {
 
   const handleResetFilters = useCallback(() => setFilters(cleanFilters()), []);
 
-  const handleBrowseAllBooks = useCallback(
-    () => setIsBooksEnabled(true),
-    []
-  );
+  const handleBrowseAllBooks = useCallback(() => setIsBooksEnabled(true), []);
 
   const handleLogoClick = useCallback(() => {
     if (contentRef.current) {
@@ -129,13 +126,13 @@ export const Dashboard = () => {
             fetchNextPage={fetchNextPage}
             isFetchingNextPage={isFetchingNextPage}
             scrollRootRef={contentRef}
+            fillHeight={false}
           />
         )}
         <CountBadge
           onClick={handleLogoClick}
-          isFetching={isFetching || isFetchingNextPage}
+          isFetching={isBooksApiFetching}
           count={count}
-          deliveredCount={deliveredCount}
         />
       </div>
     </main>

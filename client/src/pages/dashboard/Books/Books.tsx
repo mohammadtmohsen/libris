@@ -1,11 +1,5 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Modal,
-  useModal,
-  BookCard,
-  OverlayLoader,
-  NoData,
-} from '_components/shared';
+import { Modal, useModal, BookCard, NoData } from '_components/shared';
 import { Book } from '_queries/booksQueries';
 import { getStatusAccent } from '_constants/statusStyles';
 import { useStore } from '_store/useStore';
@@ -43,7 +37,6 @@ export const Books = ({
   enableVirtualization = true,
   showSkeletons = false,
   skeletonCount = 1,
-  showOverlayLoader = true,
   showEmptyState = true,
   fillHeight = true,
 }: {
@@ -238,8 +231,8 @@ export const Books = ({
     ? books.slice(startIndex, endIndex)
     : books;
 
-  const containerClassName = `relative flex w-full flex-col${
-    fillHeight ? ' h-full' : ''
+  const containerClassName = `relative flex w-full flex-col ${
+    fillHeight ? 'h-full' : ''
   }`;
   const shouldShowEmptyState =
     showEmptyState && !isFetching && books.length === 0;
@@ -347,14 +340,14 @@ export const Books = ({
         </>
       )}
 
-      {showOverlayLoader && (
+      {/* {showOverlayLoader && (
         <OverlayLoader
           show={isFetching}
           // show={isFetchingNextPage || isFetching}
           mini
           className='mt-auto'
         />
-      )}
+      )} */}
 
       <Modal {...pdfModal} />
     </div>
