@@ -17,6 +17,17 @@ export default defineConfig({
       devOptions: {
         enabled: false,
       },
+      workbox: {
+        navigateFallbackDenylist: [
+          /^\/users/,
+          /^\/auth/,
+          /^\/books/,
+          /^\/series/,
+          /^\/storage/,
+          /^\/progress/,
+          /^\/invitations/,
+        ],
+      },
       manifest: {
         name: 'LIBRIS PWA',
         short_name: 'LIBRIS',
