@@ -9,7 +9,7 @@ import seriesRoutes from './seriesRoutes.js';
 const router = Router();
 
 // Health check route
-router.get('/', (req, res) => {
+router.get('/health', (req, res) => {
   res.json({
     message: 'Libris API Server is running!',
     timestamp: new Date().toISOString(),

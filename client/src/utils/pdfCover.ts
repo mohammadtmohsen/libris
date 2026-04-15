@@ -55,7 +55,7 @@ export async function extractFirstPageAsImage(
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
 
-  await page.render({ canvasContext: ctx, viewport }).promise;
+  await page.render({ canvas, canvasContext: ctx, viewport }).promise;
   paintCanvasWhite(canvas, ctx);
 
   const blob: Blob = await new Promise((resolve, reject) => {

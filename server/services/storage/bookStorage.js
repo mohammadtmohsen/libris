@@ -4,6 +4,11 @@ import {
   deleteObject,
   isR2Configured,
 } from '../r2Client.js';
+import {
+  isLocalStorageConfigured,
+  saveFile,
+  deleteFile,
+} from './localStorage.js';
 
 export const DEFAULT_BOOK_URL_TTL_SECONDS = 3600; // 60 minutes
 export const MAX_BOOK_URL_TTL_SECONDS = 7200; // 2 hours cap to limit signed URL churn
@@ -14,6 +19,37 @@ export class StorageNotConfiguredError extends Error {
     this.name = 'StorageNotConfiguredError';
   }
 }
+
+const localBookStorage = {
+  type: 'local',
+  isConfigured: () => isLocalStorageConfigured(),
+  async upload(key, readableStream) {
+    await saveFile(key, readableStream);
+  },
+  async getReadUrl({ key }) {
+    return `/storage/files/${key}`;
+  },
+  async deleteAssets({ fileKey, coverKey }) {
+    const errors = [];
+    if (fileKey) {
+      try {
+        await deleteFile(fileKey);
+      } catch (err) {
+        errors.push('Failed to delete book file from storage');
+        console.error('Local delete file error', err);
+      }
+    }
+    if (coverKey) {
+      try {
+        await deleteFile(coverKey);
+      } catch (err) {
+        errors.push('Failed to delete cover from storage');
+        console.error('Local delete cover error', err);
+      }
+    }
+    return { errors };
+  },
+};
 
 const r2BookStorage = {
   type: 'r2',
@@ -60,7 +96,11 @@ const disabledBookStorage = {
   },
 };
 
-export const isStorageConfigured = () => isR2Configured();
+export const isStorageConfigured = () =>
+  isLocalStorageConfigured() || isR2Configured();
 
-export const getBookStorage = () =>
-  isR2Configured() ? r2BookStorage : disabledBookStorage;
+export const getBookStorage = () => {
+  if (isLocalStorageConfigured()) return localBookStorage;
+  if (isR2Configured()) return r2BookStorage;
+  return disabledBookStorage;
+};
