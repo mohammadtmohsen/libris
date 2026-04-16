@@ -39,7 +39,7 @@ export const parseBookMetadataFromFilename = (
 
   let title = remainder;
   let publicationYear: number | undefined;
-  const yearMatch = remainder.match(/^(\d{3,4})(?:\s+|[-_]+)(.+)$/);
+  const yearMatch = remainder.match(/^(\d{3,4})(?:\s+|[-_]+(?!\d))(.+)$/);
 
   if (yearMatch) {
     const parsedYear = Number(yearMatch[1]);
